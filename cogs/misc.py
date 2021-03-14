@@ -7,6 +7,7 @@ class Misc(commands.Cog):
         self.client = client
 
     @commands.command()
+    @commands.cooldown(1, 3, commands.BucketType.user)
     async def ping(self, ctx):
         bot_latency = round(self.client.latency * 1000)
         embed = Embed(description=':ping_pong: Pong !')
@@ -17,6 +18,7 @@ class Misc(commands.Cog):
         return await msg.edit(embed=embed)
 
     @commands.command()
+    @commands.cooldown(1, 3, commands.BucketType.user)
     async def avatar(self, ctx):
         user = ctx.message.mentions[0] if ctx.message.mentions else ctx.message.author
         embed = Embed(description="**{0.display_name}'s** [avatar]({0.avatar_url}):".format(user))\

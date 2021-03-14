@@ -49,7 +49,7 @@ class MochiBot(commands.Bot):
 
         # Init Lavalink client
         await lavalink.close()
-        a = await lavalink.initialize(
+        await lavalink.initialize(
             self, host=LAVALINK_HOST, password=LAVALINK_PASS,
             rest_port=LAVALINK_PORT, ws_port=LAVALINK_PORT
         )

@@ -33,6 +33,7 @@ class Music(commands.Cog):
                 print(player.is_playing)
 
     @commands.command()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def join(self, ctx):
         response = await join_voice_channel(ctx)
 
@@ -42,6 +43,7 @@ class Music(commands.Cog):
             return await ctx.message.add_reaction("👌")
 
     @commands.command()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def leave(self, ctx):
         if await leave(ctx) is not None:
             return await ctx.message.add_reaction("👋")
