@@ -81,11 +81,40 @@ class Image(commands.Cog):
         post = get_reddit_image(sub_reddit=memes_subreddit, search_limit=50)
 
         if post is None:
-            embed = Embed(description="😕 We are sorry, we have done a lot of research but we can't find any too cute pics.")
+            embed = Embed(description="😕 We are sorry, we have done a lot of research but we can't find any sad cat pics.")
         else:
             embed = reddit_embed(post=post)
 
         return await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.cooldown(1, 3, commands.BucketType.user)
+    async def fan(self, ctx):
+        memes_subreddit = "onlyfans"
+
+        post = get_reddit_image(sub_reddit=memes_subreddit, search_limit=50)
+
+        if post is None:
+            embed = Embed(description="😕 We are sorry, we have done a lot of research but we can't find any fans pics.")
+        else:
+            embed = reddit_embed(post=post)
+
+        return await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.cooldown(1, 3, commands.BucketType.user)
+    async def axolotl(self, ctx):
+        memes_subreddit = "axolotls"
+
+        post = get_reddit_image(sub_reddit=memes_subreddit, search_limit=50)
+
+        if post is None:
+            embed = Embed(description="😕 We are sorry, we have done a lot of research but we can't find any axolotl pics.")
+        else:
+            embed = reddit_embed(post=post)
+
+        return await ctx.send(embed=embed)
+
 
 def setup(client):
     client.add_cog(Image(client))
