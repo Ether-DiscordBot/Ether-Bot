@@ -8,6 +8,8 @@ from discord.ext import commands
 from discord.ext.commands import CommandNotFound, CommandOnCooldown
 from discord import Embed
 
+import praw
+
 import lavalink
 
 load_dotenv()
@@ -53,6 +55,17 @@ class MochiBot(commands.Bot):
             self, host=LAVALINK_HOST, password=LAVALINK_PASS,
             rest_port=LAVALINK_PORT, ws_port=LAVALINK_PORT
         )
+
+        # Init Reddit client
+        self.reddit_client = praw.Reddit(
+                    client_id=os.getenv('REDDIT_CLIENT_ID'),
+                    client_secret=os.getenv('REDDIT_CLIENT_SECRET'),
+                    user_agent="Mochi Bot",
+                    username=os.getenv('REDDIT_NAME'),
+                    password=os.getenv('REDDIT_PASS'),
+                    check_for_async=False
+                )
+        print('--- Reddit client as been initialized !')
 
         return print('--- Lavalink client as been initialized !')
 
