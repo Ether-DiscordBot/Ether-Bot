@@ -1,6 +1,6 @@
 # Mochi DiscordBot
 
-![](https://img.shields.io/badge/python-3.9-blue.svg)![](https://img.shields.io/badge/discord-py-blue.svg)![](https://img.shields.io/github/license/holy-tanuki/Mochi-DiscordBot)![](https://img.shields.io/github/stars/holy-tanuki/Mochi-DiscordBot)
+![](https://img.shields.io/badge/python-3.9-blue.svg) ![](https://img.shields.io/badge/discord-py-blue.svg) ![](https://img.shields.io/github/license/holy-tanuki/Mochi-DiscordBot) ![](https://img.shields.io/github/stars/holy-tanuki/Mochi-DiscordBot)
 
 Mochi is a powerful bot for Discord coding in python. It can interact with an online dashboard (feature under development), it has a very complete music part using [Lavalink](https://github.com/Frederikam/Lavalink) and many other features developed or under development.
 
