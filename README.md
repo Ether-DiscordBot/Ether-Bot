@@ -16,7 +16,7 @@ For the moment only this feature is available:
 - Images (from reddit) ✅
 - Other ❌
 
-✅: Everything is good  |⭕️: Other features are coming soon | ❌: Not yet finished
+✅: Everything is good  |⭕️: Other features are coming | ❌: Not yet finished
 
 ## Installation
 
