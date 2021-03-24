@@ -1,6 +1,9 @@
 from discord.ext import commands
 from discord import Embed
 
+import os
+import praw
+
 from core.reddit import get_reddit_image
 
 
@@ -16,6 +19,16 @@ def reddit_embed(post):
 class Image(commands.Cog):
     def __init__(self, client):
         self.client = client
+        
+        self.reddit_client = praw.Reddit(
+            client_id=os.getenv('REDDIT_CLIENT_ID'),
+            client_secret=os.getenv('REDDIT_CLIENT_SECRET'),
+            user_agent="Mochi Bot",
+            username=os.getenv('REDDIT_NAME'),
+            password=os.getenv('REDDIT_PASS'),
+            check_for_async=False
+        )
+        print('--- Reddit client as been initialized !')
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)

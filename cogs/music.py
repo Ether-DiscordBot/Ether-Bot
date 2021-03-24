@@ -4,10 +4,15 @@ from discord.ext import commands
 
 from core.music import *
 
+import lavalink
+import os
+
 
 class Music(commands.Cog):
     def __init__(self, client):
         self.client = client
+        
+        os.system("start cmd.exe /c java -jar Lavalink.jar")
 
         lavalink.register_event_listener(
             self.lavalink_event_handler
