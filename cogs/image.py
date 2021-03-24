@@ -20,7 +20,7 @@ class Image(commands.Cog):
     def __init__(self, client):
         self.client = client
         
-        self.reddit_client = praw.Reddit(
+        client.reddit_client = praw.Reddit(
             client_id=os.getenv('REDDIT_CLIENT_ID'),
             client_secret=os.getenv('REDDIT_CLIENT_SECRET'),
             user_agent="Mochi Bot",
