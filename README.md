@@ -34,7 +34,7 @@
 <div>
 <p>Only <a href="https://docs.discord.red/en/stable/install_windows.html">Windows</a> is supported for now.</p>
 <p>You can use this bot but the repository is not a python package.</p>
-<p>However, if you want to use this Bot Discord you can do so by:</p>
+<p>However, if you want to use this Discord bot you can do so by:</p>
 
  - Installink <a href="https://github.com/Frederikam/Lavalink">Lavalink</a>
  - Installing all the dependencies
