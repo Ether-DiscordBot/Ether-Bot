@@ -31,6 +31,9 @@ However, if you want to use Mochi you can do so by:
  - And putting the key-values in a .env file
 
 When you have finished installing and configuring Mochi you can run the *main.py* file, no need to run Lavalink, Mochi does it all by itself.
+```
+python main.py
+```
 
 ## License
 
