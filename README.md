@@ -1,46 +1,48 @@
-<div align="center">
-<h2>Mochi Discord Bot</h2>
-<h4>Music ● Moderation ● Leveling ● Dashboard ● Fun</h4>
-  <a href="https://github.com/Rapptz/discord.py/">
-     <img src="https://img.shields.io/badge/discord-py-blue.svg" alt="discord.py">
- </a>
-   <a href="https://www.python.org/">
-  <img alt="python-version" src="https://img.shields.io/badge/python-3.9-blue.svg">
-  </a>
-  <a href="https://github.com/holy-tanuki/Mochi-DiscordBot">
-    <img alt="license" src="https://img.shields.io/github/license/holy-tanuki/Mochi-DiscordBot">
-  </a>
-  <a href="https://github.com/holy-tanuki/Mochi-DiscordBot">
-  <img alt="github-start" src="https://img.shields.io/github/issues/holy-tanuki/Mochi-DiscordBot">
-  </a>
-  <a href="https://github.com/holy-tanuki/Mochi-DiscordBot">
-  <img alt="github-start" src="https://img.shields.io/github/forks/holy-tanuki/Mochi-DiscordBot">
-  </a>
-  <a href="https://github.com/holy-tanuki/Mochi-DiscordBot">
-  <img alt="github-start" src="https://img.shields.io/github/stars/holy-tanuki/Mochi-DiscordBot">
-  </a>
-</div>
+# Mochi DiscordBot
 
-<h2>Features</h2>
-<div>
+---
 
- - MUSIC
- - IMAGE
- - FUN
- 
-</div>
+![](https://img.shields.io/badge/python-3.9-blue.svg)![](https://img.shields.io/badge/discord-py-blue.svg)![](https://img.shields.io/github/license/holy-tanuki/Mochi-DiscordBot)![](https://img.shields.io/github/stars/holy-tanuki/Mochi-DiscordBot)
 
-<h2>Installation</h2>
-<div>
-<p>Only <a href="https://docs.discord.red/en/stable/install_windows.html">Windows</a> is supported for now.</p>
-<p>You can use this bot but the repository is not a python package.</p>
-<p>However, if you want to use this Discord bot you can do so by:</p>
+Mochi is a powerful bot for Discord coding in python. It can interact with an online dashboard (feature under development), it has a very complete music part using [Lavalink](https://github.com/Frederikam/Lavalink) and many other features developed or under development.
 
- - Installink <a href="https://github.com/Frederikam/Lavalink">Lavalink</a>
+For the moment Mochi is not made to be installed on your computer and it is not for the moment planned to be. It is however planned that Mochi will be put online and accessible to everyone.
+
+## Overview
+
+---
+
+Mochi is in the very early stages of development, many of the features are not there yet but they will come.
+
+For the moment only this feature is available:
+
+- Music ⭕️
+- Images (from reddit) ✅
+- Other ❌
+
+✅: Everything is good  |⭕️: Other features are coming soon | ❌: Not yet finished
+
+## Installation
+
+---
+
+Only **Windows** is supported for now.
+
+As said earlier, you can use this project for your own purposes, but it is absolutely not meant for that (for the moment).
+
+However, if you want to use Mochi you can do so by:
+
+- Installing [Lavalink](https://github.com/Frederikam/Lavalink) and create an application.yml file in the main directory.
  - Installing all the dependencies
  - And putting the key-values in a .env file
 
-</div>
+When you have finished installing and configuring Mochi you can run the *main.py* file, no need to run Lavalink, Mochi does it all by itself.
+
+## License
+
+---
+
+Released under [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html) license.
 
 
 
