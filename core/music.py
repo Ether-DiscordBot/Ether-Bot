@@ -215,13 +215,13 @@ class MusicCommandsManager:
 
         domain = urllib.parse.urlsplit(arg).netloc
         if music_client.channel:
-            if domain != "" and (domain == "youtube.com" or domain == "soundcloud.com"):
+            if domain != "" and ("youtube.com" in domain or "soundcloud.com" in domain):
                 load_result = await music_client.load_tracks(arg)
                 result = load_result.tracks
                 return result
             elif domain == "":
-                videosSearch = VideosSearch(" ".join(args), limit=1)
-                url = videosSearch.result()['result'][0]['link']
+                videos_search = VideosSearch(" ".join(args), limit=1)
+                url = videos_search.result()['result'][0]['link']
                 result = []
                 track = await music_client.load_tracks(url)
                 if track and track.tracks and track.tracks[0]:

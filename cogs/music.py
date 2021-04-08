@@ -76,22 +76,22 @@ class Music(commands.Cog):
                     return
                 else:
                     message = "# Current track: \n" \
-                              "1.  {0.title} [{1}]\n \n".format(music_client.current, lavalink.utils
-                                                                .format_time(music_client.current.length))
+                              "1.  {0.title} [{1}]\n".format(music_client.current, lavalink.utils
+                                                             .format_time(music_client.current.length))
                     if len(queue) > 0:
-                        message += "# Queue: \n"
+                        message += "\n# Queue: \n"
                         index = 1
                         for track in queue:
                             index += 1
                             if index == 10:
                                 if len(queue) > 10:
-                                    message += "{0}. {1.title} [{2}]\n..."\
+                                    message += "{0}. {1.title} [{2}]\n..." \
                                         .format(index, track, lavalink.utils.format_time(track.length))
                                 else:
-                                    message += "{0}. {1.title} [{2}]\n"\
+                                    message += "{0}. {1.title} [{2}]\n" \
                                         .format(index, track, lavalink.utils.format_time(track.length))
                                 break
-                            message += "{0}.  {1.title} [{2}]\n"\
+                            message += "{0}.  {1.title} [{2}]\n" \
                                 .format(index, track, lavalink.utils.format_time(track.length))
 
                     return await ctx.send(f"```glsl\n {message}```")
