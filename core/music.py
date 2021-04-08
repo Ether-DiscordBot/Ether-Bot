@@ -224,7 +224,6 @@ class MusicCommandsManager:
                 url = videosSearch.result()['result'][0]['link']
                 result = []
                 track = await music_client.load_tracks(url)
-                print(track)
                 if track and track.tracks and track.tracks[0]:
                     result.append(track.tracks[0])
                     return result
