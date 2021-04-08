@@ -2,6 +2,8 @@ from abc import abstractmethod
 import urllib.parse
 import lavalink
 
+from youtubesearchpython import VideosSearch
+
 from discord import Embed
 
 import os
@@ -209,7 +211,6 @@ class MusicCommandsManager:
         :param arg: argument (url or keyword.s)
         :return: Track or None
         """
-
         music_client = self.get_client(ctx.guild.id)
 
         domain = urllib.parse.urlsplit(arg).netloc
@@ -219,8 +220,11 @@ class MusicCommandsManager:
                 result = load_result.tracks
                 return result
             elif domain == "":
+                videosSearch = VideosSearch(" ".join(args), limit=1)
+                url = videosSearch.result()['result'][0]['link']
                 result = []
-                track = await music_client.search_yt(" ".join(args))
+                track = await music_client.load_tracks(url)
+                print(track)
                 if track and track.tracks and track.tracks[0]:
                     result.append(track.tracks[0])
                     return result
