@@ -221,12 +221,15 @@ class MusicCommandsManager:
             elif domain == "":
                 result = []
                 track = await music_client.search_yt(" ".join(args))
-                result.append(track.tracks[0])
-                return result
+                if track and track.tracks and track.tracks[0]:
+                    result.append(track.tracks[0])
+                    return result
+                else:
+                    return None
             else:
                 return None
         else:
-            return
+            return None
 
     def get_queue(self, ctx):
         """
