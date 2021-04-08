@@ -1,5 +1,5 @@
 from discord.ext import commands
-from discord.ext.commands import CommandNotFound, CommandOnCooldown
+from discord.ext.commands import CommandNotFound, CommandOnCooldown, MissingRequiredArgument
 from discord import Embed
 
 import os
@@ -50,5 +50,7 @@ class Client(commands.Bot):
                             color=0xe74c3c))
             await asyncio.sleep(2)
             await error_msg.delete()
+            return
+        elif isinstance(error, MissingRequiredArgument):
             return
         raise error

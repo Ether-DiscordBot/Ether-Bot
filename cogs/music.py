@@ -1,6 +1,5 @@
 from discord.ext import commands
-
-from core.music import *
+from discord import Embed
 
 import lavalink
 
@@ -42,56 +41,74 @@ class Music(commands.Cog):
             return
 
     @commands.command(aliases=['p'])
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def play(self, ctx, arg):
-        global embed
-
-        prefix_len = len(await self.client.get_prefix(ctx.message))
-        if arg:
-            if ctx.author.voice and ctx.author.voice.channel:
-                is_in_client_channel = await self.client.musicCmd.user_is_in_client_channel(ctx)
-                if is_in_client_channel:
-                    await self.client.musicCmd.add_track_to_queue(ctx, await self.client.musicCmd.search_track(ctx=ctx, arg=arg))
-                    await self.client.musicCmd.play(ctx)
-                    return
+    @commands.cooldown(1, 2, commands.BucketType.user)
+    async def play(self, ctx, *args):
+        if ctx.author.voice and ctx.author.voice.channel:
+            is_in_client_channel = await self.client.musicCmd.user_is_in_client_channel(ctx)
+            if is_in_client_channel:
+                if args:
+                    track = await self.client.musicCmd.search_track(ctx=ctx, arg=args[0], args=args)
+                    if track is not None:
+                        await self.client.musicCmd.add_track_to_queue(ctx, track, arg=args[0])
+                        return await self.client.musicCmd.play(ctx)
+                    else:
+                        embed = Embed(description="Music not found", color=0xe74c3c)
+                        return await ctx.send(embed=embed)
                 else:
-                    embed = Embed(description="You must be connected in the same voice channel as the bot.")
+                    return await self.client.musicCmd.play(ctx)
             else:
-                embed = Embed(description="You must be connected to a voice channel.")
-
-            return await ctx.send(embed=embed)
+                embed = Embed(description="You must be connected in the same voice channel as the bot.")
         else:
-            return
+            embed = Embed(description="You must be connected to a voice channel.")
+
+        return await ctx.send(embed=embed)
 
     @commands.command()
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.cooldown(1, 2, commands.BucketType.user)
     async def queue(self, ctx):
         queue = self.client.musicCmd.get_queue(ctx)
 
-        if queue is None:
-            return
+        if ctx.author.voice and ctx.author.voice.channel:
+            is_in_client_channel = await self.client.musicCmd.user_is_in_client_channel(ctx)
+            if is_in_client_channel:
+                music_client = self.client.musicCmd.get_client(ctx.guild.id)
+                if music_client.current is None and queue is None:
+                    return
+                else:
+                    message = "# Current track: \n" \
+                              "1.  {0.title} [{1}]\n \n".format(music_client.current, lavalink.utils
+                                                                .format_time(music_client.current.length))
+                    if len(queue) > 0:
+                        message += "# Queue: \n"
+                        index = 1
+                        for track in queue:
+                            index += 1
+                            if index == 10:
+                                if len(queue) > 10:
+                                    message += "{0}. {1.title} [{2}]\n..."\
+                                        .format(index, track, lavalink.utils.format_time(track.length))
+                                else:
+                                    message += "{0}. {1.title} [{2}]\n"\
+                                        .format(index, track, lavalink.utils.format_time(track.length))
+                                break
+                            message += "{0}.  {1.title} [{2}]\n"\
+                                .format(index, track, lavalink.utils.format_time(track.length))
+
+                    return await ctx.send(f"```glsl\n {message}```")
+            else:
+                embed = Embed(description="You must be connected in the same voice channel as the bot.")
         else:
-            music_client = self.client.musicCmd.get_client(ctx.guild.id)
+            embed = Embed(description="You must be connected to a voice channel.")
 
-            message = "# Current track: \n" \
-                      "1.  {0.title} [{1}]\n \n".format(music_client.current, lavalink.utils.format_time(music_client.current.length))
+        return await ctx.send(embed=embed)
 
-            if len(queue) > 0:
-                message += "# Queue: \n"
-                index = 1
-                for track in queue:
-                    index += 1
-                    if index == 10:
-                        if len(queue) > 10:
-                            message += "{0}. {1.title} [{2}]\n...".format(index, track,
-                                                                          lavalink.utils.format_time(track.length))
-                        else:
-                            message += "{0}. {1.title} [{2}]\n".format(index, track,
-                                                                          lavalink.utils.format_time(track.length))
-                        break
-                    message += "{0}.  {1.title} [{2}]\n".format(index, track, lavalink.utils.format_time(track.length))
+    @commands.command()
+    async def pause(self, ctx):
+        await self.client.musicCmd.pause(ctx, True)
 
-            return await ctx.send(f"```glsl\n {message}```")
+    @commands.command()
+    async def resume(self, ctx):
+        await self.client.musicCmd.pause(ctx, False)
 
 
 def setup(client):

@@ -1,5 +1,5 @@
 from abc import abstractmethod
-
+import urllib.parse
 import lavalink
 
 from discord import Embed
@@ -12,8 +12,6 @@ class MusicCommandsManager:
         self.client = client
 
     async def init(self):
-        os.system("start cmd.exe /c java -jar Lavalink.jar")
-
         await lavalink.close()
         await lavalink.initialize(
             self.client, host=os.getenv('LAVALINK_HOST'), password=os.getenv('LAVALINK_PASS'),
@@ -29,15 +27,18 @@ class MusicCommandsManager:
 
         if event_type == lavalink.LavalinkEvents.TRACK_START:
             track = player.current
-            embed = Embed(description="▶️ **Now playing** [{0.title}]({0.uri}) !".format(track))
-            message = await track.channel.send(embed=embed)
-            track.start_message = message
+            if track:
+                embed = Embed(description="▶️ **Now playing** [{0.title}]({0.uri}) !".format(track))
+                message = await track.channel.send(embed=embed)
+                track.start_message = message
+                if not len(player.queue) > 1:
+                    player.store("m_msg", message)
 
         if event_type == lavalink.LavalinkEvents.TRACK_END:
-
-            if extra == lavalink.TrackEndReason.FINISHED:
-                track = player.current
-                await track.start_message.delete()
+            msg = player.fetch("m_msg")
+            if extra == lavalink.TrackEndReason.FINISHED or extra == lavalink.TrackEndReason.REPLACED:
+                if msg:
+                    await msg.delete()
 
             if len(player.queue):
                 await player.stop()
@@ -120,7 +121,7 @@ class MusicCommandsManager:
 
         music_client = self.get_client(ctx.guild.id)
 
-        if music_client and music_client.is_playing and music_client.channel:
+        if music_client and music_client.channel:
             await music_client.skip()
             return True
         else:
@@ -142,16 +143,15 @@ class MusicCommandsManager:
         else:
             return
 
-    async def pause(self, ctx):
+    async def pause(self, ctx, pause):
         """
         :param ctx: context
         :return: True or None
         """
-
         music_client = self.get_client(ctx.guild.id)
 
         if music_client.channel:
-            await music_client.pause()
+            await music_client.pause(pause=pause)
 
             return True
         else:
@@ -167,7 +167,7 @@ class MusicCommandsManager:
         if music_client.channel:
             await music_client.disconnect()
 
-    async def add_track_to_queue(self, ctx, track):
+    async def add_track_to_queue(self, ctx, tracks, arg):
         """
         :param ctx: context
         :param track: the track to add in the queue
@@ -179,19 +179,31 @@ class MusicCommandsManager:
         if music_client.channel:
             music_client = self.get_client(ctx.guild.id)
 
-            track.channel = ctx.channel
+            tracks[0].channel = ctx.channel
 
-            music_client.add(ctx.author, track)
-
-            if music_client.current:
-                embed = Embed(description="Queued [{0.title}]({0.uri})".format(track))
-                return await ctx.send(embed=embed)
+            if len(tracks) <= 1:
+                music_client.add(ctx.author, tracks[0])
             else:
-                return
+                for track in tracks:
+                    music_client.add(ctx.author, track)
+
+            if not music_client.is_playing:
+                if len(tracks) > 1:
+                    length = len(tracks)
+                    embed = Embed(description=f"Queued [**{length}** tracks]({arg}) !")
+                    await ctx.send(embed=embed)
+                return await self.play(ctx)
+            else:
+                if len(tracks) <= 1:
+                    embed = Embed(description="Queued [{0.title}]({0.uri})".format(tracks[0]))
+                else:
+                    length = len(tracks)
+                    embed = Embed(description=f"Queued [**{length}** tracks]({arg}) !")
+                return await ctx.send(embed=embed)
         else:
             return
 
-    async def search_track(self, ctx, arg):
+    async def search_track(self, ctx, arg, args):
         """
         :param ctx: context
         :param arg: argument (url or keyword.s)
@@ -200,9 +212,19 @@ class MusicCommandsManager:
 
         music_client = self.get_client(ctx.guild.id)
 
+        domain = urllib.parse.urlsplit(arg).netloc
         if music_client.channel:
-            result = await music_client.search_yt(arg)
-            return result.tracks[0]
+            if domain != "" and (domain == "youtube.com" or domain == "soundcloud.com"):
+                load_result = await music_client.load_tracks(arg)
+                result = load_result.tracks
+                return result
+            elif domain == "":
+                result = []
+                track = await music_client.search_yt(" ".join(args))
+                result.append(track.tracks[0])
+                return result
+            else:
+                return None
         else:
             return
 

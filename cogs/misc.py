@@ -1,11 +1,7 @@
 from discord import Embed
 from discord.ext import commands
+from random import random
 
-from PIL import Image
-import requests
-from io import BytesIO
-
-import os
 
 class Misc(commands.Cog):
     def __init__(self, client):
@@ -29,6 +25,11 @@ class Misc(commands.Cog):
         embed = Embed(description="**{0.display_name}'s** [avatar]({0.avatar_url}):".format(user))\
             .set_image(url=user.avatar_url_as(format='png', size=256))
         return await ctx.channel.send(embed=embed)
+
+    @commands.command(aliases=['flip'])
+    async def flipcoin(self, ctx):
+        result = "Heads" if round(random()) else "Tails"
+        return await ctx.channel.send(result)
 
 def setup(client):
     client.add_cog(Misc(client))

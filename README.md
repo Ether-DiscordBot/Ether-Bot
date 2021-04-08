@@ -12,11 +12,9 @@ Mochi is in the very early stages of development, many of the features are not t
 
 For the moment only this feature is available:
 
-- Music ⭕️
+- Music ✅
 - Images (from reddit) ✅
 - Other ❌
-
-✅: Everything is good  |⭕️: Other features are coming | ❌: Not yet finished
 
 ## Installation
 
@@ -26,11 +24,15 @@ As said earlier, you can use this project for your own purposes, but it is absol
 
 However, if you want to use Mochi you can do so by:
 
-- Installing [Lavalink](https://github.com/Frederikam/Lavalink) and create an application.yml file in the main directory.
+ - Installing [Lavalink](https://github.com/Frederikam/Lavalink) and create an application.yml file in the main directory.
  - Installing all the dependencies
  - And putting the key-values in a .env file
 
-When you have finished installing and configuring Mochi you can run the *main.py* file, no need to run Lavalink, Mochi does it all by itself.
+To use the bot:
+```
+java -jar Lavalink.jar
+```
+
 ```
 python main.py
 ```
