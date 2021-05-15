@@ -22,10 +22,3 @@ class RedditCommandsManager:
             if post.url.endswith(".png") or post.url.endswith(".jpg") or post.url.endswith(".gif") or post.url.endswith(".gifv"):
                 subs.append(post)
         return choice(subs)
-
-    def reddit_embed(self, post):
-        embed = Embed(title=post.title)
-        embed.url = "https://reddit.com" + post.permalink
-        embed.set_image(url=post.url)
-        embed.set_footer(text=f"⬆️ {post.score} │ 💬 {post.num_comments}")
-        return embed
