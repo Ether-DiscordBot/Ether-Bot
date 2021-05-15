@@ -23,7 +23,7 @@ class Moderation(commands.Cog):
         try:
             await ctx.guild.kick(member)
             await ctx.send(embed=embed)
-        except Exception as exception:
+        except:
             embed = Embed(colour=Colour.ERROR, description="Can't do that. Probably because I don't have the "
                                                            "permissions for.")
             return await ctx.send(embed=embed)

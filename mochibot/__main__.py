@@ -5,7 +5,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-if __name__ == "__main__":
-    mochi_bot = Client()
 
-mochi_bot.run(os.getenv('BOT_TOKEN'))
+def main():
+    mochi_bot = Client()
+    mochi_bot.run(os.getenv('BOT_TOKEN'))
+
+
+if __name__ == "__main__":
+    main()
