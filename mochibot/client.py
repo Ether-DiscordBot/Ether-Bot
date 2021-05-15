@@ -1,12 +1,14 @@
 from discord.ext import commands
-from discord.ext.commands import CommandNotFound, CommandOnCooldown, MissingRequiredArgument
-from discord.ext.commands.errors import MissingPermissions, UserNotFound
+from discord.ext.commands.errors import MissingPermissions, UserNotFound, CommandNotFound, CommandOnCooldown, \
+    MissingRequiredArgument
 from discord import Embed
-from core.colour import Colour
+from core import Colour
 
 import os
 import asyncio
 from dotenv import load_dotenv
+
+from load import LoaderManager
 
 from core.music import MusicCommandsManager
 from core.reddit import RedditCommandsManager
@@ -15,10 +17,12 @@ load_dotenv()
 
 
 class Client(commands.Bot):
-    def __init__(self):
-        super().__init__(command_prefix=os.getenv("BASE_PREFIX"))
+    def __init__(self, prefix=None, token=None):
+        self.prefix = prefix or os.getenv("BASE_PREFIX")
+        self.token = token or os.getenv("BOT_TOKEN")
         self.musicCmd = MusicCommandsManager(self)
         self.redditCmd = RedditCommandsManager()
+        super().__init__(command_prefix=self.prefix)
 
     async def on_ready(self):
         os.system("cls")
@@ -34,11 +38,8 @@ class Client(commands.Bot):
 
         print("Logges as {0.display_name}#{0.discriminator} !".format(self.user))
 
-        for file in os.listdir("cogs"):
-            if file.endswith(".py"):
-                name = file[:-3]
-                self.load_extension(f"cogs.{name}")
-                print(f"--- Commands loaded: {name}")
+        loader = LoaderManager(self)
+        loader.find_extension()
 
         await self.musicCmd.init()
 

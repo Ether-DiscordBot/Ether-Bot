@@ -6,8 +6,6 @@ class Image(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-        print('--- Reddit client as been initialized !')
-
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def meme(self, ctx):
@@ -106,7 +104,3 @@ class Image(commands.Cog):
             embed = self.client.redditCmd.reddit_embed(post=post)
 
         return await ctx.send(embed=embed)
-
-
-def setup(client):
-    client.add_cog(Image(client))

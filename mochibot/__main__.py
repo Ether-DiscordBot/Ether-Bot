@@ -1,14 +1,13 @@
 from client import Client
 
-import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
-def main():
-    mochi_bot = Client()
-    mochi_bot.run(os.getenv('BOT_TOKEN'))
+def main(token=None, prefix=None):
+    bot = Client(token, prefix)
+    bot.run(bot.token)
 
 
 if __name__ == "__main__":
