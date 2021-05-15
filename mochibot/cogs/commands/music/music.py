@@ -112,6 +112,3 @@ class Music(commands.Cog):
     async def resume(self, ctx):
         await self.client.musicCmd.pause(ctx, False)
 
-
-def setup(client):
-    client.add_cog(Music(client))

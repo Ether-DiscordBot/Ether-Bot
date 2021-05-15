@@ -31,6 +31,3 @@ class Misc(commands.Cog):
         result = "Heads" if round(random()) else "Tails"
         return await ctx.channel.send(result)
 
-
-def setup(client):
-    client.add_cog(Misc(client))
