@@ -44,7 +44,6 @@ class MusicCommandsManager:
 
             if len(player.queue):
                 await player.stop()
-                print(player.is_playing)
 
     def get_client(self, guild_id):
         """

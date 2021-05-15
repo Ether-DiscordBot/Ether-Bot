@@ -36,6 +36,7 @@ class Music(commands.Cog):
     @commands.command()
     async def skip(self, ctx):
         if await self.client.musicCmd.next_track(ctx) is not None:
+            await self.client.musicCmd.play(ctx)
             return await ctx.message.add_reaction("⏭️")
         else:
             return
@@ -75,32 +76,33 @@ class Music(commands.Cog):
                 if music_client.current is None and queue is None:
                     return
                 else:
-                    message = "# Current track: \n" \
-                              "1.  {0.title} [{1}]\n".format(music_client.current, lavalink.utils
-                                                             .format_time(music_client.current.length))
-                    if len(queue) > 0:
-                        message += "\n# Queue: \n"
-                        index = 1
-                        for track in queue:
-                            index += 1
-                            if index == 10:
-                                if len(queue) > 10:
-                                    message += "{0}. {1.title} [{2}]\n..." \
-                                        .format(index, track, lavalink.utils.format_time(track.length))
-                                else:
-                                    message += "{0}. {1.title} [{2}]\n" \
-                                        .format(index, track, lavalink.utils.format_time(track.length))
-                                break
-                            message += "{0}.  {1.title} [{2}]\n" \
-                                .format(index, track, lavalink.utils.format_time(track.length))
+                    if music_client.current is not None:
+                        message = "# Current track: \n" \
+                                  "1.  {0.title} [{1}]\n".format(music_client.current, lavalink.utils
+                                                                 .format_time(music_client.current.length))
+                        if len(queue) > 0:
+                            message += "\n# Queue: \n"
+                            index = 1
+                            for track in queue:
+                                index += 1
+                                if index == 10:
+                                    if len(queue) > 10:
+                                        message += "{0}. {1.title} [{2}]\n..." \
+                                            .format(index, track, lavalink.utils.format_time(track.length))
+                                    else:
+                                        message += "{0}. {1.title} [{2}]\n" \
+                                            .format(index, track, lavalink.utils.format_time(track.length))
+                                    break
+                                message += "{0}.  {1.title} [{2}]\n" \
+                                    .format(index, track, lavalink.utils.format_time(track.length))
 
-                    return await ctx.send(f"```glsl\n {message}```")
+                        return await ctx.send(f"```glsl\n {message}```")
             else:
                 embed = Embed(description="You must be connected in the same voice channel as the bot.")
+                return await ctx.send(embed=embed)
         else:
             embed = Embed(description="You must be connected to a voice channel.")
-
-        return await ctx.send(embed=embed)
+            return await ctx.send(embed=embed)
 
     @commands.command()
     async def pause(self, ctx):

@@ -1,6 +1,8 @@
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound, CommandOnCooldown, MissingRequiredArgument
+from discord.ext.commands.errors import MissingPermissions, UserNotFound
 from discord import Embed
+from core.colour import Colour
 
 import os
 import asyncio
@@ -46,11 +48,18 @@ class Client(commands.Bot):
         elif isinstance(error, CommandOnCooldown):
             time_left = str(error)[34:]
             error_msg = await ctx.send(
-                embed=Embed(description=f"You are on cooldown for this command.\nPlease try again in **{time_left}**",
+                embed=Embed(colour=Colour.ERROR, description=f"You are on cooldown for this command.\nPlease try "
+                                                             f"again in **{time_left}**",
                             color=0xe74c3c))
             await asyncio.sleep(2)
             await error_msg.delete()
             return
         elif isinstance(error, MissingRequiredArgument):
             return
+        elif isinstance(error, MissingPermissions):
+            embed = Embed(colour=Colour.ERROR, description=f"You don't have the **permissions** to do that.")
+            return await ctx.send(embed=embed)
+        elif isinstance(error, UserNotFound):
+            embed = Embed(colour=Colour.ERROR, description=f"**Unknown** member.")
+            return await ctx.send(embed=embed)
         raise error
