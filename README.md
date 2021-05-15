@@ -4,7 +4,7 @@
 
 Mochi is a powerful bot for Discord coding in python. It can interact with an online dashboard (feature under development), it has a very complete music part using [Lavalink](https://github.com/Frederikam/Lavalink) and many other features developed or under development.
 
-For the moment Mochi is not made to be installed on your computer and it is not for the moment planned to be. It is however planned that Mochi will be put online and accessible to everyone.
+The bot will be divided into two parts, one opensource and another that will communicate with a database, the latter will be private.
 
 ## Overview
 
@@ -20,15 +20,18 @@ For the moment only this feature is available:
 
 Only **Windows** is supported for now.
 
-As said earlier, you can use this project for your own purposes, but it is absolutely not meant for that (for the moment).
+[Warning] The bot is still in development, come back later to have all the installation steps.
 
-However, if you want to use Mochi you can do so by:
+```
+pip install mochibot
+```
 
- - Installing [Lavalink](https://github.com/Frederikam/Lavalink) and create an application.yml file in the main directory.
- - Installing all the dependencies
- - And putting the key-values in a .env file
+ - Install [Lavalink](https://github.com/Frederikam/Lavalink) and create an application.yml file in the main directory.
+ - Install all the dependencies
+ - And put the key-values in a .env file (follow the .env.example)
 
 To use the bot:
+
 ```
 java -jar Lavalink.jar
 ```
