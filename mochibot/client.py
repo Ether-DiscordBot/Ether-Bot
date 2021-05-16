@@ -2,7 +2,6 @@ from discord.ext import commands
 from discord.ext.commands.errors import MissingPermissions, UserNotFound, CommandNotFound, CommandOnCooldown, \
     MissingRequiredArgument
 from discord import Embed
-from core import Colour
 from mochibot import __version__ as mochibot_version
 from discord import __version__ as discord_version
 from lavalink import __version__ as lavalink_version
@@ -12,19 +11,24 @@ from dotenv import load_dotenv
 
 from load import LoaderManager
 
-from core.music import MusicCommandsManager
-from core.reddit import RedditCommandsManager
+from core import Colour
+from core import MusicCommandsManager
+from core import RedditCommandsManager
 
 load_dotenv()
 
 
 class Client(commands.Bot):
     def __init__(self, prefix=None, token=None):
+        self._loader = LoaderManager(self)
         self.prefix = prefix or os.getenv("BASE_PREFIX")
         self.token = token or os.getenv("BOT_TOKEN")
         self.musicCmd = MusicCommandsManager(self)
         self.redditCmd = RedditCommandsManager()
         super().__init__(command_prefix=self.prefix)
+
+    async def load_extensions(self):
+        await self._loader.find_extension()
 
     async def on_ready(self):
         os.system("cls")
@@ -36,7 +40,7 @@ class Client(commands.Bot):
             "| |\/| | / _ \  / __|| '_ \ | | |______| | |  | || |/ __| / __|/ _ \ | '__|/ _` ||  _ <  / _ \ | __|\n"
             "| |  | || (_) || (__ | | | || |          | |__| || |\__ \| (__| (_) || |  | (_| || |_) || (_) || |_ \n"
             "|_|  |_| \___/  \___||_| |_||_|          |_____/ |_||___/ \___|\___/ |_|   \__,_||____/  \___/  "
-            "\__|\n\n\033[37m")
+            "\__|\n\033[37m")
 
         print(f"\tVersion:\t{mochibot_version}")
         print(f"\tDiscord.py:\t{discord_version}")
@@ -45,8 +49,7 @@ class Client(commands.Bot):
         print(f"\tClient ID:\t{self.user.id}")
         print(f"\tClient Disc:\t{self.user.discriminator}\n")
 
-        loader = LoaderManager(self)
-        loader.find_extension()
+        await self.load_extensions()
 
         await self.musicCmd.init()
 

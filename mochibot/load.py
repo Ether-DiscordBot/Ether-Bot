@@ -6,7 +6,7 @@ class LoaderManager:
     def __init__(self, bot):
         self.bot = bot
 
-    def find_extension(self):
+    async def find_extension(self):
         path = "cogs/commands/"
         banned_dir = ['__pycache__']
         name = '__init__.py'
