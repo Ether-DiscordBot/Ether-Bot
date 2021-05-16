@@ -2,15 +2,13 @@ from discord.ext import commands
 from discord.ext.commands.errors import MissingPermissions, UserNotFound, CommandNotFound, CommandOnCooldown, \
     MissingRequiredArgument
 from discord import Embed
-from mochibot import __version__ as mochibot_version
-from discord import __version__ as discord_version
-from lavalink import __version__ as lavalink_version
 import os
 import asyncio
 from dotenv import load_dotenv
 
 from load import LoaderManager
 
+import mochibot
 from core import Colour
 from core import MusicCommandsManager
 from core import RedditCommandsManager
@@ -20,15 +18,20 @@ load_dotenv()
 
 class Client(commands.Bot):
     def __init__(self, prefix=None, token=None):
-        self._loader = LoaderManager(self)
         self.prefix = prefix or os.getenv("BASE_PREFIX")
         self.token = token or os.getenv("BOT_TOKEN")
+
+        self._loader = LoaderManager(self)
+
         self.musicCmd = MusicCommandsManager(self)
-        self.redditCmd = RedditCommandsManager()
+        self.redditCmd = None
         super().__init__(command_prefix=self.prefix)
 
     async def load_extensions(self):
         await self._loader.find_extension()
+
+    async def init_reddit_client(self, client_id, client_token, reddit_name, reddit_pass):
+        RedditCommandsManager(self, client_id, client_token, reddit_name, reddit_pass)
 
     async def on_ready(self):
         os.system("cls")
@@ -42,14 +45,19 @@ class Client(commands.Bot):
             "|_|  |_| \___/  \___||_| |_||_|          |_____/ |_||___/ \___|\___/ |_|   \__,_||____/  \___/  "
             "\__|\n\033[37m")
 
-        print(f"\tVersion:\t{mochibot_version}")
-        print(f"\tDiscord.py:\t{discord_version}")
-        print(f"\tRed-Lavalink:\t{lavalink_version}\n")
+        print(f"\tVersion:\t{mochibot.__version__}")
         print(f"\tClient Name:\t{self.user.name}")
         print(f"\tClient ID:\t{self.user.id}")
         print(f"\tClient Disc:\t{self.user.discriminator}\n")
 
         await self.load_extensions()
+
+
+
+        await self.init_reddit_client(os.getenv('REDDIT_CLIENT_ID'),
+                                      os.getenv('REDDIT_CLIENT_SECRET'),
+                                      os.getenv('REDDIT_NAME'),
+                                      os.getenv('REDDIT_PASS'))
 
         await self.musicCmd.init()
 

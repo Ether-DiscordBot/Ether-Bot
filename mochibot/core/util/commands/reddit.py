@@ -1,16 +1,16 @@
 from random import choice
-import os
 import praw
 
 
 class RedditCommandsManager:
-    def __init__(self):
+    def __init__(self, client, client_id, client_secret, reddit_name, reddit_pass):
+        self.client = client
         self.reddit_client = praw.Reddit(
-            client_id=os.getenv('REDDIT_CLIENT_ID'),
-            client_secret=os.getenv('REDDIT_CLIENT_SECRET'),
+            client_id=client_id,
+            client_secret=client_secret,
             user_agent="Mochi Bot",
-            username=os.getenv('REDDIT_NAME'),
-            password=os.getenv('REDDIT_PASS'),
+            username=reddit_name,
+            password=reddit_pass,
             check_for_async=False
         )
 

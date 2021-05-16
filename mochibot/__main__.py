@@ -1,3 +1,5 @@
+import os
+
 from client import Client
 
 from dotenv import load_dotenv
