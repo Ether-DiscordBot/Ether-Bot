@@ -28,6 +28,6 @@ class LoaderManager:
     def load_extension(self, ext):
         try:
             ext.setup(self.bot)
-            print(f"--- Commands loaded in {ext.__name__}")
+            print(f"Commands loaded in {ext.__name__}")
         except Exception as e:
             raise e
