@@ -23,15 +23,12 @@ class Client(commands.Bot):
 
         self._loader = LoaderManager(self)
 
-        self.musicCmd = MusicCommandsManager(self)
+        self.musicCmd = None
         self.redditCmd = None
         super().__init__(command_prefix=self.prefix)
 
     async def load_extensions(self):
         await self._loader.find_extension()
-
-    async def init_reddit_client(self, client_id, client_token, reddit_name, reddit_pass):
-        RedditCommandsManager(self, client_id, client_token, reddit_name, reddit_pass)
 
     async def on_ready(self):
         os.system("cls")
@@ -52,13 +49,13 @@ class Client(commands.Bot):
 
         await self.load_extensions()
 
+        self.redditCmd = RedditCommandsManager(self,
+                                               os.getenv('REDDIT_CLIENT_ID'),
+                                               os.getenv('REDDIT_CLIENT_SECRET'),
+                                               os.getenv('REDDIT_NAME'),
+                                               os.getenv('REDDIT_PASS'))
 
-
-        await self.init_reddit_client(os.getenv('REDDIT_CLIENT_ID'),
-                                      os.getenv('REDDIT_CLIENT_SECRET'),
-                                      os.getenv('REDDIT_NAME'),
-                                      os.getenv('REDDIT_PASS'))
-
+        self.musicCmd = MusicCommandsManager(self)
         await self.musicCmd.init()
 
     async def on_command_error(self, ctx, error):
