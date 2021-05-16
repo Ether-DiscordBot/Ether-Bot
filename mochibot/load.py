@@ -1,7 +1,4 @@
 import os
-from importlib import util
-from importlib.abc import Loader
-from importlib.machinery import ModuleSpec
 import importlib
 
 
@@ -20,14 +17,12 @@ class LoaderManager:
                 paths.append(os.path.join(path, dir))
 
         for path in paths:
-            for file in os.listdir(path):
+            listdir = os.listdir(path)
+            for file in listdir:
                 if file == name:
-                    temp = importlib.import_module(path.replace('/', '.'))
-                    self.load_extension(temp)
-
-    def load_extension(self, ext):
-        try:
-            ext.setup(self.bot)
-            print(f" | Commands loaded in {ext.__name__}")
-        except Exception as e:
-            raise e
+                    mod = importlib.import_module(path.replace('/', '.'))
+                    try:
+                        mod.setup(self.bot)
+                        print(f"[{paths.index(path)}/{len(paths)-1}] Commands loaded in {mod.__name__}")
+                    except Exception as e:
+                        raise e
