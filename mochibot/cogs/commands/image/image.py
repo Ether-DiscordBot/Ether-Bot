@@ -18,7 +18,7 @@ class Image(commands.Cog):
             embed.colour = Colour.DEFAULT
             embed.set_image(url=post.url)
             embed.set_footer(text=f"⬆️ {post.score} │ 💬 {post.num_comments}")
-            
+
         return await ctx.send(embed=embed)
 
     @commands.command()

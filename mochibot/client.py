@@ -3,7 +3,9 @@ from discord.ext.commands.errors import MissingPermissions, UserNotFound, Comman
     MissingRequiredArgument
 from discord import Embed
 from core import Colour
-
+from mochibot import __version__ as mochibot_version
+from discord import __version__ as discord_version
+from lavalink import __version__ as lavalink_version
 import os
 import asyncio
 from dotenv import load_dotenv
@@ -34,9 +36,14 @@ class Client(commands.Bot):
             "| |\/| | / _ \  / __|| '_ \ | | |______| | |  | || |/ __| / __|/ _ \ | '__|/ _` ||  _ <  / _ \ | __|\n"
             "| |  | || (_) || (__ | | | || |          | |__| || |\__ \| (__| (_) || |  | (_| || |_) || (_) || |_ \n"
             "|_|  |_| \___/  \___||_| |_||_|          |_____/ |_||___/ \___|\___/ |_|   \__,_||____/  \___/  "
-            "\__|\n\n\n\033[37m")
+            "\__|\n\n\033[37m")
 
-        print("Logges as {0.display_name}#{0.discriminator} !".format(self.user))
+        print(f"\tVersion:\t{mochibot_version}")
+        print(f"\tDiscord.py:\t{discord_version}")
+        print(f"\tRed-Lavalink:\t{lavalink_version}\n")
+        print(f"\tClient Name:\t{self.user.name}")
+        print(f"\tClient ID:\t{self.user.id}")
+        print(f"\tClient Disc:\t{self.user.discriminator}\n")
 
         loader = LoaderManager(self)
         loader.find_extension()
