@@ -18,8 +18,8 @@ load_dotenv()
 
 class Client(commands.Bot):
     def __init__(self, prefix=None, token=None):
-        self.prefix = prefix or os.getenv("BASE_PREFIX")
-        self.token = token or os.getenv("BOT_TOKEN")
+        self.prefix = prefix
+        self.token = token
 
         self._loader = LoaderManager(self)
 
