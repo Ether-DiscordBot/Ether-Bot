@@ -1,7 +1,6 @@
 from random import choice
 import os
 import praw
-from discord import Embed
 
 
 class RedditCommandsManager:
