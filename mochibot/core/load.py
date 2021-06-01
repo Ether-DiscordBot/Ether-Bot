@@ -7,7 +7,7 @@ class LoaderManager:
         self.bot = bot
 
     async def find_extension(self):
-        path = "cogs/commands/"
+        path = "./../cogs/commands/"
         banned_dir = ['__pycache__']
         name = '__init__.py'
         paths = []
@@ -22,6 +22,7 @@ class LoaderManager:
                 if file == name:
                     mod = importlib.import_module(path.replace('/', '.'))
                     try:
+                        print(file)
                         mod.setup(self.bot)
                         print(f"[{paths.index(path)}/{len(paths)-1}] Commands loaded in {mod.__name__}")
                     except Exception as e:

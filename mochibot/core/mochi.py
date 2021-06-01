@@ -6,12 +6,11 @@ import os
 import asyncio
 from dotenv import load_dotenv
 
-from mochibot.core import LoaderManager
-
 import mochibot
-from core import Colour
-from core import MusicCommandsManager
-from core import RedditCommandsManager
+from mochibot.core import LoaderManager
+from mochibot.core import Colour
+from mochibot.core import MusicCommandsManager
+from mochibot.core import RedditCommandsManager
 
 load_dotenv()
 

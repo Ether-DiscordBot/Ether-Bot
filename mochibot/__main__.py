@@ -1,6 +1,6 @@
 import os
 
-from client import Client
+from mochibot.core import Client
 
 from dotenv import load_dotenv
 
