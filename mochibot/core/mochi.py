@@ -1,16 +1,26 @@
 from discord.ext import commands
-from discord.ext.commands.errors import MissingPermissions, UserNotFound, CommandNotFound, CommandOnCooldown, \
-    MissingRequiredArgument
+from discord.ext.commands.errors import (
+    MissingPermissions,
+    UserNotFound,
+    CommandNotFound,
+    CommandOnCooldown,
+    MissingRequiredArgument,
+)
 from discord import Embed
 import os
 import asyncio
 from dotenv import load_dotenv
 
-import mochibot
-from mochibot.core import LoaderManager
-from mochibot.core import Colour
-from mochibot.core import MusicCommandsManager
-from mochibot.core import RedditCommandsManager
+from __init__ import __version__
+
+from mochibot import config
+
+from core import (
+    LoaderManager,
+    Colour,
+    MusicCommandsManager,
+    RedditCommandsManager,
+)
 
 load_dotenv()
 
@@ -39,20 +49,23 @@ class Client(commands.Bot):
             "| |\/| | / _ \  / __|| '_ \ | | |______| | |  | || |/ __| / __|/ _ \ | '__|/ _` ||  _ <  / _ \ | __|\n"
             "| |  | || (_) || (__ | | | || |          | |__| || |\__ \| (__| (_) || |  | (_| || |_) || (_) || |_ \n"
             "|_|  |_| \___/  \___||_| |_||_|          |_____/ |_||___/ \___|\___/ |_|   \__,_||____/  \___/  "
-            "\__|\n\033[37m")
+            "\__|\n\033[37m"
+        )
 
-        print(f"\tVersion:\t{mochibot.__version__}")
+        print(f"\tVersion:\t{Config.VERSION}")
         print(f"\tClient Name:\t{self.user.name}")
         print(f"\tClient ID:\t{self.user.id}")
         print(f"\tClient Disc:\t{self.user.discriminator}\n")
 
         await self.load_extensions()
 
-        self.redditCmd = RedditCommandsManager(self,
-                                               os.getenv('REDDIT_CLIENT_ID'),
-                                               os.getenv('REDDIT_CLIENT_SECRET'),
-                                               os.getenv('REDDIT_NAME'),
-                                               os.getenv('REDDIT_PASS'))
+        self.redditCmd = RedditCommandsManager(
+            self,
+            os.getenv("REDDIT_CLIENT_ID"),
+            os.getenv("REDDIT_CLIENT_SECRET"),
+            os.getenv("REDDIT_NAME"),
+            os.getenv("REDDIT_PASS"),
+        )
 
         self.musicCmd = MusicCommandsManager(self)
         await self.musicCmd.init()
@@ -63,16 +76,23 @@ class Client(commands.Bot):
         elif isinstance(error, CommandOnCooldown):
             time_left = str(error)[34:]
             error_msg = await ctx.send(
-                embed=Embed(colour=Colour.ERROR, description=f"You are on cooldown for this command.\nPlease try "
-                                                             f"again in **{time_left}**",
-                            color=0xe74c3c))
+                embed=Embed(
+                    colour=Colour.ERROR,
+                    description=f"You are on cooldown for this command.\nPlease try "
+                    f"again in **{time_left}**",
+                    color=0xE74C3C,
+                )
+            )
             await asyncio.sleep(2)
             await error_msg.delete()
             return
         elif isinstance(error, MissingRequiredArgument):
             return
         elif isinstance(error, MissingPermissions):
-            embed = Embed(colour=Colour.ERROR, description=f"You don't have the **permissions** to do that.")
+            embed = Embed(
+                colour=Colour.ERROR,
+                description=f"You don't have the **permissions** to do that.",
+            )
             return await ctx.send(embed=embed)
         elif isinstance(error, UserNotFound):
             embed = Embed(colour=Colour.ERROR, description=f"**Unknown** member.")

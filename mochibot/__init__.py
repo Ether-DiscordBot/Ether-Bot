@@ -1,2 +1,3 @@
-__version__ = "0.0.3.dev1"
+from config import *
 
+__version__ = Config.VERSION

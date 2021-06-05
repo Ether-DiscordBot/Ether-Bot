@@ -13,19 +13,23 @@ class Admin(commands.Cog):
 
         if not member:
             embed = Embed(
-                colour=Colour.ERROR,
-                description=f"unknown {member.display_name} !")
+                colour=Colour.ERROR, description=f"unknown {member.display_name} !"
+            )
             return await ctx.send(embed=embed)
 
         embed = Embed(
             colour=Colour.SUCCESS,
-            description=f"**{member.display_name}** as been kicked !\n**Reason:** {reason}")
+            description=f"**{member.display_name}** as been kicked !\n**Reason:** {reason}",
+        )
         try:
             await ctx.guild.kick(member)
             await ctx.send(embed=embed)
         except:
-            embed = Embed(colour=Colour.ERROR, description="Can't do that. Probably because I don't have the "
-                                                           "permissions for.")
+            embed = Embed(
+                colour=Colour.ERROR,
+                description="Can't do that. Probably because I don't have the "
+                "permissions for.",
+            )
             return await ctx.send(embed=embed)
 
     @commands.command()
@@ -34,17 +38,21 @@ class Admin(commands.Cog):
 
         if not member:
             embed = Embed(
-                colour=Colour.ERROR,
-                description=f"unknown {member.display_name} !")
+                colour=Colour.ERROR, description=f"unknown {member.display_name} !"
+            )
             return await ctx.send(embed=embed)
 
         try:
             embed = Embed(
                 colour=Colour.SUCCESS,
-                description=f"**{member.display_name}** as been banned !\n**Reason:** {reason}")
+                description=f"**{member.display_name}** as been banned !\n**Reason:** {reason}",
+            )
             await ctx.guild.ban(member)
             await ctx.send(embed=embed)
         except Exception as exception:
-            embed = Embed(colour=Colour.ERROR, description="Can't do that. Probably because I don't have the "
-                                                           "permissions for.")
+            embed = Embed(
+                colour=Colour.ERROR,
+                description="Can't do that. Probably because I don't have the "
+                "permissions for.",
+            )
             return await ctx.send(embed=embed)
