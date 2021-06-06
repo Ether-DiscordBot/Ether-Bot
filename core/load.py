@@ -1,7 +1,7 @@
 import os
 import importlib
 
-import mochibot.app
+import app
 
 
 class LoaderManager:
@@ -9,7 +9,7 @@ class LoaderManager:
         self.bot = bot
 
     async def find_extension(self):
-        path = "mochibot/cogs/commands/"
+        path = "commands/"
         banned_dir = ["__pycache__"]
         name = "__init__.py"
         paths = []
@@ -22,12 +22,13 @@ class LoaderManager:
             listdir = os.listdir(path)
             for file in listdir:
                 if file == name:
-                    mod = importlib.import_module(path.replace("/", "."))
+                    mod = importlib.import_module(
+                        path.replace("/", "."), package=__package__
+                    )
                     try:
-                        print(file)
                         mod.setup(self.bot)
                         print(
-                            f"[{paths.index(path)}/{len(paths)-1}] Commands loaded in {mod.__name__}"
+                            f"\t[{paths.index(path)}/{len(paths)-1}] Commands loaded in {mod.__name__}"
                         )
                     except Exception as e:
                         raise e

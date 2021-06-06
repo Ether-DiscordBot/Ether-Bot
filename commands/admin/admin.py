@@ -1,4 +1,4 @@
-from mochibot.core import Colour
+from core import Colour
 from discord import Embed, User
 from discord.ext import commands
 

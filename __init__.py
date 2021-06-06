@@ -1,3 +1,3 @@
 from .app import *
 from .core import *
-from .cogs import *
+from .commands import *

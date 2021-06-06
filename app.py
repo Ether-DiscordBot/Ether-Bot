@@ -21,7 +21,7 @@ load_dotenv()
 
 
 class App:
-    APP_VERSION = "0.0.3.dev2"
+    APP_VERSION = "0.0.4.dev1"
 
     def run():
         os.system("cls")
@@ -36,14 +36,9 @@ class App:
             "\__|\n\033[37m"
         )
         print(f"\tVersion:\t{App.APP_VERSION}\n")
-        print("\tRunning Client...")
 
         client = Client(prefix=os.getenv("BASE_PREFIX"), token=os.getenv("BOT_TOKEN"))
         client.run(client.token)
-
-        print(f"\tClient Name:\t{client.user.name}")
-        print(f"\tClient ID:\t{client.user.id}")
-        print(f"\tClient Disc:\t{client.user.discriminator}\n")
 
 
 class Client(commands.Bot):
@@ -61,6 +56,10 @@ class Client(commands.Bot):
         await self._loader.find_extension()
 
     async def on_ready(self):
+        print(f"\tClient Name:\t{self.user.name}")
+        print(f"\tClient ID:\t{self.user.id}")
+        print(f"\tClient Disc:\t{self.user.discriminator}\n")
+
         await self.load_extensions()
 
         self.redditCmd = RedditCommandsManager(
