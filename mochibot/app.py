@@ -11,18 +11,39 @@ import os
 import asyncio
 from dotenv import load_dotenv
 
-from __init__ import __version__
+from core import LoaderManager
 
-from mochibot import config
-
-from core import (
-    LoaderManager,
-    Colour,
-    MusicCommandsManager,
-    RedditCommandsManager,
-)
+from core import Colour
+from core import MusicCommandsManager
+from core import RedditCommandsManager
 
 load_dotenv()
+
+
+class App:
+    APP_VERSION = "0.0.3.dev2"
+
+    def run():
+        os.system("cls")
+        print(
+            "\033[34m \n\n __  __               _      _            _____   _                            _  ____    "
+            "      _   \n"
+            "|  \/  |             | |    (_)          |  __ \ (_)                          | ||  _ \        | | \n"
+            "| \  / |  ___    ___ | |__   _   ______  | |  | | _  ___   ___  ___   _ __  __| || |_) |  ___  | |_ \n"
+            "| |\/| | / _ \  / __|| '_ \ | | |______| | |  | || |/ __| / __|/ _ \ | '__|/ _` ||  _ <  / _ \ | __|\n"
+            "| |  | || (_) || (__ | | | || |          | |__| || |\__ \| (__| (_) || |  | (_| || |_) || (_) || |_ \n"
+            "|_|  |_| \___/  \___||_| |_||_|          |_____/ |_||___/ \___|\___/ |_|   \__,_||____/  \___/  "
+            "\__|\n\033[37m"
+        )
+        print(f"\tVersion:\t{App.APP_VERSION}\n")
+        print("\tRunning Client...")
+
+        client = Client(prefix=os.getenv("BASE_PREFIX"), token=os.getenv("BOT_TOKEN"))
+        client.run(client.token)
+
+        print(f"\tClient Name:\t{client.user.name}")
+        print(f"\tClient ID:\t{client.user.id}")
+        print(f"\tClient Disc:\t{client.user.discriminator}\n")
 
 
 class Client(commands.Bot):
@@ -40,23 +61,6 @@ class Client(commands.Bot):
         await self._loader.find_extension()
 
     async def on_ready(self):
-        os.system("cls")
-        print(
-            "\033[34m \n\n __  __               _      _            _____   _                            _  ____    "
-            "      _   \n"
-            "|  \/  |             | |    (_)          |  __ \ (_)                          | ||  _ \        | | \n"
-            "| \  / |  ___    ___ | |__   _   ______  | |  | | _  ___   ___  ___   _ __  __| || |_) |  ___  | |_ \n"
-            "| |\/| | / _ \  / __|| '_ \ | | |______| | |  | || |/ __| / __|/ _ \ | '__|/ _` ||  _ <  / _ \ | __|\n"
-            "| |  | || (_) || (__ | | | || |          | |__| || |\__ \| (__| (_) || |  | (_| || |_) || (_) || |_ \n"
-            "|_|  |_| \___/  \___||_| |_||_|          |_____/ |_||___/ \___|\___/ |_|   \__,_||____/  \___/  "
-            "\__|\n\033[37m"
-        )
-
-        print(f"\tVersion:\t{Config.VERSION}")
-        print(f"\tClient Name:\t{self.user.name}")
-        print(f"\tClient ID:\t{self.user.id}")
-        print(f"\tClient Disc:\t{self.user.discriminator}\n")
-
         await self.load_extensions()
 
         self.redditCmd = RedditCommandsManager(

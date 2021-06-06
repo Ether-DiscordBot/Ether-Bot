@@ -1,6 +1,6 @@
 from discord.ext import commands
 from discord import Embed
-from mochibot.core import Colour
+from .core import Colour
 
 
 class Image(commands.Cog):

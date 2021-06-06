@@ -1,3 +1,3 @@
-from config import *
-
-__version__ = Config.VERSION
+from .app import *
+from .core import *
+from .cogs import *

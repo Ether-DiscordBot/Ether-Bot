@@ -22,10 +22,6 @@ Only **Windows** is supported for now.
 
 [Warning] The bot is still in development, come back later to have all the installation steps.
 
-```
-pip install mochibot
-```
-
  - Install [Lavalink](https://github.com/Frederikam/Lavalink) and create an application.yml file in the main directory.
  - Install all the dependencies
  - And put the key-values in a .env file (follow the .env.example)
@@ -37,12 +33,9 @@ java -jar Lavalink.jar
 ```
 
 ```
-python main.py
+python mochibot
 ```
 
 ## License
 
 Released under [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html) license.
-
-
-
