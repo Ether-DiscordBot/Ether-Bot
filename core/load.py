@@ -28,7 +28,7 @@ class LoaderManager:
                     try:
                         mod.setup(self.bot)
                         print(
-                            f"\t[{paths.index(path)}/{len(paths)-1}] Commands loaded in {mod.__name__}"
+                            f"\t[{paths.index(path)+1}/{len(paths)}] Commands loaded in {mod.__name__}"
                         )
                     except Exception as e:
                         raise e
