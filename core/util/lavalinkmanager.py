@@ -3,31 +3,42 @@ from abc import abstractmethod
 import lavalink
 from discord import Embed
 
+## TODO: Change red-lavalink to wavelink
+
 
 class LavalinkManager:
-    def __init__(self, client, lavalink_logs):
+    __keys__ = ["pass", "host", "ws", "port"]
+
+    def __init__(self, client, **kwargs):
         self.client = client
-        self.logs = lavalink_logs
-        self.lavalink_event_handler = None
+        for name, value in kwargs.items():
+            setattr(self, name, value)
 
     async def initialize_lavalink(self):
         await lavalink.close()
         await lavalink.initialize(
-            self.client, host=self.logs.host, password=self.logs.password,
-            rest_port=self.logs.port, ws_port=self.logs.ws
+            self.client,
+            host=self.host,
+            password=self.password,
+            rest_port=self.rest_port,
+            ws_port=self.ws_port,
         )
 
-        lavalink.register_event_listener(
-            self.lavalink_event_handler
-        )
+        lavalink.register_event_listener(self.lavalink_event_handler)
 
     @abstractmethod
-    async def lavalink_event_handler(self, player: lavalink.Player, event_type: lavalink.LavalinkEvents, extra):
+    async def lavalink_event_handler(
+        self, player: lavalink.Player, event_type: lavalink.LavalinkEvents, extra
+    ):
 
         if event_type == lavalink.LavalinkEvents.TRACK_START:
             track = player.current
             if track:
-                embed = Embed(description="▶️ **Now playing** [{0.title}]({0.uri}) !".format(track))
+                embed = Embed(
+                    description="▶️ **Now playing** [{0.title}]({0.uri}) !".format(
+                        track
+                    )
+                )
                 message = await track.channel.send(embed=embed)
                 track.start_message = message
                 if not len(player.queue) > 1:
@@ -35,17 +46,12 @@ class LavalinkManager:
 
         if event_type == lavalink.LavalinkEvents.TRACK_END:
             msg = player.fetch("m_msg")
-            if extra == lavalink.TrackEndReason.FINISHED or extra == lavalink.TrackEndReason.REPLACED:
+            if (
+                extra == lavalink.TrackEndReason.FINISHED
+                or extra == lavalink.TrackEndReason.REPLACED
+            ):
                 if msg:
                     await msg.delete()
 
             if len(player.queue):
                 await player.stop()
-
-
-class LavalinkLogs:
-    def __init__(self, **kwargs):
-        self.password = kwargs.get("password")
-        self.host = kwargs.get("host")
-        self.port = kwargs.get("port")
-        self.ws = kwargs.get("ws") or kwargs.get("port")

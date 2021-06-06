@@ -2,6 +2,7 @@ import urllib.parse
 import lavalink
 
 from youtubesearchpython import VideosSearch
+from core.util.lavalinkmanager import LavalinkManager
 
 from discord import Embed
 
@@ -14,15 +15,15 @@ class MusicCommandsManager:
         self.lavalink = None
 
     async def init(self):
-        await lavalink.close()
-        await lavalink.initialize(
-            self.client, host=os.getenv('LAVALINK_HOST'), password=os.getenv('LAVALINK_PASS'),
-            rest_port=os.getenv('LAVALINK_PORT'), ws_port=os.getenv('LAVALINK_PORT')
+        self.lavalink = LavalinkManager(
+            self.client,
+            host=os.getenv("LAVALINK_HOST"),
+            password=os.getenv("LAVALINK_PASS"),
+            rest_port=os.getenv("LAVALINK_PORT"),
+            ws_port=os.getenv("LAVALINK_PORT"),
         )
 
-        lavalink.register_event_listener(
-            self.lavalink_event_handler
-        )
+        await self.lavalink.initialize_lavalink()
 
     def get_client(self, guild_id):
         """
@@ -175,7 +176,9 @@ class MusicCommandsManager:
                 return await self.play(ctx)
             else:
                 if len(tracks) <= 1:
-                    embed = Embed(description="Queued [{0.title}]({0.uri})".format(tracks[0]))
+                    embed = Embed(
+                        description="Queued [{0.title}]({0.uri})".format(tracks[0])
+                    )
                 else:
                     length = len(tracks)
                     embed = Embed(description=f"Queued [**{length}** tracks]({arg}) !")
@@ -199,7 +202,7 @@ class MusicCommandsManager:
                 return result
             elif domain == "":
                 videos_search = VideosSearch(" ".join(args), limit=1)
-                url = videos_search.result()['result'][0]['link']
+                url = videos_search.result()["result"][0]["link"]
                 result = []
                 track = await music_client.load_tracks(url)
                 if track and track.tracks and track.tracks[0]:
