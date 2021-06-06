@@ -3,8 +3,6 @@ from abc import abstractmethod
 import lavalink
 from discord import Embed
 
-## TODO: Change red-lavalink to wavelink
-
 
 class LavalinkManager:
     __keys__ = ["pass", "host", "ws", "port"]
