@@ -50,7 +50,7 @@ class Client(commands.Bot):
 
         self.musicCmd = None
         self.redditCmd = None
-        super().__init__(command_prefix=self.prefix)
+        super().__init__(command_prefix=self.prefix, help_command=None)
 
     async def load_extensions(self):
         await self._loader.find_extension()
