@@ -10,6 +10,7 @@ from discord import Embed
 import os
 import asyncio
 from dotenv import load_dotenv
+import random
 
 from core import LoaderManager
 
@@ -75,6 +76,11 @@ class Client(commands.Bot):
         await self.musicCmd.init()
 
         self.db = Database()
+
+    async def on_message(self, ctx):
+        random.seed()
+        if random.randint(1, 100) <= 100:
+            self.db.add_exp(ctx.author, 20)
 
     async def on_command_error(self, ctx, error):
         if isinstance(error, CommandNotFound):
