@@ -16,6 +16,7 @@ from core import LoaderManager
 from core import Colour
 from core import MusicCommandsManager
 from core import RedditCommandsManager
+from core import Database
 
 load_dotenv()
 
@@ -47,7 +48,7 @@ class Client(commands.Bot):
         self.token = token
 
         self._loader = LoaderManager(self)
-
+        self.db = None
         self.musicCmd = None
         self.redditCmd = None
         super().__init__(command_prefix=self.prefix, help_command=None)
@@ -72,6 +73,8 @@ class Client(commands.Bot):
 
         self.musicCmd = MusicCommandsManager(self)
         await self.musicCmd.init()
+
+        self.db = Database()
 
     async def on_command_error(self, ctx, error):
         if isinstance(error, CommandNotFound):
