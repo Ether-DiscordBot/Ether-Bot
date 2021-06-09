@@ -15,8 +15,11 @@ class Database(object):
 
     def get_user(self, user):
         if not user.bot:
-            db_user = self.db.users.find_one({"user_id": user.id})
+            db_user = self.db.users.find_one({"id": user.id})
+            if db_user["username"] != user.name:
+                self.update_user(user, "username", user.name)
             if db_user:
+
                 return db_user
             else:
                 return self.create_user(user)
@@ -27,23 +30,23 @@ class Database(object):
         if not user.bot:
             self.db.users.insert_one(
                 {
-                    "user_id": user.id,
-                    "user_datas": {
-                        "premium": False,
-                        "exp": 0,
-                        "birthday": None,
-                        "sexe": None,
-                    },
+                    "id": user.id,
+                    "username": user.name,
+                    "premium": False,
+                    "exp": 0,
                 }
             )
 
     def update_user(self, user, key, value):
-        db_user.update_one({"user_id": user.id}, {"$set": {key, value}})
-
-    def find_user_data(self, user, key):
-        db_user = self.get_user(user)
-        return db_user.get(key)
+        self.db.users.update_one({"id": user.id}, {"$set": {key: value}})
 
     def add_exp(self, user, value):
-        db_user = self.get_user(user)
-        self.update_user(user, "exp", self.find_user_data(user, "exp") + value)
+        if not user.bot:
+            db_user = self.get_user(user)
+            self.update_user(user, "exp", db_user["exp"] + value)
+
+    def set_birthday(self, user, birthday):
+        self.update_user(user, "birthday", birthday)
+
+    def set_sex(self, user, sex):
+        self.update_user(user, "sex", sex)
