@@ -1,1 +1,2 @@
-docker build 
+CMD python main.py
+docker build
