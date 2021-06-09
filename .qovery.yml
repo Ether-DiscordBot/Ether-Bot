@@ -1,0 +1,11 @@
+---
+application:
+  name: "mochi"
+  project: "mochi"
+  organization: "QoveryCommunity"
+routers:
+- name: "main-mochi"
+  routes:
+  - application_name: "mochi"
+    paths:
+    - "/*"
