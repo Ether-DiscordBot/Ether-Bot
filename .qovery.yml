@@ -1,15 +1,11 @@
 ---
 application:
-  name: "mochi-discordbot"
-  project: "mochi-discordbot"
+  name: "mochi"
+  project: "mochi"
   organization: "QoveryCommunity"
-databases:
-- type: "MONGODB"
-  name: "mochidb"
-  version: "4.4"
 routers:
-- name: "main-mochi-discordbot"
+- name: "main-mochi"
   routes:
-  - application_name: "mochi-discordbot"
+  - application_name: "mochi"
     paths:
     - "/*"
