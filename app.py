@@ -10,12 +10,14 @@ from discord import Embed
 import os
 import asyncio
 from dotenv import load_dotenv
+import random
 
 from core import LoaderManager
 
 from core import Colour
 from core import MusicCommandsManager
 from core import RedditCommandsManager
+from core import Database
 
 load_dotenv()
 
@@ -47,10 +49,10 @@ class Client(commands.Bot):
         self.token = token
 
         self._loader = LoaderManager(self)
-
+        self.db = None
         self.musicCmd = None
         self.redditCmd = None
-        super().__init__(command_prefix=self.prefix)
+        super().__init__(command_prefix=self.prefix, help_command=None)
 
     async def load_extensions(self):
         await self._loader.find_extension()
@@ -72,6 +74,16 @@ class Client(commands.Bot):
 
         self.musicCmd = MusicCommandsManager(self)
         await self.musicCmd.init()
+
+        self.db = Database()
+
+    async def on_message(self, ctx):
+        if not ctx.author.bot:
+            random.seed()
+            if random.randint(1, 100) <= 37:
+                self.db.add_exp(ctx.author, 20)
+
+            await self.process_commands(ctx)
 
     async def on_command_error(self, ctx, error):
         if isinstance(error, CommandNotFound):
