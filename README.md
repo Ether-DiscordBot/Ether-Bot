@@ -1,32 +1,41 @@
-<div align="center">
-<h2>Mochi Discord Bot</h2>
-<h4>Music ● Moderation ● Leveling ● Dashboard ● Fun</h4>
-  <a href="https://github.com/Rapptz/discord.py/">
-     <img src="https://img.shields.io/badge/discord-py-blue.svg" alt="discord.py">
- </a>
-   <a href="https://www.python.org/">
-  <img alt="python-version" src="https://img.shields.io/badge/python-3.9-blue.svg">
-  </a>
-  <a href="https://github.com/holy-tanuki/Mochi-DiscordBot">
-    <img alt="license" src="https://img.shields.io/github/license/holy-tanuki/Mochi-DiscordBot">
-  </a>
-  <a href="https://github.com/holy-tanuki/Mochi-DiscordBot">
-  <img alt="github-start" src="https://img.shields.io/github/issues/holy-tanuki/Mochi-DiscordBot">
-  </a>
-  <a href="https://github.com/holy-tanuki/Mochi-DiscordBot">
-  <img alt="github-start" src="https://img.shields.io/github/forks/holy-tanuki/Mochi-DiscordBot">
-  </a>
-  <a href="https://github.com/holy-tanuki/Mochi-DiscordBot">
-  <img alt="github-start" src="https://img.shields.io/github/stars/holy-tanuki/Mochi-DiscordBot">
-  </a>
-</div>
+# Mochi DiscordBot
 
-<div>
+![](https://img.shields.io/badge/python-3.9-blue.svg) ![](https://img.shields.io/badge/discord-py-blue.svg) ![](https://img.shields.io/github/license/holy-tanuki/Mochi-DiscordBot) ![](https://img.shields.io/github/stars/holy-tanuki/Mochi-DiscordBot)
 
- -
- -
- -
- 
-</div>
+Mochi is a powerful bot for Discord coding in python. It can interact with an online dashboard (feature under development), it has a very complete music part using [Lavalink](https://github.com/Frederikam/Lavalink) and many other features developed or under development.
 
+The bot will be divided into two parts, one opensource and another that will communicate with a database, the latter will be private.
 
+## Overview
+
+Mochi is in the very early stages of development, many of the features are not there yet but they will come.
+
+For the moment only this feature is available:
+
+- Music ✅
+- Images (from reddit) ✅
+- Other ❌
+
+## Installation
+
+Only **Windows** is supported for now.
+
+[Warning] The bot is still in development, come back later to have all the installation steps.
+
+ - Install [Lavalink](https://github.com/Frederikam/Lavalink) and create an application.yml file in the main directory.
+ - Install all the dependencies
+ - And put the key-values in a .env file (follow the .env.example)
+
+To use the bot:
+
+```
+java -jar Lavalink.jar
+```
+
+```
+python mochibot
+```
+
+## License
+
+Released under [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html) license.
