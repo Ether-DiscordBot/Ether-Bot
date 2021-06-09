@@ -2,6 +2,15 @@ import lavalink
 
 from discord import Embed
 
+import os
+
+
+async def init_lavalink(self):
+        await lavalink.close()
+        await lavalink.initialize(
+            self, host=os.getenv('LAVALINK_HOST'), password=os.getenv('LAVALINK_PASS'),
+            rest_port=os.getenv('LAVALINK_PORT'), ws_port=os.getenv('LAVALINK_PORT')
+        )
 
 def get_client(guild_id):
     """

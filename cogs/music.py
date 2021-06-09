@@ -4,10 +4,15 @@ from discord.ext import commands
 
 from core.music import *
 
+import lavalink
+import os
+
 
 class Music(commands.Cog):
     def __init__(self, client):
         self.client = client
+        
+        os.system("start cmd.exe /c java -jar Lavalink.jar")
 
         lavalink.register_event_listener(
             self.lavalink_event_handler
@@ -33,6 +38,7 @@ class Music(commands.Cog):
                 print(player.is_playing)
 
     @commands.command()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def join(self, ctx):
         response = await join_voice_channel(ctx)
 
@@ -42,6 +48,7 @@ class Music(commands.Cog):
             return await ctx.message.add_reaction("👌")
 
     @commands.command()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def leave(self, ctx):
         if await leave(ctx) is not None:
             return await ctx.message.add_reaction("👋")
