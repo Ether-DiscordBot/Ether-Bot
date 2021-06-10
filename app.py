@@ -78,10 +78,12 @@ class Client(commands.Bot):
         self.db = Database()
 
     async def on_message(self, ctx):
+        db_guild = self.db.get_guild(ctx.guild)
+        self.db.get_user(ctx.author, ctx.guild)
         if not ctx.author.bot:
             random.seed()
             if random.randint(1, 100) <= 37:
-                self.db.add_exp(ctx.author, 20)
+                self.db.add_exp(ctx.author, ctx.guild, 20)
 
             await self.process_commands(ctx)
 
