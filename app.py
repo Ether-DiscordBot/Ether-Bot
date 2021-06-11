@@ -24,7 +24,7 @@ load_dotenv()
 
 
 class App:
-    APP_VERSION = "0.0.4.dev2"
+    APP_VERSION = "0.0.5"
 
     def run():
         os.system("cls")
