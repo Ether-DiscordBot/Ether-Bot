@@ -72,6 +72,20 @@ class Database(object):
             {
                 "id": guild.id,
                 "prefix": self.default_prefix,
+                "logs": {
+                    "join": {
+                        "channel_id": guild.text_channels[0].id,
+                        "message": "Welcome to {user.name} !",
+                        "active": False,
+                        "private": False,
+                    },
+                    "leave": {
+                        "channel_id": guild.text_channels[0].id,
+                        "message": "{user.name} is gone",
+                        "active": False,
+                        "private": False,
+                    },
+                },
                 "members": [],
             }
         )

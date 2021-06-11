@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands
 from discord.ext.commands.errors import (
     MissingPermissions,
@@ -23,7 +24,7 @@ load_dotenv()
 
 
 class App:
-    APP_VERSION = "0.0.4.dev1"
+    APP_VERSION = "0.0.4.dev2"
 
     def run():
         os.system("cls")
@@ -39,7 +40,11 @@ class App:
         )
         print(f"\tVersion:\t{App.APP_VERSION}\n")
 
-        client = Client(prefix=os.getenv("BASE_PREFIX"), token=os.getenv("BOT_TOKEN"))
+        client = Client(
+            prefix=os.getenv("BASE_PREFIX"),
+            token=os.getenv("BOT_TOKEN"),
+        )
+
         client.run(client.token)
 
 
@@ -52,7 +57,10 @@ class Client(commands.Bot):
         self.db = None
         self.musicCmd = None
         self.redditCmd = None
-        super().__init__(command_prefix=self.prefix, help_command=None)
+
+        intents = discord.Intents.default()
+        intents.members = True
+        super().__init__(intents=intents, command_prefix=self.prefix, help_command=None)
 
     async def load_extensions(self):
         await self._loader.find_extension()
@@ -76,6 +84,26 @@ class Client(commands.Bot):
         await self.musicCmd.init()
 
         self.db = Database()
+
+    async def on_member_join(self, member):
+        guild = self.db.get_guild(member.guild)
+        log = guild["logs"]["join"]
+        if log["active"]:
+            channel = member.guild.get_channel(log["channel_id"])
+            if channel:
+                await channel.send(
+                    log["message"].format(user=member, guild=member.guild)
+                )
+
+    async def on_member_remove(self, member):
+        guild = self.db.get_guild(member.guild)
+        log = guild["logs"]["leave"]
+        if log["active"]:
+            channel = member.guild.get_channel(log["channel_id"])
+            if channel:
+                await channel.send(
+                    log["message"].format(user=member, guild=member.guild)
+                )
 
     async def on_message(self, ctx):
         db_guild = self.db.get_guild(ctx.guild)
