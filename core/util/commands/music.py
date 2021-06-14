@@ -32,11 +32,9 @@ class MusicCommandsManager:
         """
 
         try:
-            player = lavalink.get_player(guild_id=guild_id)
+            return lavalink.get_player(guild_id=guild_id)
         except:
-            player = None
-
-        return player
+            return None
 
     async def user_is_in_client_channel(self, ctx):
         """
@@ -71,10 +69,11 @@ class MusicCommandsManager:
 
         if ctx.author.voice and ctx.author.voice.channel:
             voice_channel = ctx.author.voice.channel
-
-            return await lavalink.connect(voice_channel)
+            await lavalink.connect(voice_channel)
         else:
             return "You must be connected to a voice channel."
+
+        return
 
     async def play(self, ctx):
         """
@@ -208,12 +207,7 @@ class MusicCommandsManager:
                 if track and track.tracks and track.tracks[0]:
                     result.append(track.tracks[0])
                     return result
-                else:
-                    return None
-            else:
-                return None
-        else:
-            return None
+        return None
 
     def get_queue(self, ctx):
         """
@@ -225,5 +219,5 @@ class MusicCommandsManager:
 
         if music_client is not None:
             return music_client.queue
-        else:
-            return
+        
+        return
