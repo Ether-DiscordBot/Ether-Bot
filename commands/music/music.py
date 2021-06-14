@@ -14,7 +14,7 @@ class Music(commands.Cog, name="music"):
     async def join(self, ctx):
         response = await self.client.musicCmd.join_voice_channel(ctx)
 
-        if type(response) == str:
+        if isinstance(response, str):
             return await ctx.send(embed=Embed(description=response))
         return await ctx.message.add_reaction("👌")
 

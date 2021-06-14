@@ -62,8 +62,7 @@ class Database(object):
         db_guild = self.db.guilds.find_one({"id": guild.id})
         if db_guild:
             return db_guild
-        else:
-            return self.create_guild(guild)
+        return self.create_guild(guild)
 
     def create_guild(self, guild):
         self.db.guilds.insert_one(

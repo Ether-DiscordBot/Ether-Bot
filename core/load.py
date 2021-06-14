@@ -14,9 +14,9 @@ class LoaderManager:
         name = "__init__.py"
         paths = []
 
-        for dir in os.listdir(path):
-            if os.path.isdir(os.path.join(path, dir)) and dir not in banned_dir:
-                paths.append(os.path.join(path, dir))
+        for _dir in os.listdir(path):
+            if os.path.isdir(os.path.join(path, _dir)) and _dir not in banned_dir:
+                paths.append(os.path.join(path, _dir))
 
         for path in paths:
             listdir = os.listdir(path)
