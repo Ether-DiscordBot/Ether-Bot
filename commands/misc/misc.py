@@ -7,12 +7,22 @@ from random import random
 class Misc(commands.Cog):
     def __init__(self, client):
         self.client = client
-
-        self.help_embed = HelpEmbed(self.client.commands).embed
+        self.fancy_name = "Misc"
 
     @commands.command()
     async def help(self, ctx):
-        await ctx.send(embed=self.help_embed)
+        print(self.client.cogs)
+        embed = Embed(
+            description="Get more informations about these [commands](https://www.youtube.com/watch?v=dQw4w9WgXcQ)."
+        )
+        for name, cog in self.client.cogs.items():
+            field = {"name": cog.fancy_name, "value": []}
+            for cmd in cog.get_commands():
+                field["value"].append(cmd.name)
+            embed.add_field(
+                name=field["name"], value=", ".join(field["value"]), inline=False
+            )
+        await ctx.send(embed=embed)
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
@@ -48,12 +58,3 @@ class Misc(commands.Cog):
     async def flipcoin(self, ctx):
         result = "Heads" if round(random()) else "Tails"
         return await ctx.channel.send(result)
-
-
-class HelpEmbed:
-    def __init__(self, commands):
-        self._msg = ""
-        for cmd in commands:
-            self._msg += cmd.name + "\n"
-
-        self.embed = Embed(description=self._msg)

@@ -7,6 +7,7 @@ from core import Colour
 class Image(commands.Cog, name="image"):
     def __init__(self, client):
         self.client = client
+        self.fancy_name = "Image"
 
     async def return_rep(self, ctx, sub, err_msg):
         post = self.client.redditCmd.get_reddit_image(sub_reddit=sub)

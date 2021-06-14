@@ -7,6 +7,7 @@ import lavalink
 class Music(commands.Cog, name="music"):
     def __init__(self, client):
         self.client = client
+        self.fancy_name = "Music"
 
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)
