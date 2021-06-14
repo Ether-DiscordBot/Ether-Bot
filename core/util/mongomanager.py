@@ -26,8 +26,7 @@ class Database(object):
             if db_user:
                 return db_user
             return self.create_user(user)
-        else:
-            return False
+        return False
 
     def create_user(self, user):
         if not user.bot:
