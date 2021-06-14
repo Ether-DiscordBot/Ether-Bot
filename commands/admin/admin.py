@@ -1,9 +1,10 @@
 from core import Colour
 from discord import Embed, User
 from discord.ext import commands
+from discord_slash import cog_ext, SlashContext
 
 
-class Admin(commands.Cog):
+class Admin(commands.Cog, name="admin"):
     def __init__(self, client):
         self.client = client
 
@@ -32,9 +33,9 @@ class Admin(commands.Cog):
             )
             return await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command
     @commands.has_permissions(ban_members=True)
-    async def ban(self, ctx, member: User, *, reason=None):
+    async def ban(self, ctx: SlashContext, member: User, *, reason: str = None):
 
         if not member:
             embed = Embed(

@@ -7,6 +7,8 @@ from discord.ext.commands.errors import (
     CommandOnCooldown,
     MissingRequiredArgument,
 )
+from discord_slash import SlashCommand
+from discord_slash.utils.manage_commands import create_option, create_choice
 from discord import Embed
 import os
 import asyncio
@@ -24,12 +26,12 @@ load_dotenv()
 
 
 class App:
-    APP_VERSION = "0.0.5"
+    APP_VERSION = "0.0.5dev1"
 
     def run():
         os.system("cls")
         print(
-            "\033[34m \n\n __  __               _      _            _____   _                            _  ____    "
+            "\03v3[34m \n\n __  __               _      _            _____   _                            _  ____    "
             "      _   \n"
             "|  \/  |             | |    (_)          |  __ \ (_)                          | ||  _ \        | | \n"
             "| \  / |  ___    ___ | |__   _   ______  | |  | | _  ___   ___  ___   _ __  __| || |_) |  ___  | |_ \n"
@@ -45,6 +47,12 @@ class App:
             token=os.getenv("BOT_TOKEN"),
         )
 
+        guild_ids = [697735468875513876]
+
+        @client.slash.slash(name="foo", guild_ids=guild_ids)
+        async def _foo(ctx):
+            await ctx.send(f"Pong! ({client.latency*1000}ms)")
+
         client.run(client.token)
 
 
@@ -52,15 +60,17 @@ class Client(commands.Bot):
     def __init__(self, prefix=None, token=None):
         self.prefix = prefix
         self.token = token
+        self.bot_link = "https://discord.com/oauth2/authorize?client_id=693456698299383829&permissions=3757567862&scope=bot%20applications.commands"
 
         self._loader = LoaderManager(self)
         self.db = None
         self.musicCmd = None
         self.redditCmd = None
 
-        intents = discord.Intents.default()
-        intents.members = True
-        super().__init__(intents=intents, command_prefix=self.prefix, help_command=None)
+        super().__init__(
+            intents=discord.Intents.all(), command_prefix=self.prefix, help_command=None
+        )
+        self.slash = SlashCommand(self, override_type=True)
 
     async def load_extensions(self):
         await self._loader.find_extension()
@@ -96,14 +106,15 @@ class Client(commands.Bot):
                 )
 
     async def on_member_remove(self, member):
-        guild = self.db.get_guild(member.guild)
-        log = guild["logs"]["leave"]
-        if log["active"]:
-            channel = member.guild.get_channel(log["channel_id"])
-            if channel:
-                await channel.send(
-                    log["message"].format(user=member, guild=member.guild)
-                )
+        if member.id != self.id:
+            guild = self.db.get_guild(member.guild)
+            log = guild["logs"]["leave"]
+            if log["active"]:
+                channel = member.guild.get_channel(log["channel_id"])
+                if channel:
+                    await channel.send(
+                        log["message"].format(user=member, guild=member.guild)
+                    )
 
     async def on_message(self, ctx):
         db_guild = self.db.get_guild(ctx.guild)
@@ -111,7 +122,7 @@ class Client(commands.Bot):
         if not ctx.author.bot:
             random.seed()
             if random.randint(1, 100) <= 37:
-                self.db.add_exp(ctx.author, ctx.guild, 20)
+                self.db.add_exp(ctx.author, ctx.guild, 5)
 
             await self.process_commands(ctx)
 

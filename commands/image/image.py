@@ -1,9 +1,10 @@
 from discord.ext import commands
+from discord_slash import cog_ext, SlashContext
 from discord import Embed
 from core import Colour
 
 
-class Image(commands.Cog):
+class Image(commands.Cog, name="image"):
     def __init__(self, client):
         self.client = client
 
@@ -23,7 +24,7 @@ class Image(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
-    async def meme(self, ctx):
+    async def meme(self, ctx: SlashContext):
         memes_subreddit = "memes"
         error_message = "😕 We are sorry, we have done a lot of research but we can't find any memes."
         await self.return_rep(ctx, memes_subreddit, error_message)
