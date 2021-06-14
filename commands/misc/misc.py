@@ -11,7 +11,6 @@ class Misc(commands.Cog):
 
     @commands.command()
     async def help(self, ctx):
-        print(self.client.cogs)
         embed = Embed(
             description="Get more informations about these [commands](https://www.youtube.com/watch?v=dQw4w9WgXcQ)."
         )
@@ -30,9 +29,7 @@ class Misc(commands.Cog):
         bot_latency = round(self.client.latency * 1000)
         embed = Embed(description=":ping_pong: Pong !")
         msg = await ctx.channel.send(embed=embed)
-        embed.add_field(
-            name="Bot latency", value="{0} ms".format(bot_latency), inline=True
-        )
+        embed.add_field(name="Bot latency", value=f"{bot_latency} ms", inline=True)
         embed.add_field(
             name="User latency",
             value="{0} ms".format(
