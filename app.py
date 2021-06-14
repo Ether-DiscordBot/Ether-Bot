@@ -11,8 +11,6 @@ from discord_slash import SlashCommand
 from discord_slash.utils.manage_commands import create_option, create_choice
 from discord import Embed
 import os
-import subprocess
-import asyncio
 from dotenv import load_dotenv
 import random
 
@@ -30,9 +28,8 @@ class App:
     APP_VERSION = "0.0.5dev1"
 
     def run():
-        subprocess.call('/bin/cls', shell=False)
         print(
-            "\03v3[34m \n\n __  __               _      _            _____   _                            _  ____    "
+            "\033[34m \n\n __  __               _      _            _____   _                            _  ____    "
             "      _   \n"
             "|  \/  |             | |    (_)          |  __ \ (_)                          | ||  _ \        | | \n"
             "| \  / |  ___    ___ | |__   _   ______  | |  | | _  ___   ___  ___   _ __  __| || |_) |  ___  | |_ \n"
