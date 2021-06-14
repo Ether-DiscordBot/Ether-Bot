@@ -127,33 +127,3 @@ class Client(commands.Bot):
 
         if isinstance(error, ignored):
             return
-        
-        """if isinstance(error, CommandNotFound):
-            pass
-        if isinstance(error, CommandOnCooldown):
-            time_left = str(error)[34:]
-            error_msg = await ctx.send(
-                embed=Embed(
-                    colour=Colour.ERROR,
-                    description=f"You are on cooldown for this command.\nPlease try "
-                    f"again in **{time_left}**",
-                    color=0xE74C3C,
-                )
-            )
-            await asyncio.sleep(2)
-            await error_msg.delete()
-            return
-        if isinstance(error, MissingRequiredArgument):
-            return
-        if isinstance(error, MissingPermissions):
-            embed = Embed(
-                colour=Colour.ERROR,
-                description=f"You don't have the **permissions** to do that.",
-            )
-            await ctx.send(embed=embed)
-            return
-        if isinstance(error, UserNotFound):
-            embed = Embed(colour=Colour.ERROR, description=f"**Unknown** member.")
-            await ctx.send(embed=embed)
-            return
-        raise error"""
