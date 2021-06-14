@@ -123,7 +123,7 @@ class Client(commands.Bot):
     async def on_command_error(self, ctx, error):
         if isinstance(error, CommandNotFound):
             pass
-        elif isinstance(error, CommandOnCooldown):
+        if isinstance(error, CommandOnCooldown):
             time_left = str(error)[34:]
             error_msg = await ctx.send(
                 embed=Embed(
@@ -135,18 +135,18 @@ class Client(commands.Bot):
             )
             await asyncio.sleep(2)
             await error_msg.delete()
-            pass
-        elif isinstance(error, MissingRequiredArgument):
-            pass
-        elif isinstance(error, MissingPermissions):
+            return
+        if isinstance(error, MissingRequiredArgument):
+            return
+        if isinstance(error, MissingPermissions):
             embed = Embed(
                 colour=Colour.ERROR,
                 description=f"You don't have the **permissions** to do that.",
             )
             await ctx.send(embed=embed)
-            pass
-        elif isinstance(error, UserNotFound):
+            return
+        if isinstance(error, UserNotFound):
             embed = Embed(colour=Colour.ERROR, description=f"**Unknown** member.")
             await ctx.send(embed=embed)
-            pass
+            return
         raise error
