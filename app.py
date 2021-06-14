@@ -47,12 +47,6 @@ class App:
             token=os.getenv("BOT_TOKEN"),
         )
 
-        guild_ids = [697735468875513876]
-
-        @client.slash.slash(name="foo", guild_ids=guild_ids)
-        async def _foo(ctx):
-            await ctx.send(f"Pong! ({client.latency*1000}ms)")
-
         client.run(client.token)
 
 
@@ -70,7 +64,6 @@ class Client(commands.Bot):
         super().__init__(
             intents=discord.Intents.all(), command_prefix=self.prefix, help_command=None
         )
-        self.slash = SlashCommand(self, override_type=True)
 
     async def load_extensions(self):
         await self._loader.find_extension()
