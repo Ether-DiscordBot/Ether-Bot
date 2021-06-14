@@ -58,10 +58,9 @@ class Music(commands.Cog, name="music"):
                     embed = Embed(description="Music not found", color=0xE74C3C)
                     return await ctx.send(embed=embed)
                 return await self.client.musicCmd.play(ctx)
-            else:
-                embed = Embed(
-                    description="You must be connected in the same voice channel as the bot."
-                )
+            embed = Embed(
+                description="You must be connected in the same voice channel as the bot."
+            )
         else:
             embed = Embed(description="You must be connected to a voice channel.")
 
