@@ -31,10 +31,7 @@ class MusicCommandsManager:
         :return: lavalink.Player or None
         """
 
-        try:
-            return lavalink.get_player(guild_id=guild_id)
-        except:
-            return None
+        return lavalink.get_player(guild_id=guild_id)
 
     async def user_is_in_client_channel(self, ctx):
         """
@@ -88,10 +85,8 @@ class MusicCommandsManager:
 
         if music_client.current is None and music_client.channel:
             await music_client.play()
-
             return True
-        else:
-            return
+        return None
 
     async def next_track(self, ctx):
         """
@@ -104,8 +99,7 @@ class MusicCommandsManager:
         if music_client and music_client.channel:
             await music_client.skip()
             return True
-        else:
-            return
+        return None
 
     async def stop(self, ctx):
         """
@@ -118,10 +112,8 @@ class MusicCommandsManager:
         if music_client and music_client.is_playing and music_client.channel:
             await music_client.current.start_message.delete()
             await music_client.stop()
-
             return True
-        else:
-            return
+        return None
 
     async def pause(self, ctx, pause):
         """
@@ -132,10 +124,8 @@ class MusicCommandsManager:
 
         if music_client.channel:
             await music_client.pause(pause=pause)
-
             return True
-        else:
-            return False
+        return None
 
     async def leave(self, ctx):
         """
@@ -173,17 +163,15 @@ class MusicCommandsManager:
                     embed = Embed(description=f"Queued [**{length}** tracks]({arg}) !")
                     await ctx.send(embed=embed)
                 return await self.play(ctx)
+            if len(tracks) <= 1:
+                embed = Embed(
+                    description="Queued [{0.title}]({0.uri})".format(tracks[0])
+                )
             else:
-                if len(tracks) <= 1:
-                    embed = Embed(
-                        description="Queued [{0.title}]({0.uri})".format(tracks[0])
-                    )
-                else:
-                    length = len(tracks)
-                    embed = Embed(description=f"Queued [**{length}** tracks]({arg}) !")
-                return await ctx.send(embed=embed)
-        else:
-            return
+                length = len(tracks)
+                embed = Embed(description=f"Queued [**{length}** tracks]({arg}) !")
+            return await ctx.send(embed=embed)
+        return
 
     async def search_track(self, ctx, arg, args):
         """
@@ -199,7 +187,7 @@ class MusicCommandsManager:
                 load_result = await music_client.load_tracks(arg)
                 result = load_result.tracks
                 return result
-            elif domain == "":
+            if domain == "":
                 videos_search = VideosSearch(" ".join(args), limit=1)
                 url = videos_search.result()["result"][0]["link"]
                 result = []
