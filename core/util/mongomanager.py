@@ -25,8 +25,7 @@ class Database(object):
                     self.insert_member_guild(guild, user)
             if db_user:
                 return db_user
-            else:
-                return self.create_user(user)
+            return self.create_user(user)
         else:
             return False
 
