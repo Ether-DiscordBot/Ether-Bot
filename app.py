@@ -121,7 +121,14 @@ class Client(commands.Bot):
             await self.process_commands(ctx)
 
     async def on_command_error(self, ctx, error):
-        if isinstance(error, CommandNotFound):
+        ignored = (commands.NoPrivateMessage, commands.DisabledCommand, commands.CheckFailure,
+                   commands.CommandNotFound, commands.UserInputError, discord.HTTPException)
+        error = getattr(error, 'original', error)
+
+        if isinstance(error, ignored):
+            return
+        
+        """if isinstance(error, CommandNotFound):
             pass
         if isinstance(error, CommandOnCooldown):
             time_left = str(error)[34:]
@@ -149,4 +156,4 @@ class Client(commands.Bot):
             embed = Embed(colour=Colour.ERROR, description=f"**Unknown** member.")
             await ctx.send(embed=embed)
             return
-        raise error
+        raise error"""

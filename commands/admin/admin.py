@@ -23,16 +23,16 @@ class Admin(commands.Cog, name="admin"):
             colour=Colour.SUCCESS,
             description=f"**{member.display_name}** as been kicked !\n**Reason:** {reason}",
         )
-        try:
-            await ctx.guild.kick(member)
-            await ctx.send(embed=embed)
-        except:
-            embed = Embed(
-                colour=Colour.ERROR,
-                description="Can't do that. Probably because I don't have the "
-                "permissions for.",
-            )
-            return await ctx.send(embed=embed)
+        #try:
+        await ctx.guild.kick(member)
+        await ctx.send(embed=embed)
+        # except error:
+        #    embed = Embed(
+        #       colour=Colour.ERROR,
+        #        description="Can't do that. Probably because I don't have the "
+        #        "permissions for.",
+        #    )
+        #    return await ctx.send(embed=embed)
 
     @commands.command()
     @commands.has_permissions(ban_members=True)
