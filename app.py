@@ -11,6 +11,7 @@ from discord_slash import SlashCommand
 from discord_slash.utils.manage_commands import create_option, create_choice
 from discord import Embed
 import os
+import subprocess
 import asyncio
 from dotenv import load_dotenv
 import random
@@ -29,7 +30,7 @@ class App:
     APP_VERSION = "0.0.5dev1"
 
     def run():
-        os.system("cls")
+        subprocess.call('/bin/cls', shell=False)
         print(
             "\03v3[34m \n\n __  __               _      _            _____   _                            _  ____    "
             "      _   \n"
@@ -121,7 +122,7 @@ class Client(commands.Bot):
 
     async def on_command_error(self, ctx, error):
         if isinstance(error, CommandNotFound):
-            return
+            pass
         elif isinstance(error, CommandOnCooldown):
             time_left = str(error)[34:]
             error_msg = await ctx.send(
@@ -134,16 +135,18 @@ class Client(commands.Bot):
             )
             await asyncio.sleep(2)
             await error_msg.delete()
-            return
+            pass
         elif isinstance(error, MissingRequiredArgument):
-            return
+            pass
         elif isinstance(error, MissingPermissions):
             embed = Embed(
                 colour=Colour.ERROR,
                 description=f"You don't have the **permissions** to do that.",
             )
-            return await ctx.send(embed=embed)
+            await ctx.send(embed=embed)
+            pass
         elif isinstance(error, UserNotFound):
             embed = Embed(colour=Colour.ERROR, description=f"**Unknown** member.")
-            return await ctx.send(embed=embed)
+            await ctx.send(embed=embed)
+            pass
         raise error
