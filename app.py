@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands as cmds
 from discord.ext.commands.errors import (
     MissingPermissions,
     UserNotFound,
@@ -14,12 +14,7 @@ import os
 from dotenv import load_dotenv
 import random
 
-from core import LoaderManager
-
-from core import Colour
-from core import MusicCommandsManager
-from core import RedditCommandsManager
-from core import Database
+from core import *
 
 load_dotenv()
 
@@ -48,7 +43,7 @@ class App:
         client.run(client.token)
 
 
-class Client(commands.Bot):
+class Client(cmds.Bot):
     def __init__(self, prefix=None, token=None):
         self.prefix = prefix
         self.token = token
@@ -58,6 +53,8 @@ class Client(commands.Bot):
         self.db = None
         self.musicCmd = None
         self.redditCmd = None
+
+        self.utils = utils.Utils
 
         super().__init__(
             intents=discord.Intents.all(), command_prefix=self.prefix, help_command=None
@@ -97,7 +94,7 @@ class Client(commands.Bot):
                 )
 
     async def on_member_remove(self, member):
-        if member.id != self.id:
+        if member.id != self.user.id:
             guild = self.db.get_guild(member.guild)
             log = guild["logs"]["leave"]
             if log["active"]:
@@ -118,8 +115,8 @@ class Client(commands.Bot):
             await self.process_commands(ctx)
 
     async def on_command_error(self, ctx, error):
-        ignored = (commands.NoPrivateMessage, commands.DisabledCommand, commands.CheckFailure,
-                   commands.CommandNotFound, commands.UserInputError, discord.HTTPException)
+        ignored = (cmds.NoPrivateMessage, cmds.DisabledCommand, cmds.CheckFailure,
+                   cmds.CommandNotFound, cmds.UserInputError, discord.HTTPException)
         error = getattr(error, 'original', error)
 
         if isinstance(error, ignored):

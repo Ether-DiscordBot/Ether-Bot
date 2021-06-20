@@ -33,8 +33,8 @@ class Database(object):
             self.db.users.insert_one(
                 {
                     "id": user.id,
-                    "premium": False,
                     "exp": 0,
+                    "level": 0,
                 }
             )
 
@@ -69,6 +69,7 @@ class Database(object):
             {
                 "id": guild.id,
                 "prefix": self.default_prefix,
+                "premium": False,
                 "logs": {
                     "join": {
                         "channel_id": guild.text_channels[0].id,
@@ -82,6 +83,10 @@ class Database(object):
                         "active": False,
                         "private": False,
                     },
+                    "moderation": {
+                        "channel_id": guild.text_channels[0].id,
+                        "active": False,
+                    },
                 },
                 "members": [],
             }
@@ -94,7 +99,7 @@ class Database(object):
 
     def insert_member_guild(self, guild, user):
         members_array = self.get_guild(guild)["members"]
-        members_array.append({"id": user.id, "exp": 0})
+        members_array.append({"id": user.id, "exp": 0, "level": 0})
         self.update_guild(guild, "members", members_array)
 
     def get_guild_member(self, guild, user):

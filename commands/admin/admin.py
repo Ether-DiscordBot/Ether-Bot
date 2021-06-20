@@ -1,5 +1,5 @@
 from core import Colour
-from discord import Embed, User
+from discord import Embed, User, utils
 from discord.ext import commands
 from discord_slash import cog_ext, SlashContext
 
@@ -12,45 +12,60 @@ class Admin(commands.Cog, name="admin"):
     @commands.command()
     @commands.has_permissions(kick_members=True)
     async def kick(self, ctx, member: User, *, reason=None):
-
+        db_guild = self.client.db.get_guild(ctx.guild)
         if not member:
             embed = Embed(
-                colour=Colour.ERROR, description=f"unknown {member.display_name} !"
-            )
-            return await ctx.send(embed=embed)
-
-        embed = Embed(
-            colour=Colour.SUCCESS,
-            description=f"**{member.display_name}** as been kicked !\n**Reason:** {reason}",
-        )
-        #try:
-        await ctx.guild.kick(member)
-        await ctx.send(embed=embed)
-        # except error:
-        #    embed = Embed(
-        #       colour=Colour.ERROR,
-        #        description="Can't do that. Probably because I don't have the "
-        #        "permissions for.",
-        #    )
-        #    return await ctx.send(embed=embed)
-
-    @commands.command()
-    @commands.has_permissions(ban_members=True)
-    async def ban(self, ctx, member: User, *, reason: str = None):
-
-        if not member:
-            embed = Embed(
-                colour=Colour.ERROR, description=f"unknown {member.display_name} !"
+                colour=Colour.ERROR, description=f"Unknown **{member.name}** !"
             )
             return await ctx.send(embed=embed)
 
         try:
+            if db_guild["logs"]["moderation"]["active"]:
+                channel = ctx.guild.get_channel(db_guild["logs"]["moderation"]["channel_id"])
+                if channel:
+                    embed = Embed(colour=Colour.KICK)
+                    embed.set_author(name=f"[KICK] {member.name}#{member.discriminator}", icon_url=self.client.utils.get_avatar_url(member))
+                    embed.add_field(name="User", value=f"<@{member.id}>", inline=True)
+                    embed.add_field(name="Moderator", value=f"<@{ctx.author.id}>", inline=True)
+                    embed.add_field(name="Channel", value=f"<#{ctx.channel.id}>", inline=True)
+                    embed.add_field(name="Reason", value=reason or "No reason.", inline=True)    
+                        
+                    await ctx.guild.kick(member)
+
+                    await channel.send(embed=embed)
+        except Exception as exception:
             embed = Embed(
-                colour=Colour.SUCCESS,
-                description=f"**{member.display_name}** as been banned !\n**Reason:** {reason}",
+                colour=Colour.ERROR,
+                description="Can't do that. Probably because I don't have the "
+                "permissions for.",
             )
-            await ctx.guild.ban(member)
-            await ctx.send(embed=embed)
+            return await ctx.send(embed=embed)
+
+
+    @commands.command()
+    @commands.has_permissions(ban_members=True)
+    async def ban(self, ctx, member: User, *, reason: str = None):
+        db_guild = self.client.db.get_guild(ctx.guild)
+        if not member:
+            embed = Embed(
+                colour=Colour.ERROR, description=f"Unknown **{member.name}** !"
+            )
+            return await ctx.send(embed=embed)
+
+        try:
+            if db_guild["logs"]["moderation"]["active"]:
+                channel = ctx.guild.get_channel(db_guild["logs"]["moderation"]["channel_id"])
+                if channel:
+                    embed = Embed(colour=Colour.BAN, description="[`[unban]`](https://www.youtube.com/watch?v=dQw4w9WgXcQ)")
+                    embed.set_author(name=f"[BAN] {member.name}#{member.discriminator}", icon_url=self.client.utils.get_avatar_url(member))
+                    embed.add_field(name="User", value=f"<@{member.id}>", inline=True)
+                    embed.add_field(name="Moderator", value=f"<@{ctx.author.id}>", inline=True)
+                    embed.add_field(name="Channel", value=f"<#{ctx.channel.id}>", inline=True)
+                    embed.add_field(name="Reason", value=reason or "No reason.", inline=True)  
+
+                    await ctx.guild.ban(member)
+
+                    await channel.send(embed=embed)
         except Exception as exception:
             embed = Embed(
                 colour=Colour.ERROR,
