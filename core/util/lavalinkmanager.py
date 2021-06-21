@@ -13,12 +13,10 @@ class LavalinkManager:
             setattr(self, name, value)
 
     async def initialize_lavalink(self):
-        await lavalink.close()
         await lavalink.initialize(
             self.client,
             host=self.host,
             password=self.password,
-            rest_port=self.rest_port,
             ws_port=self.ws_port,
         )
 

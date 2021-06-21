@@ -19,7 +19,6 @@ class MusicCommandsManager:
             self.client,
             host=os.getenv("LAVALINK_HOST"),
             password=os.getenv("LAVALINK_PASS"),
-            rest_port=os.getenv("LAVALINK_PORT"),
             ws_port=os.getenv("LAVALINK_PORT"),
         )
 
@@ -37,7 +36,6 @@ class MusicCommandsManager:
         """
         Return if a user is in the same voice channel as the bot.
         :param ctx: context
-        :param music_client: lavalink.Player
         :return: True or False
         """
 
@@ -58,13 +56,13 @@ class MusicCommandsManager:
         :param ctx: context
         :return: String or lavalink.Player
         """
-
         music_client = self.get_client(ctx.guild.id)
 
         if music_client and music_client.channel:
             return "I'm already connected in a voice channel."
 
         if ctx.author.voice and ctx.author.voice.channel:
+            print("2")
             voice_channel = ctx.author.voice.channel
             await lavalink.connect(voice_channel)
         else:
