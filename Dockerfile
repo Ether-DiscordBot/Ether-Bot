@@ -1,1 +1,4 @@
-RUN main.py
+FROM python:latest
+WORKDIR /
+COPY .
+CMD ["test.py"]
