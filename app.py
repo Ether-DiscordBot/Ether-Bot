@@ -79,7 +79,6 @@ class Client(cmds.Bot):
         )
 
         self.musicCmd = MusicCommandsManager(self)
-        await self.musicCmd.init()
 
         self.db = Database()
 

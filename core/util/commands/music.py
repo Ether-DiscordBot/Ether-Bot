@@ -1,5 +1,7 @@
 import urllib.parse
+import discord
 import lavalink
+import wavelink
 
 from youtubesearchpython import VideosSearch
 from core.util.lavalinkmanager import LavalinkManager
@@ -12,25 +14,34 @@ import os
 class MusicCommandsManager:
     def __init__(self, client):
         self.client = client
-        self.lavalink = None
+    
+        
+        if not hasattr(client, 'wavelink'):
+            self.client.wavelink = wavelink.Client(bot=self.client)
 
-    async def init(self):
-        self.lavalink = LavalinkManager(
+        self.client.loop.create_task(self.start_nodes())
+        #self.lavalink = None
+
+    async def start_nodes(self):
+        """self.lavalink = LavalinkManager(
             self.client,
             host=os.getenv("LAVALINK_HOST"),
             password=os.getenv("LAVALINK_PASS"),
             ws_port=os.getenv("LAVALINK_PORT"),
-        )
+        )"""
 
-        await self.lavalink.initialize_lavalink()
+        await self.client.wait_until_ready()
 
-    def get_client(self, guild_id):
-        """
-        :param guild_id: the guild id
-        :return: lavalink.Player or None
-        """
+        # Initiate our nodes. For this example we will use one server.
+        # Region should be a discord.py guild.region e.g sydney or us_central (Though this is not technically required)
+        await self.client.wavelink.initiate_node(host=os.getenv("LAVALINK_HOST"),
+                                              port=os.getenv("LAVALINK_PORT"),
+                                              rest_uri=os.getenv("LAVALINK_HOST"),
+                                              password=os.getenv("LAVALINK_PASS"),
+                                              identifier='MOCHI',
+                                              region='eu')
 
-        return lavalink.get_player(guild_id=guild_id)
+        # await self.lavalink.initialize_lavalink()
 
     async def user_is_in_client_channel(self, ctx):
         """
@@ -39,7 +50,7 @@ class MusicCommandsManager:
         :return: True or False
         """
 
-        music_client = self.get_client(ctx.guild.id)
+        music_client = self.client.wavelink.get_player(ctx.guild.id)
 
         if music_client is None:
             await self.join_voice_channel(ctx)
@@ -51,24 +62,17 @@ class MusicCommandsManager:
 
         return False
 
-    async def join_voice_channel(self, ctx):
+    async def join_voice_channel(self, channel: discord.VoiceChannel=None):
         """
         :param ctx: context
         :return: String or lavalink.Player
         """
-        music_client = self.get_client(ctx.guild.id)
 
-        if music_client and music_client.channel:
-            return "I'm already connected in a voice channel."
+        if channel:
+            player = self.client.wavelink.get_player(channel.guild.id)
+            return await player.connect(channel.id)
 
-        if ctx.author.voice and ctx.author.voice.channel:
-            print("2")
-            voice_channel = ctx.author.voice.channel
-            await lavalink.connect(voice_channel)
-        else:
-            return "You must be connected to a voice channel."
-
-        return
+        return "You must be connected to a voice channel."
 
     async def play(self, ctx):
         """
@@ -76,7 +80,7 @@ class MusicCommandsManager:
         :return: True or None
         """
 
-        music_client = self.get_client(ctx.guild.id)
+        music_client = self.client.wavelink.get_player(ctx.guild.id)
 
         if music_client is None:
             music_client = await self.join_voice_channel(ctx)
@@ -92,7 +96,7 @@ class MusicCommandsManager:
         :return: True or None
         """
 
-        music_client = self.get_client(ctx.guild.id)
+        music_client = self.client.wavelink.get_player(ctx.guild.id)
 
         if music_client and music_client.channel:
             await music_client.skip()
@@ -118,7 +122,7 @@ class MusicCommandsManager:
         :param ctx: context
         :return: True or None
         """
-        music_client = self.get_client(ctx.guild.id)
+        music_client = self.client.wavelink.get_player(ctx.guild.id)
 
         if music_client.channel:
             await music_client.pause(pause=pause)
@@ -130,7 +134,7 @@ class MusicCommandsManager:
         :param ctx: context
         :return: True or False
         """
-        music_client = self.get_client(ctx.guild.id)
+        music_client = self.client.wavelink.get_player(ctx.guild.id)
 
         if music_client.channel:
             await music_client.disconnect()
@@ -142,10 +146,10 @@ class MusicCommandsManager:
         :return: True
         """
 
-        music_client = self.get_client(ctx.guild.id)
+        music_client = self.client.wavelink.get_player(ctx.guild.id)
 
         if music_client.channel:
-            music_client = self.get_client(ctx.guild.id)
+            music_client = self.client.wavelink.get_player(ctx.guild.id)
 
             tracks[0].channel = ctx.channel
 
@@ -177,7 +181,7 @@ class MusicCommandsManager:
         :param arg: argument (url or keyword.s)
         :return: Track or None
         """
-        music_client = self.get_client(ctx.guild.id)
+        music_client = self.client.wavelink.get_player(ctx.guild.id)
 
         domain = urllib.parse.urlsplit(arg).netloc
         if music_client.channel:
@@ -201,7 +205,7 @@ class MusicCommandsManager:
         :return: lavalink.Player.queue or None
         """
 
-        music_client = self.get_client(ctx.guild.id)
+        music_client = self.client.wavelink.get_player(ctx.guild.id)
 
         if music_client is not None:
             return music_client.queue

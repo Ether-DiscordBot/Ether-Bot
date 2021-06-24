@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands
 from discord import Embed
 
@@ -11,8 +12,8 @@ class Music(commands.Cog, name="music"):
 
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def join(self, ctx):
-        response = await self.client.musicCmd.join_voice_channel(ctx)
+    async def join(self, ctx, *, channel: discord.VoiceChannel=None):
+        response = await self.client.musicCmd.join_voice_channel(ctx.author.voice.channel)
 
         if isinstance(response, str):
             return await ctx.send(embed=Embed(description=response))
