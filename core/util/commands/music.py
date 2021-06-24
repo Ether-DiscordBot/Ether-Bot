@@ -20,20 +20,10 @@ class MusicCommandsManager:
             self.client.wavelink = wavelink.Client(bot=self.client)
 
         self.client.loop.create_task(self.start_nodes())
-        #self.lavalink = None
 
     async def start_nodes(self):
-        """self.lavalink = LavalinkManager(
-            self.client,
-            host=os.getenv("LAVALINK_HOST"),
-            password=os.getenv("LAVALINK_PASS"),
-            ws_port=os.getenv("LAVALINK_PORT"),
-        )"""
-
         await self.client.wait_until_ready()
 
-        # Initiate our nodes. For this example we will use one server.
-        # Region should be a discord.py guild.region e.g sydney or us_central (Though this is not technically required)
         await self.client.wavelink.initiate_node(host=os.getenv("LAVALINK_HOST"),
                                               port=os.getenv("LAVALINK_PORT"),
                                               rest_uri=os.getenv("LAVALINK_HOST"),
@@ -43,31 +33,22 @@ class MusicCommandsManager:
 
         # await self.lavalink.initialize_lavalink()
 
-    async def user_is_in_client_channel(self, ctx):
-        """
-        Return if a user is in the same voice channel as the bot.
-        :param ctx: context
-        :return: True or False
-        """
+    async def user_is_in_client_channel(self, ctx, try=5):
+        client = self.client.wavelink.get_player(ctx.guild.id)
 
-        music_client = self.client.wavelink.get_player(ctx.guild.id)
-
-        if music_client is None:
+        if client is None:
             await self.join_voice_channel(ctx)
-            return True
+            if try > 0:
+                return await self.user_is_in_client_channel(ctx, try=try-1)
+            return False
 
-        if music_client and music_client.channel:
-            if ctx.author.voice and ctx.author.voice.channel == music_client.channel:
+        if client and client.channel_ids:
+            if ctx.author.voice and ctx.author.voice.channel.id == client.channel_id:
                 return True
 
         return False
 
     async def join_voice_channel(self, channel: discord.VoiceChannel=None):
-        """
-        :param ctx: context
-        :return: String or lavalink.Player
-        """
-
         if channel:
             player = self.client.wavelink.get_player(channel.guild.id)
             return await player.connect(channel.id)
@@ -134,10 +115,9 @@ class MusicCommandsManager:
         :param ctx: context
         :return: True or False
         """
-        music_client = self.client.wavelink.get_player(ctx.guild.id)
+        client = self.client.wavelink.get_player(ctx.guild.id)
 
-        if music_client.channel:
-            await music_client.disconnect()
+        await client.disconnect()
 
     async def add_track_to_queue(self, ctx, tracks, arg):
         """
@@ -175,28 +155,17 @@ class MusicCommandsManager:
             return await ctx.send(embed=embed)
         return
 
-    async def search_track(self, ctx, arg, args):
+    async def search_track(self, ctx, query):
         """
         :param ctx: context
         :param arg: argument (url or keyword.s)
         :return: Track or None
         """
-        music_client = self.client.wavelink.get_player(ctx.guild.id)
+        client = self.client.wavelink.get_player(ctx.guild.id)
 
-        domain = urllib.parse.urlsplit(arg).netloc
-        if music_client.channel:
-            if domain != "" and ("youtube.com" in domain or "soundcloud.com" in domain):
-                load_result = await music_client.load_tracks(arg)
-                result = load_result.tracks
-                return result
-            if domain == "":
-                videos_search = VideosSearch(" ".join(args), limit=1)
-                url = videos_search.result()["result"][0]["link"]
-                result = []
-                track = await music_client.load_tracks(url)
-                if track and track.tracks and track.tracks[0]:
-                    result.append(track.tracks[0])
-                    return result
+        if client.channel:
+                track = await client.get_tracks(f"ytsearch:{query}").tracks
+                return track
         return None
 
     def get_queue(self, ctx):

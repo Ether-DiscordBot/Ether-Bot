@@ -22,15 +22,13 @@ class Music(commands.Cog, name="music"):
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def leave(self, ctx):
-        if await self.client.musicCmd.leave(ctx) is not None:
-            return await ctx.message.add_reaction("👋")
-        return
+        await self.client.musicCmd.leave(ctx)
+        return await ctx.message.add_reaction("👋")
 
     @commands.command()
     async def stop(self, ctx):
-        if await self.client.musicCmd.stop(ctx) is not None:
-            return await ctx.message.add_reaction("🛑")
-        return
+        await self.client.musicCmd.stop(ctx)
+        return await ctx.message.add_reaction("🛑")
 
     @commands.command()
     async def skip(self, ctx):
@@ -49,8 +47,9 @@ class Music(commands.Cog, name="music"):
             if is_in_client_channel:
                 if args:
                     track = await self.client.musicCmd.search_track(
-                        ctx=ctx, arg=args[0], args=args
+                        ctx=ctx, args=args
                     )
+                    print(track)
                     if track is not None:
                         await self.client.musicCmd.add_track_to_queue(
                             ctx, track, arg=args[0]
