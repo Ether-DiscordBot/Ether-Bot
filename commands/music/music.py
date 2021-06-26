@@ -1,8 +1,12 @@
+from core.util import colour
+from core.util.colour import Colour
+import os
 import discord
 from discord.ext import commands
 from discord import Embed
 
 import lavalink
+import wavelink
 
 
 class Music(commands.Cog, name="music"):
@@ -10,63 +14,98 @@ class Music(commands.Cog, name="music"):
         self.client = client
         self.fancy_name = "Music"
 
-    @commands.command()
+        if not hasattr(client, 'wavelink'):
+            self.client.wavelink = wavelink.Client(bot=self.client)
+
+        self.client.loop.create_task(self.start_nodes())
+    
+    async def start_nodes(self):
+        await self.client.wait_until_ready()
+    
+        await self.client.wavelink.initiate_node(host='127.0.0.1',
+                                              port=2333,
+                                              rest_uri='http://127.0.0.1:2333',
+                                              password="pxV58RF6f292N9NK",
+                                              identifier='TEST',
+                                              region='us_central')
+
+
+    @commands.command(name="join")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def join(self, ctx, *, channel: discord.VoiceChannel=None):
-        response = await self.client.musicCmd.join_voice_channel(ctx.author.voice.channel)
+    async def _connect(self, ctx, *, channel: discord.VoiceChannel=None):
+        if not channel:
+            try:
+                channel = ctx.author.voice.channel
+            except AttributeError:
+                return ctx.send(embed=Embed(description="Please join a channel.", colour=Colour.ERROR))
 
-        if isinstance(response, str):
-            return await ctx.send(embed=Embed(description=response))
-        return await ctx.message.add_reaction("👌")
+        player = self.client.wavelink.get_player(ctx.guild.id)
+        await player.connect(channel.id)
 
-    @commands.command()
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def leave(self, ctx):
-        await self.client.musicCmd.leave(ctx)
-        return await ctx.message.add_reaction("👋")
+        await ctx.message.add_reaction("👌")
+        return player
 
-    @commands.command()
-    async def stop(self, ctx):
-        await self.client.musicCmd.stop(ctx)
-        return await ctx.message.add_reaction("🛑")
 
-    @commands.command()
-    async def skip(self, ctx):
-        if await self.client.musicCmd.next_track(ctx) is not None:
-            await self.client.musicCmd.play(ctx)
-            return await ctx.message.add_reaction("⏭️")
-        return
+    @commands.command(name="leave")
+    async def _disconnect(self, ctx, *, channel: discord.VoiceChannel=None):
+        if not channel:
+            try:
+                channel = ctx.author.voice.channel
+            except AttributeError:
+                return await ctx.send(embed=Embed(description="You must be connected to a voice channel.", colour=Colour.ERROR))
+        
+        player = self.client.wavelink.get_player(ctx.guild.id)
+        if player.channel_id == channel.id:
+            await player.disconnect()
 
-    @commands.command(aliases=["p"])
-    @commands.cooldown(1, 2, commands.BucketType.user)
-    async def play(self, ctx, *args):
-        if ctx.author.voice and ctx.author.voice.channel:
-            is_in_client_channel = await self.client.musicCmd.user_is_in_client_channel(
-                ctx
-            )
-            if is_in_client_channel:
-                if args:
-                    track = await self.client.musicCmd.search_track(
-                        ctx=ctx, args=args
-                    )
-                    print(track)
-                    if track is not None:
-                        await self.client.musicCmd.add_track_to_queue(
-                            ctx, track, arg=args[0]
-                        )
-                        return await self.client.musicCmd.play(ctx)
-                    embed = Embed(description="Music not found", color=0xE74C3C)
-                    return await ctx.send(embed=embed)
-                return await self.client.musicCmd.play(ctx)
-            embed = Embed(
-                description="You must be connected in the same voice channel as the bot."
-            )
-        else:
-            embed = Embed(description="You must be connected to a voice channel.")
+            await ctx.message.add_reaction("👋")
+            return player
 
-        return await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(name="play", aliases=["p"])
+    async def _play(self, ctx, *, query: str):
+        if not ctx.author.voice:
+            return await ctx.send(embed=Embed(description="You must be connected to a voice channel.", colour=Colour.ERROR))
+
+        player = self.client.wavelink.get_player(ctx.guild.id)
+
+        if ctx.author.voice.channel.id != player.channel_id:
+            if player.is_playing:
+                return await ctx.send(embed=Embed(description="I'm already playing music in an other channel.", colour=Colour.ERROR))
+            
+            await ctx.invoke(self._connect)
+        
+        tracks = await self.client.wavelink.get_tracks(f'ytsearch:{query}')
+
+        if not tracks:
+            return await ctx.send('Could not find any songs with that query.')
+        if not player.is_connected:
+            await ctx.invoke(self.connect_)
+
+        await ctx.send(f'Added {str(tracks[0])} to the queue.')
+        await player.play(tracks[0], replace=player.position == 0)
+
+
+
+        #To Do
+
+
+
+    @commands.command(name="stop")
+    async def _stop(self, ctx):
+        if ctx.author.voice:
+            channel = ctx.author.voice.channel
+        
+        player = self.client.wavelink.get_player(ctx.guild.id)
+        if player.channel_id == channel.id:
+            await player.stop()
+
+            await ctx.message.add_reaction("🛑")
+            print(player.tracks)
+            return player
+
+
+    """@commands.command()
     @commands.cooldown(1, 2, commands.BucketType.user)
     async def queue(self, ctx):
         queue = self.client.musicCmd.get_queue(ctx)
@@ -117,12 +156,22 @@ class Music(commands.Cog, name="music"):
                 return await ctx.send(embed=embed)
         else:
             embed = Embed(description="You must be connected to a voice channel.")
-            return await ctx.send(embed=embed)
+            return await ctx.send(embed=embed)"""
 
     @commands.command()
     async def pause(self, ctx):
-        await self.client.musicCmd.pause(ctx, True)
+        player = self.client.wavelink.get_player(ctx.guild.id)
+        if not player.is_playing:
+            return await ctx.send(embed=Embed(description='I am not currently playing anything!', colour=Colour.ERROR), delete_after=15)
+
+        await ctx.send(embed=Embed(description='Pausing the song!', colour=Colour.DEFAULT), delete_after=15)
+        await player.set_pause(True)
 
     @commands.command()
     async def resume(self, ctx):
-        await self.client.musicCmd.pause(ctx, False)
+        player = self.client.wavelink.get_player(ctx.guild.id)
+        if not player.paused:
+            return await ctx.send(embed=Embed(description='I am not currently paused!', colour=Colour.ERROR), delete_after=15)
+
+        await ctx.send(embed=Embed(description='Resuming the player!', colour=Colour.DEFAULT), delete_after=15)
+        await player.set_pause(False)

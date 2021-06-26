@@ -20,7 +20,7 @@ load_dotenv()
 
 
 class App:
-    APP_VERSION = "0.0.5dev1"
+    APP_VERSION = "0.0.5dev2"
 
     def run():
         print(
@@ -78,7 +78,7 @@ class Client(cmds.Bot):
             os.getenv("REDDIT_PASS"),
         )
 
-        self.musicCmd = MusicCommandsManager(self)
+        self.musicCmd = await self.get_cog('music').start_nodes()
 
         self.db = Database()
 
@@ -114,6 +114,7 @@ class Client(cmds.Bot):
             await self.process_commands(ctx)
 
     async def on_command_error(self, ctx, error):
+        raise error
         ignored = (cmds.NoPrivateMessage, cmds.DisabledCommand, cmds.CheckFailure,
                    cmds.CommandNotFound, cmds.UserInputError, discord.HTTPException)
         error = getattr(error, 'original', error)
