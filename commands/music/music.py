@@ -104,7 +104,6 @@ class Music(commands.Cog, name="music"):
             await player.stop()
 
             await ctx.message.add_reaction("🛑")
-            print(player.tracks)
             return player
 
 
