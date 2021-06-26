@@ -5,6 +5,8 @@ import discord
 from discord.ext import commands
 from discord import Embed
 
+import requests
+
 import lavalink
 import wavelink
 
@@ -75,10 +77,16 @@ class Music(commands.Cog, name="music"):
             
             await ctx.invoke(self._connect)
         
-        tracks = await self.client.wavelink.get_tracks(f'ytsearch:{query}')
+        try:
+            requests.get(query)
+            tracks = await self.client.wavelink.get_tracks(query)
+        except requests.ConnectionError as exception:
+            return await ctx.send(embed=Embed(description='Invalid URL.', colour=Colour.ERROR), delete_after=15)
+        except requests.exceptions.InvalidURL as exception:
+            tracks = await self.client.wavelink.get_tracks(f'ytsearch:{query}')
 
         if not tracks:
-            return await ctx.send('Could not find any songs with that query.')
+            return await ctx.send(embed=Embed(description='Could not find any songs with that query.', colour=Colour.ERROR), delete_after=15)
         if not player.is_connected:
             await ctx.invoke(self.connect_)
 
