@@ -57,7 +57,7 @@ class Client(cmds.Bot):
         self.utils = utils.Utils
 
         super().__init__(
-            intents=discord.Intents.all(), command_prefix=self.prefix, help_command=None
+            command_prefix=self.prefix, help_command=None
         )
 
     async def load_extensions(self):
@@ -114,10 +114,11 @@ class Client(cmds.Bot):
             await self.process_commands(ctx)
 
     async def on_command_error(self, ctx, error):
-        raise error
         ignored = (cmds.NoPrivateMessage, cmds.DisabledCommand, cmds.CheckFailure,
                    cmds.CommandNotFound, cmds.UserInputError, discord.HTTPException)
         error = getattr(error, 'original', error)
 
         if isinstance(error, ignored):
             return
+        
+        raise error

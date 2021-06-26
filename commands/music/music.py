@@ -52,7 +52,7 @@ class Music(commands.Cog, name="music"):
             try:
                 channel = ctx.author.voice.channel
             except AttributeError:
-                return await ctx.send(embed=Embed(description="You must be connected to a voice channel.", colour=Colour.ERROR))
+                return await ctx.send(embed=Embed(description="You must be connected on a voice channel.", colour=Colour.ERROR))
         
         player = self.client.wavelink.get_player(ctx.guild.id)
         if player.channel_id == channel.id:
@@ -65,7 +65,7 @@ class Music(commands.Cog, name="music"):
     @commands.command(name="play", aliases=["p"])
     async def _play(self, ctx, *, query: str):
         if not ctx.author.voice:
-            return await ctx.send(embed=Embed(description="You must be connected to a voice channel.", colour=Colour.ERROR))
+            return await ctx.send(embed=Embed(description="You must be connected on a voice channel.", colour=Colour.ERROR))
 
         player = self.client.wavelink.get_player(ctx.guild.id)
 
@@ -86,11 +86,6 @@ class Music(commands.Cog, name="music"):
         await player.play(tracks[0], replace=player.position == 0)
 
 
-
-        #To Do
-
-
-
     @commands.command(name="stop")
     async def _stop(self, ctx):
         if ctx.author.voice:
@@ -103,6 +98,35 @@ class Music(commands.Cog, name="music"):
             await ctx.message.add_reaction("🛑")
             print(player.tracks)
             return player
+
+
+    @commands.command()
+    async def pause(self, ctx):
+        player = self.client.wavelink.get_player(ctx.guild.id)
+        if ctx.author.voice and ctx.author.voice.channel.id == player.channel_id:
+            if not player.is_playing:
+                return await ctx.send(embed=Embed(description='I am not currently playing anything!', colour=Colour.ERROR), delete_after=15)
+
+            await ctx.send(embed=Embed(description='Pausing the song!', colour=Colour.DEFAULT), delete_after=15)
+            await player.set_pause(True)
+        return
+
+    @commands.command()
+    async def resume(self, ctx):
+        player = self.client.wavelink.get_player(ctx.guild.id)
+        if ctx.author.voice and ctx.author.voice.channel.id == player.channel_id:
+            if not player.paused:
+                return await ctx.send(embed=Embed(description='I am not currently paused!', colour=Colour.ERROR), delete_after=15)
+
+            await ctx.send(embed=Embed(description='Resuming the player!', colour=Colour.DEFAULT), delete_after=15)
+            return await player.set_pause(False)
+
+        return
+  
+  
+        #To Do
+
+
 
 
     """@commands.command()
@@ -158,20 +182,3 @@ class Music(commands.Cog, name="music"):
             embed = Embed(description="You must be connected to a voice channel.")
             return await ctx.send(embed=embed)"""
 
-    @commands.command()
-    async def pause(self, ctx):
-        player = self.client.wavelink.get_player(ctx.guild.id)
-        if not player.is_playing:
-            return await ctx.send(embed=Embed(description='I am not currently playing anything!', colour=Colour.ERROR), delete_after=15)
-
-        await ctx.send(embed=Embed(description='Pausing the song!', colour=Colour.DEFAULT), delete_after=15)
-        await player.set_pause(True)
-
-    @commands.command()
-    async def resume(self, ctx):
-        player = self.client.wavelink.get_player(ctx.guild.id)
-        if not player.paused:
-            return await ctx.send(embed=Embed(description='I am not currently paused!', colour=Colour.ERROR), delete_after=15)
-
-        await ctx.send(embed=Embed(description='Resuming the player!', colour=Colour.DEFAULT), delete_after=15)
-        await player.set_pause(False)
