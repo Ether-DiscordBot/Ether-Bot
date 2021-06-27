@@ -1,17 +1,28 @@
-from core.util import colour
-from core.util.colour import Colour
-import os
 import discord
 from discord.ext import commands
 from discord import Embed
-
-import requests
-
-import lavalink
 import wavelink
+import re
+import asyncio
+import os
+
+from core.util import colour
+from core.util.colour import Colour
+
+URL_REG = re.compile(r'https?://(?:www\.)?.+')
 
 
-class Music(commands.Cog, name="music"):
+class Track(wavelink.Track):
+
+    __slots__ = ('requester', 'channel_id')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args)
+
+        self.requester = kwargs.get('requester') or None
+        self.channel_id = kwargs.get('channel_id') or None
+
+class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
     def __init__(self, client):
         self.client = client
         self.fancy_name = "Music"
@@ -21,6 +32,7 @@ class Music(commands.Cog, name="music"):
 
         self.client.loop.create_task(self.start_nodes())
     
+
     async def start_nodes(self):
         await self.client.wait_until_ready()
     
@@ -28,8 +40,23 @@ class Music(commands.Cog, name="music"):
                                               port=2333,
                                               rest_uri='http://127.0.0.1:2333',
                                               password="pxV58RF6f292N9NK",
-                                              identifier='TEST',
+                                              identifier='client',
                                               region='us_central')
+
+    
+    @wavelink.WavelinkMixin.listener()
+    async def on_track_start(self, node: wavelink.Node, payload):
+        print(payload.player.queue.qsize())
+        track = payload.player.queue._queue
+
+        print(track[0])
+
+
+    @wavelink.WavelinkMixin.listener()
+    async def on_track_end(self, node: wavelink.Node, payload):
+        if not payload.player.queue.empty():
+            payload.player.queue.task_done()
+            await payload.player.play(await payload.player.queue.get())
 
 
     @commands.command(name="join")
@@ -42,6 +69,7 @@ class Music(commands.Cog, name="music"):
                 return ctx.send(embed=Embed(description="Please join a channel.", colour=Colour.ERROR))
 
         player = self.client.wavelink.get_player(ctx.guild.id)
+        player.queue = asyncio.Queue(maxsize=100, loop=False)
         await player.connect(channel.id)
 
         await ctx.message.add_reaction("👌")
@@ -77,21 +105,26 @@ class Music(commands.Cog, name="music"):
             
             await ctx.invoke(self._connect)
         
-        try:
-            requests.get(query)
-            tracks = await self.client.wavelink.get_tracks(query)
-        except requests.ConnectionError as exception:
-            return await ctx.send(embed=Embed(description='Invalid URL.', colour=Colour.ERROR), delete_after=15)
-        except requests.exceptions.InvalidURL as exception:
+        if not URL_REG.match(query):            
             tracks = await self.client.wavelink.get_tracks(f'ytsearch:{query}')
+            if not tracks:
+                return await ctx.send(embed=Embed(description='Could not find any songs with that query.', colour=Colour.ERROR), delete_after=15)
+        else:
+            tracks = await self.client.wavelink.get_tracks(query)
+            if not tracks:    
+                return await ctx.send(embed=Embed(description='Invalid URL.', colour=Colour.ERROR), delete_after=15)
 
-        if not tracks:
-            return await ctx.send(embed=Embed(description='Could not find any songs with that query.', colour=Colour.ERROR), delete_after=15)
         if not player.is_connected:
             await ctx.invoke(self.connect_)
-
-        await ctx.send(f'Added {str(tracks[0])} to the queue.')
-        await player.play(tracks[0], replace=player.position == 0)
+        
+        track = Track(tracks[0].id, tracks[0].info, requester=ctx.author, channel_id=ctx.channel.id)
+        
+        await player.queue.put(track)
+        if not player.is_playing:
+            track = player.queue.get_nowait()
+            await player.play(track)
+            print(track.channel_id)
+        return track
 
 
     @commands.command(name="stop")
@@ -101,6 +134,9 @@ class Music(commands.Cog, name="music"):
         
         player = self.client.wavelink.get_player(ctx.guild.id)
         if player.channel_id == channel.id:
+            while player.queue.qsize() > 0:
+                await player.queue.get()
+                player.queue.task_done()
             await player.stop()
 
             await ctx.message.add_reaction("🛑")
@@ -129,7 +165,29 @@ class Music(commands.Cog, name="music"):
             return await player.set_pause(False)
 
         return
+    
+    @commands.command()
+    async def loop(self, ctx):
+        player = self.client.wavelink.get_player(ctx.guild.id)
+        if ctx.author.voice and ctx.author.voice.channel.id == player.channel_id:
+            player.queue._loop = not player.queue._loop
+            if player.queue._loop:
+                return await ctx.send(embed=Embed(description='Queue is looping!', colour=Colour.DEFAULT), delete_after=15)
+            return await ctx.send(embed=Embed(description='Queue is no longer looping!', colour=Colour.DEFAULT), delete_after=15)
+
+        return
   
+    @commands.command(name="skip")
+    async def _skip(self, ctx):
+        if ctx.author.voice:
+            channel = ctx.author.voice.channel
+        
+        player = self.client.wavelink.get_player(ctx.guild.id)
+        if player.channel_id == channel.id:
+            await player.stop()
+
+            await ctx.message.add_reaction("⏭️")
+            return player
   
         #To Do
 
@@ -188,4 +246,3 @@ class Music(commands.Cog, name="music"):
         else:
             embed = Embed(description="You must be connected to a voice channel.")
             return await ctx.send(embed=embed)"""
-
