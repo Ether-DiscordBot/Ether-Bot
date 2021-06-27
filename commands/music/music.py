@@ -9,6 +9,7 @@ import wavelink
 import re
 import asyncio
 import os
+import random
 
 from wavelink.player import TrackPlaylist
 import humanize
@@ -118,11 +119,11 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
         if not URL_REG.match(query):            
             tracks = await self.client.wavelink.get_tracks(f'ytsearch:{query}')
             if not tracks:
-                return await ctx.send(embed=Embed(description='Could not find any songs with that query.', colour=Colour.ERROR), delete_after=15)
+                return await ctx.send(embed=Embed(description='Could not find any songs with that query.', colour=Colour.ERROR), delete_after=10)
         else:
             tracks = await self.client.wavelink.get_tracks(query)
             if not tracks:    
-                return await ctx.send(embed=Embed(description='Invalid URL.', colour=Colour.ERROR), delete_after=15)
+                return await ctx.send(embed=Embed(description='Invalid URL.', colour=Colour.ERROR), delete_after=10)
 
         if not player.is_connected:
             await ctx.invoke(self.connect_)
@@ -168,9 +169,9 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
         player = self.client.wavelink.get_player(ctx.guild.id)
         if ctx.author.voice and ctx.author.voice.channel.id == player.channel_id:
             if not player.is_playing:
-                return await ctx.send(embed=Embed(description='I am not currently playing anything!', colour=Colour.ERROR), delete_after=15)
+                return await ctx.send(embed=Embed(description='I am not currently playing anything!', colour=Colour.ERROR), delete_after=10)
 
-            await ctx.send(embed=Embed(description='Pausing the song!', colour=Colour.DEFAULT), delete_after=15)
+            await ctx.send(embed=Embed(description='Pausing the song!', colour=Colour.DEFAULT), delete_after=10)
             await player.set_pause(True)
         return
 
@@ -179,9 +180,9 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
         player = self.client.wavelink.get_player(ctx.guild.id)
         if ctx.author.voice and ctx.author.voice.channel.id == player.channel_id:
             if not player.paused:
-                return await ctx.send(embed=Embed(description='I am not currently paused!', colour=Colour.ERROR), delete_after=15)
+                return await ctx.send(embed=Embed(description='I am not currently paused!', colour=Colour.ERROR), delete_after=10)
 
-            await ctx.send(embed=Embed(description='Resuming the player!', colour=Colour.DEFAULT), delete_after=15)
+            await ctx.send(embed=Embed(description='Resuming the player!', colour=Colour.DEFAULT), delete_after=10)
             return await player.set_pause(False)
 
         return
@@ -192,8 +193,8 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
         if ctx.author.voice and ctx.author.voice.channel.id == player.channel_id:
             player.queue._loop = not player.queue._loop
             if player.queue._loop:
-                return await ctx.send(embed=Embed(description='Queue is looping!', colour=Colour.DEFAULT), delete_after=15)
-            return await ctx.send(embed=Embed(description='Queue is no longer looping!', colour=Colour.DEFAULT), delete_after=15)
+                return await ctx.send(embed=Embed(description='Queue is looping!', colour=Colour.DEFAULT), delete_after=10)
+            return await ctx.send(embed=Embed(description='Queue is no longer looping!', colour=Colour.DEFAULT), delete_after=10)
 
         return
   
@@ -208,6 +209,19 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
 
             await ctx.message.add_reaction("⏭️")
             return player
+
+    
+    @commands.command(name="shuffle")
+    async def _shuffle(self, ctx):
+        if ctx.author.voice:
+            channel = ctx.author.voice.channel
+        
+        player = self.client.wavelink.get_player(ctx.guild.id)
+        if player.channel_id == channel.id:
+            random.shuffle(player.queue._queue)
+
+            await ctx.send(embed=Embed(description='Queue has been shuffled!', colour=Colour.DEFAULT), delete_after=10)
+            return player.queue._queue
     
   
     @commands.command(name="queue", aliases=["q", "list"])
@@ -225,8 +239,8 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
             for track in player.queue._queue:
                 if track != player.current and player.queue._queue.index(track) < 10:
                     title = track.title
-                    if len(track.title) > 45:
-                        title = title[0: 41] + " ..."
+                    if len(track.title) > 35:
+                        title = title[0: 32] + " ..."
                     next_track_label.append(f"`{player.queue._queue.index(track)+2}.` [{title}]({track.uri}) | `{datetime.timedelta(milliseconds=track.length)}`"),
 
             embed.add_field(
