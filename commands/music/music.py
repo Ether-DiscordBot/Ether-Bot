@@ -2,6 +2,7 @@ from sys import maxsize
 import discord
 from discord.ext import commands
 from discord import Embed
+from humanize.time import precisedelta
 from jedi.inference import value
 from traitlets.utils import descriptions
 import wavelink
@@ -238,55 +239,32 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
 
 
 
-    """@commands.command()
-    @commands.cooldown(1, 2, commands.BucketType.user)
+    @commands.command(name="queue", aliases=["q", "list"])
     async def queue(self, ctx):
-        queue = self.client.musicCmd.get_queue(ctx)
-
-        if ctx.author.voice and ctx.author.voice.channel:
-            is_in_client_channel = await self.client.musicCmd.user_is_in_client_channel(
-                ctx
+        player = self.client.wavelink.get_player(ctx.guild.id)
+        if ctx.author.voice and ctx.author.voice.channel.id == player.channel_id:
+            embed = Embed(title=":notes: Queue:")
+            print(datetime.timedelta(milliseconds=player.current.length))
+            embed.add_field(
+                name="Now Playing:",
+                value=f"`1.` [{player.current.title}]({player.current.uri[0: 30]}) | `{datetime.timedelta(milliseconds=player.current.length)}`",
+                inline=False
             )
-            if is_in_client_channel:
-                music_client = self.client.musicCmd.get_client(ctx.guild.id)
-                if music_client.current is None and queue is None:
-                    return
-                if music_client.current is not None:
-                    message = "# Current track: \n" "1.  {0.title} [{1}]\n".format(
-                        music_client.current,
-                        lavalink.utils.format_time(music_client.current.length),
-                    )
-                    if len(queue) > 0:
-                        message += "\n# Queue: \n"
-                        index = 1
-                        for track in queue:
-                            index += 1
-                            if index == 10:
-                                if len(queue) > 10:
-                                    message += "{0}. {1.title} [{2}]\n...".format(
-                                        index,
-                                        track,
-                                        lavalink.utils.format_time(track.length),
-                                    )
-                                else:
-                                    message += "{0}. {1.title} [{2}]\n".format(
-                                        index,
-                                        track,
-                                        lavalink.utils.format_time(track.length),
-                                    )
-                                break
-                            message += "{0}.  {1.title} [{2}]\n".format(
-                                index,
-                                track,
-                                lavalink.utils.format_time(track.length),
-                            )
 
-                    return await ctx.send(f"```glsl\n {message}```")
-            else:
-                embed = Embed(
-                    description="You must be connected in the same voice channel as the bot."
-                )
-                return await ctx.send(embed=embed)
-        else:
-            embed = Embed(description="You must be connected to a voice channel.")
-            return await ctx.send(embed=embed)"""
+            next_track_label = []
+            for track in player.queue._queue:
+                if track != player.current and player.queue._queue.index(track) < 10:
+                    title = track.title
+                    if len(track.title) > 45:
+                        title = title[0: 41] + " ..."
+                    next_track_label.append(f"`{player.queue._queue.index(track)+2}.` [{title}]({track.uri}) | `{datetime.timedelta(milliseconds=track.length)}`"),
+
+            embed.add_field(
+                name="Next 10 Tracks:",
+                value="\n".join(next_track_label),
+                inline=False
+            )
+            
+            await ctx.send(embed=embed)
+                
+        return
