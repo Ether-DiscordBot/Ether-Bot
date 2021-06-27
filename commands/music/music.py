@@ -244,7 +244,6 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
         player = self.client.wavelink.get_player(ctx.guild.id)
         if ctx.author.voice and ctx.author.voice.channel.id == player.channel_id:
             embed = Embed(title=":notes: Queue:")
-            print(datetime.timedelta(milliseconds=player.current.length))
             embed.add_field(
                 name="Now Playing:",
                 value=f"`1.` [{player.current.title}]({player.current.uri[0: 30]}) | `{datetime.timedelta(milliseconds=player.current.length)}`",
