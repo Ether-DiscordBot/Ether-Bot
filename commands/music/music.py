@@ -1,10 +1,17 @@
+from sys import maxsize
 import discord
 from discord.ext import commands
 from discord import Embed
+from jedi.inference import value
+from traitlets.utils import descriptions
 import wavelink
 import re
 import asyncio
 import os
+
+from wavelink.player import TrackPlaylist
+import humanize
+import datetime
 
 from core.util import colour
 from core.util.colour import Colour
@@ -14,13 +21,14 @@ URL_REG = re.compile(r'https?://(?:www\.)?.+')
 
 class Track(wavelink.Track):
 
-    __slots__ = ('requester', 'channel_id')
+    __slots__ = ('requester', 'channel_id', 'message')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args)
 
         self.requester = kwargs.get('requester') or None
         self.channel_id = kwargs.get('channel_id') or None
+        self.message = None
 
 class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
     def __init__(self, client):
@@ -46,17 +54,18 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
     
     @wavelink.WavelinkMixin.listener()
     async def on_track_start(self, node: wavelink.Node, payload):
-        print(payload.player.queue.qsize())
-        track = payload.player.queue._queue
+        track = payload.player.current
+        channel = self.client.get_channel(track.channel_id)
 
-        print(track[0])
-
+        payload.player.message = await channel.send(embed=Embed(description=f"Now Playing **[{track.title}]({track.uri})**!", colour=Colour.DEFAULT))
+        
 
     @wavelink.WavelinkMixin.listener()
-    async def on_track_end(self, node: wavelink.Node, payload):
+    async def on_track_end(self, node: wavelink.Node, payload:wavelink.events.TrackEnd):
         if not payload.player.queue.empty():
             payload.player.queue.task_done()
             await payload.player.play(await payload.player.queue.get())
+        await payload.player.message.delete()
 
 
     @commands.command(name="join")
@@ -116,15 +125,25 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
 
         if not player.is_connected:
             await ctx.invoke(self.connect_)
-        
-        track = Track(tracks[0].id, tracks[0].info, requester=ctx.author, channel_id=ctx.channel.id)
-        
-        await player.queue.put(track)
+
+        if isinstance(tracks, TrackPlaylist):
+            for t in tracks.tracks:
+                track = Track(t.id, t.info, requester=ctx.author, channel_id=ctx.channel.id)
+                await player.queue.put(track)
+            await ctx.send(embed=Embed(description=f"**[{len(tracks.tracks)} tracks]({query})** added to queue!", colour=Colour.DEFAULT))
+        else:
+            track = Track(tracks[0].id, tracks[0].info, requester=ctx.author, channel_id=ctx.channel.id)
+            await player.queue.put(track)
+
         if not player.is_playing:
             track = player.queue.get_nowait()
             await player.play(track)
-            print(track.channel_id)
-        return track
+        else:
+            if isinstance(tracks, TrackPlaylist):
+                return tracks.tracks
+            
+            await ctx.send(embed=Embed(description=f"Track added to queue: **[{track.title}]({track.uri})**", colour=Colour.DEFAULT))
+            return track
 
 
     @commands.command(name="stop")
@@ -188,6 +207,31 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
 
             await ctx.message.add_reaction("⏭️")
             return player
+    
+    @commands.command(name="lavalinkinfo")
+    async def info(self, ctx):
+        player = self.client.wavelink.get_player(ctx.guild.id)
+        node = player.node
+
+        used = humanize.naturalsize(node.stats.memory_used)
+        total = humanize.naturalsize(node.stats.memory_allocated)
+        free = humanize.naturalsize(node.stats.memory_free)
+        cpu = node.stats.cpu_cores
+
+        embed = Embed(title=f'**WaveLink:** `{wavelink.__version__}`', colour=Colour.DEFAULT)
+
+        embed.add_field(name="Node", value=f'Connected to `{len(self.client.wavelink.nodes)}` nodes.\n' \
+              f'Best available Node `{self.client.wavelink.get_best_node().__repr__()}`\n' \
+              f'`{len(self.client.wavelink.players)}` players are distributed on nodes.\n' \
+              f'`{node.stats.players}` players are distributed on server.\n' \
+              f'`{node.stats.playing_players}` players are playing on server.')
+        
+        embed.add_field(name="Server", value=f'Server Memory: `{used}/{total}` | `({free} free)`\n' \
+              f'Server CPU: `{cpu}`\n' \
+              f'Server Uptime: `{datetime.timedelta(milliseconds=node.stats.uptime)}`',
+              inline=False)
+
+        await ctx.send(embed=embed)
   
         #To Do
 
