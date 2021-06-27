@@ -209,32 +209,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
             await ctx.message.add_reaction("⏭️")
             return player
     
-    @commands.command(name="lavalinkinfo")
-    async def info(self, ctx):
-        player = self.client.wavelink.get_player(ctx.guild.id)
-        node = player.node
-
-        used = humanize.naturalsize(node.stats.memory_used)
-        total = humanize.naturalsize(node.stats.memory_allocated)
-        free = humanize.naturalsize(node.stats.memory_free)
-        cpu = node.stats.cpu_cores
-
-        embed = Embed(title=f'**WaveLink:** `{wavelink.__version__}`', colour=Colour.DEFAULT)
-
-        embed.add_field(name="Node", value=f'Connected to `{len(self.client.wavelink.nodes)}` nodes.\n' \
-              f'Best available Node `{self.client.wavelink.get_best_node().__repr__()}`\n' \
-              f'`{len(self.client.wavelink.players)}` players are distributed on nodes.\n' \
-              f'`{node.stats.players}` players are distributed on server.\n' \
-              f'`{node.stats.playing_players}` players are playing on server.')
-        
-        embed.add_field(name="Server", value=f'Server Memory: `{used}/{total}` | `({free} free)`\n' \
-              f'Server CPU: `{cpu}`\n' \
-              f'Server Uptime: `{datetime.timedelta(milliseconds=node.stats.uptime)}`',
-              inline=False)
-
-        await ctx.send(embed=embed)
   
-
     @commands.command(name="queue", aliases=["q", "list"])
     async def queue(self, ctx):
         player = self.client.wavelink.get_player(ctx.guild.id)
@@ -263,3 +238,29 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
             await ctx.send(embed=embed)
                 
         return
+
+
+    @commands.command(name="lavalinkinfo")
+    async def info(self, ctx):
+        player = self.client.wavelink.get_player(ctx.guild.id)
+        node = player.node
+
+        used = humanize.naturalsize(node.stats.memory_used)
+        total = humanize.naturalsize(node.stats.memory_allocated)
+        free = humanize.naturalsize(node.stats.memory_free)
+        cpu = node.stats.cpu_cores
+
+        embed = Embed(title=f'**WaveLink:** `{wavelink.__version__}`', colour=Colour.DEFAULT)
+
+        embed.add_field(name="Node", value=f'Connected to `{len(self.client.wavelink.nodes)}` nodes.\n' \
+              f'Best available Node `{self.client.wavelink.get_best_node().__repr__()}`\n' \
+              f'`{len(self.client.wavelink.players)}` players are distributed on nodes.\n' \
+              f'`{node.stats.players}` players are distributed on server.\n' \
+              f'`{node.stats.playing_players}` players are playing on server.')
+        
+        embed.add_field(name="Server", value=f'Server Memory: `{used}/{total}` | `({free} free)`\n' \
+              f'Server CPU: `{cpu}`\n' \
+              f'Server Uptime: `{datetime.timedelta(milliseconds=node.stats.uptime)}`',
+              inline=False)
+
+        await ctx.send(embed=embed)
