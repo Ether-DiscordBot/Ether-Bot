@@ -234,10 +234,6 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
 
         await ctx.send(embed=embed)
   
-        #To Do
-
-
-
 
     @commands.command(name="queue", aliases=["q", "list"])
     async def queue(self, ctx):
