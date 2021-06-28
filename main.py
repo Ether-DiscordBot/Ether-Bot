@@ -1,4 +1,4 @@
 from app import App
 
-if "__main__" == __name__:
+if __name__ == "__main__":
     mochi = App.run()

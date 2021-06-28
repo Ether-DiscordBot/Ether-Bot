@@ -17,16 +17,16 @@ class Database(object):
     # USER
 
     def get_user(self, user, guild=None):
-        if not user.bot:
-            db_user = self.db.users.find_one({"id": user.id})
-            if guild:
-                db_gm = self.get_guild_member(guild, user)
-                if not db_gm:
-                    self.insert_member_guild(guild, user)
-            if db_user:
-                return db_user
-            return self.create_user(user)
-        return False
+        if user.bot:
+            return False
+        db_user = self.db.users.find_one({"id": user.id})
+        if guild:
+            db_gm = self.get_guild_member(guild, user)
+            if not db_gm:
+                self.insert_member_guild(guild, user)
+        if db_user:
+            return db_user
+        return self.create_user(user)
 
     def create_user(self, user):
         if not user.bot:
