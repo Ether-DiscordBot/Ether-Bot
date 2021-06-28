@@ -23,17 +23,17 @@ Only **Windows** is supported for now.
 [Warning] The bot is still in development, come back later to have all the installation steps.
 
  - Install [Lavalink](https://github.com/Frederikam/Lavalink) and create an application.yml file in the main directory.
- - Install all the dependencies
+ - Install all the dependencies in the `requirements.txt`
  - And put the key-values in a .env file (follow the .env.example)
 
-To use the bot:
+To run the bot:
 
 ```
 java -jar Lavalink.jar
 ```
 
 ```
-python mochibot
+python -m mochi
 ```
 
 ## License
