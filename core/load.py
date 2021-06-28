@@ -12,11 +12,12 @@ class LoaderManager:
         path = "commands/"
         banned_dir = ["__pycache__"]
         name = "__init__.py"
-        paths = []
+        paths = [
+            os.path.join(path, _dir)
+            for _dir in os.listdir(path)
+            if os.path.isdir(os.path.join(path, _dir)) and _dir not in banned_dir
+        ]
 
-        for _dir in os.listdir(path):
-            if os.path.isdir(os.path.join(path, _dir)) and _dir not in banned_dir:
-                paths.append(os.path.join(path, _dir))
 
         for path in paths:
             listdir = os.listdir(path)

@@ -37,17 +37,20 @@ class LavalinkManager:
                 )
                 message = await track.channel.send(embed=embed)
                 track.start_message = message
-                if not len(player.queue) > 1:
+                if len(player.queue) <= 1:
                     player.store("m_msg", message)
 
         if event_type == lavalink.LavalinkEvents.TRACK_END:
             msg = player.fetch("m_msg")
             if (
-                extra == lavalink.TrackEndReason.FINISHED
-                or extra == lavalink.TrackEndReason.REPLACED
+                extra
+                in [
+                    lavalink.TrackEndReason.FINISHED,
+                    lavalink.TrackEndReason.REPLACED,
+                ]
+                and msg
             ):
-                if msg:
-                    await msg.delete()
+                await msg.delete()
 
             if len(player.queue):
                 await player.stop()
