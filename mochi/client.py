@@ -1,3 +1,4 @@
+from mochi.core import *
 import discord
 from discord.ext import commands as cmds
 from discord.ext.commands.errors import (
@@ -7,14 +8,12 @@ from discord.ext.commands.errors import (
     CommandOnCooldown,
     MissingRequiredArgument,
 )
-from discord_slash import SlashCommand
-from discord_slash.utils.manage_commands import create_option, create_choice
 from discord import Embed
 import os
 from dotenv import load_dotenv
 import random
 
-from core import *
+from mochi.core import *
 
 load_dotenv()
 
@@ -54,7 +53,7 @@ class Client(cmds.Bot):
         self.musicCmd = None
         self.redditCmd = None
 
-        self.utils = utils.Utils
+        self.utils = Utils
 
         super().__init__(
             command_prefix=self.prefix, help_command=None

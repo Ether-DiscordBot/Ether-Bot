@@ -1,22 +1,16 @@
-from sys import maxsize
 import discord
 from discord.ext import commands
 from discord import Embed
-from humanize.time import precisedelta
-from jedi.inference import value
-from traitlets.utils import descriptions
 import wavelink
 import re
 import asyncio
 import os
 import random
-
 from wavelink.player import TrackPlaylist
 import humanize
 import datetime
 
-from core.util import colour
-from core.util.colour import Colour
+from mochi import Colour
 
 URL_REG = re.compile(r'https?://(?:www\.)?.+')
 

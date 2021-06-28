@@ -1,7 +1,6 @@
-from core import Colour
+from mochi import Colour
 from discord import Embed, User, utils
 from discord.ext import commands
-from discord_slash import cog_ext, SlashContext
 
 
 class Admin(commands.Cog, name="admin"):
