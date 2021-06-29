@@ -15,14 +15,11 @@ For the moment only this feature is available:
 ### Admin
 - Kick ✅, Ban ✅, Mute ❌, Unban ❌, Unmute ❌
 ### Image
-- Meme ✅, Cat ✅, Dog ✅, Aww ✅, Sadcat ✅,
-    Fans ✅, axolotl ✅
+- Meme ✅, Cat ✅, Dog ✅, Aww ✅, Sadcat ✅, Fans ✅, axolotl ✅
 ### Misc
 - Help ✅, Ping ✅, Avatar ✅, Flipcoin ✅
 ### Music
-- Join ✅, Leave ✅, Play ✅, Stop ✅, Pause ✅,
-    Resume ✅, Loop ✅, Skip ✅, Shuffle ✅, Queue ✅,
-    Lavalinkinfo ✅, Search ❌
+- Join ✅, Leave ✅, Play ✅, Stop ✅, Pause ✅, Resume ✅, Loop ✅, Skip ✅, Shuffle ✅, Queue ✅, Lavalinkinfo ✅, Search ❌
 ## Installation
 
 Only **Windows** is supported for now.
