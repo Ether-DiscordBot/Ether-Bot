@@ -57,11 +57,11 @@ Only **Windows** is supported for now.
 To run the bot:
 
 ```
-java -jar Lavalink.jar
+$ java -jar Lavalink.jar
 ```
 
 ```
-python -m mochi
+$ python -m mochi
 ```
 
 ## License
