@@ -1,8 +1,0 @@
-build:
-  docker:
-    web: Dockerfile
-    worker: worker/Dockerfile
-release:
-  image: worker
-  command:
-    - python -m mochi
