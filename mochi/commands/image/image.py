@@ -59,7 +59,7 @@ class Image(commands.Cog, name="image"):
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
-    async def fan(self, ctx):
+    async def fans(self, ctx):
         memes_subreddit = "onlyfans"
         error_message = "😕 We are sorry, we have done a lot of research but we can't find any fans pics."
         await self.return_rep(ctx, memes_subreddit, error_message)
