@@ -3,6 +3,7 @@ application:
   name: "mochi"
   project: "mochi"
   organization: "QoveryCommunity"
+  dockerfile: null
 routers:
 - name: "main-mochi"
   routes:
