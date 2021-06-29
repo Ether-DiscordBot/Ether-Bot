@@ -12,14 +12,14 @@ Mochi is in the very early stages of development, many of the features are not t
 
 For the moment only this feature is available:
 
-### Admin
+- Admin
     Kick ✅, Ban ✅, Mute ❌, Unban ❌, Unmute ❌
-### Image
+- Image
     Meme ✅, Cat ✅, Dog ✅, Aww ✅, Sadcat ✅,
     Fans ✅, axolotl ✅
-### Misc
+- Misc
     Help ✅, Ping ✅, Avatar ✅, Flipcoin ✅
-### Music
+- Music
     Join ✅, Leave ✅, Play ✅, Stop ✅, Pause ✅,
     Resume ✅, Loop ✅, Skip ✅, Shuffle ✅, Queue ✅,
     Lavalinkinfo ✅, Search ❌
