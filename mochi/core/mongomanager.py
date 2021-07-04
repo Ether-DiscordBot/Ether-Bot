@@ -59,7 +59,7 @@ class Database(object):
     # GUILD
 
     def get_guild(self, guild):
-        db_guild = self.db.guilds.find_one({"id": guild.id})
+        db_guild = self.db.guilds.find_one({"id": str(guild.id)})
         if db_guild:
             return db_guild
         return self.create_guild(guild)
@@ -67,8 +67,8 @@ class Database(object):
     def create_guild(self, guild):
         self.db.guilds.insert_one(
             {
-                "id": guild.id,
-                "prefix": self.default_prefix,
+                "id": str(guild.id),
+                "prefix": [self.default_prefix],
                 "premium": False,
                 "logs": {
                     "join": {
@@ -95,7 +95,7 @@ class Database(object):
         return self.get_guild(guild)
 
     def update_guild(self, guild, key, value):
-        self.db.guilds.update_one({"id": guild.id}, {"$set": {key: value}})
+        self.db.guilds.update_one({"id": str(guild.id)}, {"$set": {key: value}})
 
     def insert_member_guild(self, guild, user):
         members_array = self.get_guild(guild)["members"]
@@ -111,6 +111,6 @@ class Database(object):
 
     def update_guild_member(self, guild, user, key, value):
         self.db.guilds.update_one(
-            {"id": guild.id, "members.id": user.id},
+            {"id": str(guild.id), "members.id": user.id},
             {"$set": {("members.$." + key): value}},
         )

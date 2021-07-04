@@ -8,6 +8,7 @@ from discord.ext.commands.errors import (
     CommandOnCooldown,
     MissingRequiredArgument,
 )
+from discord.ext.commands import when_mentioned_or
 from discord import Embed
 import os
 from dotenv import load_dotenv
@@ -16,6 +17,10 @@ import random
 from mochi.core import *
 
 load_dotenv()
+
+def get_prefix(client, message):
+    guild = client.db.get_guild(message.guild)
+    return when_mentioned_or(os.getenv("BASE_PREFIX"))(client, message) + guild['prefix']
 
 
 class App:
@@ -35,7 +40,7 @@ class App:
         print(f"\tVersion:\t{App.APP_VERSION}\n")
 
         client = Client(
-            prefix=os.getenv("BASE_PREFIX"),
+            prefix=get_prefix,
             token=os.getenv("BOT_TOKEN"),
         )
 
