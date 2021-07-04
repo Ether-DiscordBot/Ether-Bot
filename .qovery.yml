@@ -1,12 +1,10 @@
----
 application:
-  name: "mochi"
-  project: "mochi"
-  organization: "QoveryCommunity"
-  dockerfile: null
+  name: mochi
+  project: mochi
+  publicly_accessible: true
 routers:
-- name: "main-mochi"
+- name: main
   routes:
-  - application_name: "mochi"
+  - application_name: mochi
     paths:
-    - "/*"
+    - /*
