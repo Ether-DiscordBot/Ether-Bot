@@ -14,50 +14,6 @@ class Database(object):
         for collection in self.db.list_collection_names():
             print(f"\tFind collection => {collection}")
 
-    # USER
-
-    def get_user(self, user, guild=None):
-        if user.bot:
-            return False
-        db_user = self.db.users.find_one({"id": user.id})
-        if guild:
-            db_gm = self.get_guild_member(guild, user)
-            if not db_gm:
-                self.insert_member_guild(guild, user)
-        if db_user:
-            return db_user
-        return self.create_user(user)
-
-    def create_user(self, user):
-        if not user.bot:
-            self.db.users.insert_one(
-                {
-                    "id": user.id,
-                    "exp": 0,
-                    "level": 0,
-                }
-            )
-
-        return self.get_user(user)
-
-    def update_user(self, user, key, value):
-        self.db.users.update_one({"id": user.id}, {"$set": {key: value}})
-
-    def add_exp(self, user, guild, value):
-        if not user.bot:
-            db_user = self.get_user(user, guild)
-            db_gm = self.get_guild_member(guild, user)
-            self.update_user(user, "exp", db_user["exp"] + value)
-            self.update_guild_member(guild, user, "exp", db_gm["exp"] + value)
-
-    def set_birthday(self, user, birthday):
-        self.update_user(user, "birthday", birthday)
-
-    def set_sex(self, user, sex):
-        self.update_user(user, "sex", sex)
-
-    # GUILD
-
     def get_guild(self, guild):
         db_guild = self.db.guilds.find_one({"id": str(guild.id)})
         if db_guild:
@@ -86,9 +42,8 @@ class Database(object):
                     "moderation": {
                         "channel_id": guild.text_channels[0].id,
                         "active": False,
-                    },
-                },
-                "members": [],
+                    }
+                }
             }
         )
 
@@ -97,20 +52,22 @@ class Database(object):
     def update_guild(self, guild, key, value):
         self.db.guilds.update_one({"id": str(guild.id)}, {"$set": {key: value}})
 
-    def insert_member_guild(self, guild, user):
-        members_array = self.get_guild(guild)["members"]
-        members_array.append({"id": user.id, "exp": 0, "level": 0})
-        self.update_guild(guild, "members", members_array)
+    def get_user(self, guild, user):
+        user = self.db.users.find_one({"gid": str(guild.id), "uid": str(user.id)})
+        if user:
+            return user
+        return self.create_guild(guild, user)
 
-    def get_guild_member(self, guild, user):
-        members = self.get_guild(guild)["members"]
-        for m in members:
-            if m["id"] == user.id:
-                return m
-        return None
-
-    def update_guild_member(self, guild, user, key, value):
-        self.db.guilds.update_one(
-            {"id": str(guild.id), "members.id": user.id},
-            {"$set": {("members.$." + key): value}},
+    def create_user(self, guild, user):
+        self.db.users.insert_one(
+            {
+                "gid": str(guild.id),
+                "uid": str(user.id),
+                "exp": 0,
+                "lvl": 0
+            }
         )
+        return self.get_user(guild, user)
+
+    def update_user(self, guild, user, key, value):
+        self.db.users.update_one({"gid": str(guild.id), "uid": str(user.id)}, {"$set": {key: value}})
