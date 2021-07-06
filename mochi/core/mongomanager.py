@@ -10,8 +10,8 @@ class Database(object):
             self.db = client["dbot"]
             if self.db:
                 print("\n\tMongoDB logged")
-                for collection in self.db.list_collection_names():
-                    print(f"\tFind collection => {collection}")
+                #for collection in self.db.list_collection_names():
+                #   print(f"\tFind collection => {collection}")
         except error:
             print("Failed to connect mongoDB")
 
