@@ -108,14 +108,15 @@ class Client(cmds.Bot):
                     )
 
     async def on_message(self, ctx):
-        self.db.get_guild(ctx.guild)
-        self.db.get_user(ctx.guild, ctx.author)
-        if not ctx.author.bot:
-            random.seed()
-            if random.randint(1, 100) <= 37:
-                self.db.update_user(ctx.guild, ctx.author, "exp", 5)
+        if self.db:
+            self.db.get_guild(ctx.guild)
+            self.db.get_user(ctx.guild, ctx.author)
+            if not ctx.author.bot:
+                random.seed()
+                if random.randint(1, 100) <= 37:
+                    self.db.update_user(ctx.guild, ctx.author, "exp", 5)
 
-            await self.process_commands(ctx)
+                await self.process_commands(ctx)
 
     async def on_command_error(self, ctx, error):
         ignored = (cmds.NoPrivateMessage, cmds.DisabledCommand, cmds.CheckFailure,
