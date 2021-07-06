@@ -68,7 +68,7 @@ class Client(cmds.Bot):
             os.getenv("REDDIT_PASS"),
         )
 
-        self.db = Database()
+        #self.db = Database()
 
         super().__init__(
             command_prefix=self.prefix, help_command=None
@@ -84,7 +84,7 @@ class Client(cmds.Bot):
 
         await self.load_extensions()
         
-        self.musicCmd = await self.get_cog('music').start_nodes()
+        #self.musicCmd = await self.get_cog('music').start_nodes()
 
     async def on_member_join(self, member):
         guild = self.db.get_guild(member.guild)
