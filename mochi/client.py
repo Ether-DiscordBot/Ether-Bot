@@ -73,6 +73,8 @@ class Client(cmds.Bot):
         print(f"\tClient Disc:\t{self.user.discriminator}\n")
 
         await self.load_extensions()
+        
+        self.db = Database()
 
         self.redditCmd = RedditCommandsManager(
             self,
@@ -83,8 +85,6 @@ class Client(cmds.Bot):
         )
 
         self.musicCmd = await self.get_cog('music').start_nodes()
-
-        self.db = Database()
 
     async def on_member_join(self, member):
         guild = self.db.get_guild(member.guild)
