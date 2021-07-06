@@ -11,4 +11,5 @@ twine==3.4.1
 urllib3==1.26.2
 virtualenv==20.2.2
 wavelink==0.9.9
-python-dotenv==0.18.0 
+python-dotenv==0.18.0
+dnspython==2.1.0
