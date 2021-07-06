@@ -109,7 +109,7 @@ class Client(cmds.Bot):
 
     async def on_message(self, ctx):
         if not ctx.author.bot:
-            if self.db:
+            if not self.db:
                 self.db.get_guild(ctx.guild)
                 self.db.get_user(ctx.guild, ctx.author)
                 random.seed()
