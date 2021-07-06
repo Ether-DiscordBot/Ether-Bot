@@ -53,10 +53,12 @@ class Database(object):
         self.db.guilds.update_one({"id": str(guild.id)}, {"$set": {key: value}})
 
     def get_user(self, guild, user):
-        user = self.db.users.find_one({"gid": str(guild.id), "uid": str(user.id)})
-        if user:
-            return user
-        return self.create_guild(guild, user)
+        if user.bot:
+            return
+        db_user = self.db.users.find_one({"gid": str(guild.id), "uid": str(user.id)})
+        if db_user:
+            return db_user
+        return self.create_user(guild, user)
 
     def create_user(self, guild, user):
         self.db.users.insert_one(
