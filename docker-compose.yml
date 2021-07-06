@@ -1,0 +1,7 @@
+services:
+  lavalink:
+    image: fredboat/lavalink:master-v3
+    ports:
+      - "2333:2333"
+    volumes:
+      - "./lavalink/application.yml:/opt/Lavalink/application.yml"
