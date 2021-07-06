@@ -9,10 +9,12 @@ class Database(object):
         self.db = self.client["dbot"]
         self.default_prefix = os.getenv("BASE_PREFIX")
 
-        print("\n\tMongoDB logged")
+        if self.db:
+            print("\n\tMongoDB logged")
 
-        for collection in self.db.list_collection_names():
-            print(f"\tFind collection => {collection}")
+            for collection in self.db.list_collection_names():
+                print(f"\tFind collection => {collection}")
+
 
     def get_guild(self, guild):
         db_guild = self.db.guilds.find_one({"id": str(guild.id)})
