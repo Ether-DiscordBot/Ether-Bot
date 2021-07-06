@@ -37,7 +37,7 @@ class App:
             "|_|  |_| \___/  \___||_| |_||_|          |_____/ |_||___/ \___|\___/ |_|   \__,_||____/  \___/  "
             "\__|\n\033[37m"
         )
-        print(f"\tVersion:\t{App.APP_VERSION}\n")
+        print(f"\tVersion:\t{App.APP_VERSION}")
 
         client = Client(
             prefix=get_prefix,
@@ -60,22 +60,6 @@ class Client(cmds.Bot):
 
         self.utils = Utils
 
-        super().__init__(
-            command_prefix=self.prefix, help_command=None
-        )
-
-    async def load_extensions(self):
-        await self._loader.find_extension()
-
-    async def on_ready(self):
-        print(f"\tClient Name:\t{self.user.name}")
-        print(f"\tClient ID:\t{self.user.id}")
-        print(f"\tClient Disc:\t{self.user.discriminator}\n")
-
-        await self.load_extensions()
-        
-        self.db = Database()
-
         self.redditCmd = RedditCommandsManager(
             self,
             os.getenv("REDDIT_CLIENT_ID"),
@@ -84,10 +68,23 @@ class Client(cmds.Bot):
             os.getenv("REDDIT_PASS"),
         )
 
-        try:
-            self.musicCmd = await self.get_cog('music').start_nodes()
-        except:
-            return
+        self.db = Database()
+
+        super().__init__(
+            command_prefix=self.prefix, help_command=None
+        )
+
+    async def load_extensions(self):
+        await self._loader.find_extension()
+
+    async def on_ready(self):
+        print(f"\n\tClient Name:\t{self.user.name}")
+        print(f"\tClient ID:\t{self.user.id}")
+        print(f"\tClient Disc:\t{self.user.discriminator}\n")
+
+        await self.load_extensions()
+        
+        self.musicCmd = await self.get_cog('music').start_nodes()
 
     async def on_member_join(self, member):
         guild = self.db.get_guild(member.guild)
