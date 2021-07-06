@@ -1,20 +1,21 @@
+from logging import error
 import pymongo
 import os
 
 
 class Database(object):
     def __init__(self):
-        self._uri = os.getenv("MONGODB_URI")
-        self.client = pymongo.MongoClient(self._uri)
-        self.db = self.client["dbot"]
+        try:
+            client = pymongo.MongoClient(os.getenv("MONGODB_URI"))
+            self.db = client["dbot"]
+            if self.db:
+                print("\n\tMongoDB logged")
+                for collection in self.db.list_collection_names():
+                    print(f"\tFind collection => {collection}")
+        except error:
+            print("Failed to connect mongoDB")
+
         self.default_prefix = os.getenv("BASE_PREFIX")
-
-        if self.db:
-            print("\n\tMongoDB logged")
-
-            for collection in self.db.list_collection_names():
-                print(f"\tFind collection => {collection}")
-
 
     def get_guild(self, guild):
         db_guild = self.db.guilds.find_one({"id": str(guild.id)})
