@@ -1,6 +1,6 @@
-FROM fredboat/lavalink
+FROM fredboat/lavalink:master
 
-WORKDIR /opt/lavalink
-Copy lavalink/application.yml /opt/Lavalink/application.yml
+WORKDIR /opt/Lavalink
+COPY ./lavalink/application.yml /opt/Lavalink/application.yml
 
 CMD [ "java", "-jar", "Lavalink.jar" ]

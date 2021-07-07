@@ -44,7 +44,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
                                               port=2333,
                                               rest_uri='http://127.0.0.1:2333',
                                               password="pxV58RF6f292N9NK",
-                                              identifier='client',
+                                              identifier='MAIN',
                                               region='us_central')
 
     

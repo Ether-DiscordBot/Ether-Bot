@@ -84,7 +84,7 @@ class Client(cmds.Bot):
 
         self.db = Database()
 
-        # self.musicCmd = await self.get_cog('music').start_nodes()
+        self.musicCmd = await self.get_cog('music').start_nodes()
 
     async def on_member_join(self, member):
         guild = self.db.get_guild(member.guild)

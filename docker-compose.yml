@@ -5,8 +5,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
-      lavalink:
-        condition: service_started
+      - lavalink
 
   lavalink:
     build:

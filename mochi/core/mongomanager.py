@@ -5,15 +5,12 @@ import os
 
 class Database(object):
     def __init__(self):
-        try:
-            client = pymongo.MongoClient(os.getenv("MONGODB_URI"))
-            self.db = client["dbot"]
-            if self.db:
-                print("\n\tMongoDB logged")
-                #for collection in self.db.list_collection_names():
-                #   print(f"\tFind collection => {collection}")
-        except error:
-            print("Failed to connect mongoDB")
+        client = pymongo.MongoClient(os.getenv("MONGODB_URI"))
+        self.db = client["dbot"]
+        if self.db:
+            print("\n\tMongoDB logged")
+            for collection in self.db.list_collection_names():
+                print(f"\t > Find collection => {collection}")
 
         self.default_prefix = os.getenv("BASE_PREFIX")
 
