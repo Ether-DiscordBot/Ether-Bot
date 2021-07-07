@@ -1,7 +1,15 @@
 services:
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      lavalink:
+        condition: service_started
+
   lavalink:
-    image: fredboat/lavalink:master-v3
-    ports:
-      - "2333:2333"
-    volumes:
-      - "./lavalink/application.yml:/opt/Lavalink/application.yml"
+    build:
+      context: .
+      dockerfile: lavalink/Dockerfile
+    restart: unless-stopped

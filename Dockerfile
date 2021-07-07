@@ -1,8 +1,8 @@
 FROM python:latest
 
-COPY . /mochi
-RUN pip install -r ./mochi/requirements.txt
-
 WORKDIR /mochi
+
+COPY . /mochi
+RUN pip install -r ./requirements.txt
 
 CMD ["python", "-m", "mochi"]

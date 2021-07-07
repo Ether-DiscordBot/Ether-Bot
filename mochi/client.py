@@ -60,16 +60,6 @@ class Client(cmds.Bot):
 
         self.utils = Utils
 
-        self.redditCmd = RedditCommandsManager(
-            self,
-            os.getenv("REDDIT_CLIENT_ID"),
-            os.getenv("REDDIT_CLIENT_SECRET"),
-            os.getenv("REDDIT_NAME"),
-            os.getenv("REDDIT_PASS"),
-        )
-
-        #self.db = Database()
-
         super().__init__(
             command_prefix=self.prefix, help_command=None
         )
@@ -84,7 +74,17 @@ class Client(cmds.Bot):
 
         await self.load_extensions()
         
-        #self.musicCmd = await self.get_cog('music').start_nodes()
+        self.redditCmd = RedditCommandsManager(
+            self,
+            os.getenv("REDDIT_CLIENT_ID"),
+            os.getenv("REDDIT_CLIENT_SECRET"),
+            os.getenv("REDDIT_NAME"),
+            os.getenv("REDDIT_PASS"),
+        )
+
+        self.db = Database()
+
+        # self.musicCmd = await self.get_cog('music').start_nodes()
 
     async def on_member_join(self, member):
         guild = self.db.get_guild(member.guild)
@@ -109,7 +109,7 @@ class Client(cmds.Bot):
 
     async def on_message(self, ctx):
         if not ctx.author.bot:
-            if not self.db:
+            if self.db:
                 self.db.get_guild(ctx.guild)
                 self.db.get_user(ctx.guild, ctx.author)
                 random.seed()
