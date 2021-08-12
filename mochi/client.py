@@ -24,7 +24,7 @@ def get_prefix(client, message):
 
 
 class App:
-    APP_VERSION = "0.0.6dev1"
+    APP_VERSION = "0.0.6dev2"
 
     def run():
         print(

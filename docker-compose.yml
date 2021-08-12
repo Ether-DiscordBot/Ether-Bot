@@ -1,5 +1,6 @@
+version: "3.9"
 services:
-  worker:
+  mochi:
     build:
       context: .
       dockerfile: Dockerfile
@@ -8,6 +9,7 @@ services:
       - lavalink
 
   lavalink:
+    image: redboat/lavalink:master
     build:
       context: .
       dockerfile: lavalink/Dockerfile

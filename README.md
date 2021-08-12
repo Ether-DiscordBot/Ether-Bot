@@ -33,11 +33,14 @@ Only **Windows** is supported for now.
 To run the bot:
 
 ```
-$ docker build -t mochi .
+$ docker-compose up -d
 ```
 
+To stop/remove the bot container:
+
 ```
-$ docker run mochi
+$ docker-compose kill
+$ docker-compose rm
 ```
 
 on Linux add `sudo `.
