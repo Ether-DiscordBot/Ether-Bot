@@ -33,12 +33,14 @@ Only **Windows** is supported for now.
 To run the bot:
 
 ```
-$ java -jar Lavalink.jar
+$ docker build -t mochi .
 ```
 
 ```
-$ python -m mochi
+$ docker run mochi
 ```
+
+on Linux add `sudo `.
 
 ## License
 
