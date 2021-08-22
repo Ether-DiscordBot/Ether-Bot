@@ -13,6 +13,7 @@ from discord import Embed
 import os
 from dotenv import load_dotenv
 import random
+import time
 
 from mochi.core import *
 
@@ -20,7 +21,7 @@ load_dotenv()
 
 def get_prefix(client, message):
     guild = client.db.get_guild(message.guild)
-    return when_mentioned_or(os.getenv("BASE_PREFIX"))(client, message) + guild['prefix']
+    return when_mentioned_or(os.getenv("BASE_PREFIX"))(client, message) + list(guild['prefix'])
 
 
 class App:
@@ -84,7 +85,9 @@ class Client(cmds.Bot):
 
         self.db = Database()
 
-        self.musicCmd = await self.get_cog('music').start_nodes()
+        # time.sleep(5)
+
+        self.musicCmd = self.get_cog('music')
 
     async def on_member_join(self, member):
         guild = self.db.get_guild(member.guild)
