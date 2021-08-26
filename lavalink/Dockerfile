@@ -1,8 +1,7 @@
-FROM fredboat/lavalink:master
+FROM fredboat/lavalink:master-v3
 
 WORKDIR /opt/Lavalink
-COPY ./lavalink/application.yml /opt/Lavalink/application.yml
 
-EXPOSE 2333
+COPY ./lavalink/application.yml ./opt/application.yml
 
-CMD [ "java", "-jar", "Lavalink.jar" ]
+ENTRYPOINT ["java", "-jar", "Lavalink.jar"]

@@ -1,8 +1,8 @@
 FROM python:latest
 
-WORKDIR /mochi
+WORKDIR /ether
 
-COPY . /mochi
+COPY . /ether
 RUN pip install -r ./requirements.txt
 
-CMD ["python", "-u", "-m", "mochi"]
+CMD ["python", "-u", "-m", "ether"]

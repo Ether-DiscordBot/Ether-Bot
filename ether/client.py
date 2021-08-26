@@ -13,7 +13,7 @@ from discord import Embed
 import os
 from dotenv import load_dotenv
 import random
-import time
+import time, socket
 
 from mochi.core import *
 
@@ -29,14 +29,14 @@ class App:
 
     def run():
         print(
-            "\033[34m \n\n __  __               _      _            _____   _                            _  ____    "
-            "      _   \n"
-            "|  \/  |             | |    (_)          |  __ \ (_)                          | ||  _ \        | | \n"
-            "| \  / |  ___    ___ | |__   _   ______  | |  | | _  ___   ___  ___   _ __  __| || |_) |  ___  | |_ \n"
-            "| |\/| | / _ \  / __|| '_ \ | | |______| | |  | || |/ __| / __|/ _ \ | '__|/ _` ||  _ <  / _ \ | __|\n"
-            "| |  | || (_) || (__ | | | || |          | |__| || |\__ \| (__| (_) || |  | (_| || |_) || (_) || |_ \n"
-            "|_|  |_| \___/  \___||_| |_||_|          |_____/ |_||___/ \___|\___/ |_|   \__,_||____/  \___/  "
-            "\__|\n\033[37m"
+            "\033[34m \n\n"
+            "_____ _   _\n"
+            "|  ___| | | |\n"
+            "| |__ | |_| |\n"
+            "|  __|| __| '_ \ / _ \ '__|\n"
+            "| |___| |_| | | |  __/ |\n"
+            "\____/ \__|_| |_|\___|_|\n"
+            "\n\033[37m"
         )
         print(f"\tVersion:\t{App.APP_VERSION}")
 
@@ -84,8 +84,6 @@ class Client(cmds.Bot):
         )
 
         self.db = Database()
-
-        # time.sleep(5)
 
         self.musicCmd = self.get_cog('music')
 

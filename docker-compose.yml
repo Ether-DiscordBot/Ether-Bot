@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    restart: unless-stopped
+    restart: on-failure
     network_mode: "host"
     depends_on:
       lavalink:
@@ -12,10 +12,9 @@ services:
 
   lavalink:
     container_name: lavalink
-    image: fredboat/lavalink:master
     build:
       context: .
       dockerfile: lavalink/Dockerfile
     ports:
-      - "2333"
-    restart: unless-stopped
+      - "2333:2333"
+    restart: always

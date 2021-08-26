@@ -1,14 +1,14 @@
-# Mochi DiscordBot
+# Ether DiscordBot
 
-![](https://img.shields.io/badge/python-3.9-blue.svg) ![](https://img.shields.io/badge/discord-py-blue.svg) ![](https://img.shields.io/github/license/holy-tanuki/Mochi-DiscordBot) ![](https://img.shields.io/github/stars/holy-tanuki/Mochi-DiscordBot)
+![](https://img.shields.io/badge/python-3.9-blue.svg) ![](https://img.shields.io/badge/discord-py-blue.svg) ![](https://img.shields.io/github/license/holy-tanuki/Ether-DiscordBot) ![](https://img.shields.io/github/stars/holy-tanuki/Ether-DiscordBot)
 
-Mochi is a powerful bot for Discord coding in python. It can interact with an online dashboard (feature under development), it has a very complete music part using [Lavalink](https://github.com/Frederikam/Lavalink) and many other features developed or under development.
+Ether is a powerful bot for Discord coding in python. It can interact with an online dashboard (feature under development), it has a very complete music part using [Lavalink](https://github.com/Frederikam/Lavalink) and many other features developed or under development.
 
 The bot will be divided into two parts, one opensource and another that will communicate with a database, the latter will be private.
 
 ## To-do list
 
-Mochi is in the very early stages of development, many of the features are not there yet but they will come.
+Ether is in the very early stages of development, many of the features are not there yet but they will come.
 
 For the moment only this feature is available:
 
