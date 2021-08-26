@@ -1,6 +1,6 @@
 from discord.ext import commands
 from discord import Embed
-from mochi import Colour
+from ether import Colour
 
 
 class Image(commands.Cog, name="image"):

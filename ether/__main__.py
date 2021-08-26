@@ -1,5 +1,5 @@
-from mochi.core import *
-from mochi.client import *
+from ether.core import *
+from ether.client import *
 
 if __name__ == "__main__":
-    mochi = App.run()
+    ether = App.run()

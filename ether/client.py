@@ -1,4 +1,4 @@
-from mochi.core import *
+from ether.core import *
 import discord
 from discord.ext import commands as cmds
 from discord.ext.commands.errors import (
@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 import random
 import time, socket
 
-from mochi.core import *
+from ether.core import *
 
 load_dotenv()
 

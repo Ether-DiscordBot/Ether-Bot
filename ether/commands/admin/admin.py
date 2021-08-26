@@ -1,4 +1,4 @@
-from mochi import Colour
+from ether import Colour
 from discord import Embed, User, utils
 from discord.ext import commands
 

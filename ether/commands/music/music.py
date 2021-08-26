@@ -10,7 +10,7 @@ from wavelink.player import TrackPlaylist
 import humanize
 import datetime
 
-from mochi import Colour
+from ether import Colour
 
 URL_REG = re.compile(r'https?://(?:www\.)?.+')
 

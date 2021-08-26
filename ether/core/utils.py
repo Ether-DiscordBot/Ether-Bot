@@ -3,7 +3,7 @@ import importlib
 from random import choice
 import praw
 
-from mochi import *
+from ether import *
 
 
 class RedditCommandsManager:
@@ -12,7 +12,7 @@ class RedditCommandsManager:
         self.reddit_client = praw.Reddit(
             client_id=client_id,
             client_secret=client_secret,
-            user_agent="Mochi Bot",
+            user_agent="ether Bot",
             username=reddit_name,
             password=reddit_pass,
             check_for_async=False
@@ -37,7 +37,7 @@ class LoaderManager:
         self.bot = bot
 
     async def find_extension(self):
-        path = "mochi/commands/"
+        path = "ether/commands/"
         banned_dir = ["__pycache__"]
         name = "__init__.py"
         paths = [
