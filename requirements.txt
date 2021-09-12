@@ -1,4 +1,4 @@
-enhanced-dpy==1.7.3.7.post1
+discord.py==1.7.2
 humanize==3.9.0
 praw==7.4.0 
 pymongo==3.11.4

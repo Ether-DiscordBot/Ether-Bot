@@ -1,24 +1,20 @@
 version: "3.9"
-
 services:
   bot:
-    container_name: ether
     build:
       context: .
       dockerfile: Dockerfile
     restart: on-failure
+    network_mode: "host"
     depends_on:
       lavalink:
         condition: service_started
-    links:
-      - lavalink
-    environment:
-      - IN_DOCKER=True
 
   lavalink:
     container_name: lavalink
-    image: fredboat/lavalink:master
-    volumes:
-      - ./Lavalink/application.yml:/opt/Lavalink/application.yml
+    build:
+      context: .
+      dockerfile: lavalink/Dockerfile
+    ports:
+      - "2333:2333"
     restart: always
-    entrypoint: java -Xmx2G -jar Lavalink.jar
