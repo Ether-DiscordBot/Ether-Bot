@@ -1,9 +1,12 @@
 from discord import Embed
 from discord.ext import commands
 from random import random
+import requests
+from requests.api import request
 
 
 class Misc(commands.Cog):
+    SCP_URI="scp-wiki.wikidot.com/scp-{num}{lang}"
     def __init__(self, client):
         self.client = client
         self.fancy_name = "Misc"
@@ -50,7 +53,7 @@ class Misc(commands.Cog):
         ).set_image(url=user.avatar_url_as(format="png", size=256))
         return await ctx.channel.send(embed=embed)
 
-    @commands.command(aliases=["flip"])
+    @commands.command(aliases=["flip"], name="filpcoin")
     async def flipcoin(self, ctx):
         result = "Heads" if round(random()) else "Tails"
         return await ctx.channel.send(result)
