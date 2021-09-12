@@ -33,7 +33,7 @@ Only **Windows** is supported for now.
 To run the bot:
 
 ```
-$ docker-compose up -d
+$ docker-compose up
 ```
 
 To stop/remove the bot container:
