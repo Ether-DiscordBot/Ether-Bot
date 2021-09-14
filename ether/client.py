@@ -59,15 +59,12 @@ class Client(cmds.Bot):
 		self.db = None
 		self.musicCmd = None
 		self.redditCmd = None
-  
+
 		self.in_container = in_container
 
 		self.utils = Utils
 
-		if self.in_container:
-			self.lavalink_host = "lavalink"
-		else:
-			self.lavalink_host = "locahost"
+		self.lavalink_host = "lavalink" if self.in_container else "locahost"
 
 		super().__init__(
 			command_prefix=self.prefix, help_command=None

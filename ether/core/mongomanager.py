@@ -24,8 +24,7 @@ class Database(object):
         self.db.guilds.insert_one(
             {
                 "id": str(guild.id),
-                "prefix": [self.default_prefix],
-                "premium": False,
+                "prefix": self.default_prefix,
                 "logs": {
                     "join": {
                         "channel_id": guild.text_channels[0].id,
@@ -36,8 +35,7 @@ class Database(object):
                     "leave": {
                         "channel_id": guild.text_channels[0].id,
                         "message": "{user.name} is gone",
-                        "active": False,
-                        "private": False,
+                        "active": False
                     },
                     "moderation": {
                         "channel_id": guild.text_channels[0].id,
