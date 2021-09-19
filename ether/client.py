@@ -119,10 +119,10 @@ class Client(cmds.Bot):
 		if not ctx.author.bot:
 			if self.db:
 				self.db.get_guild(ctx.guild)
-				self.db.get_user(ctx.guild, ctx.author)
+				self.db.get_guild_user(ctx.guild, ctx.author)
 				random.seed()
 				if random.randint(1, 100) <= 37:
-					self.db.update_user(ctx.guild, ctx.author, "exp", 5)
+					self.db.update_guild_user(ctx.guild, ctx.author, "exp", 5)
 
 			await self.process_commands(ctx)
 

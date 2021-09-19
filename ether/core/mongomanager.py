@@ -1,6 +1,7 @@
 from logging import error
 import pymongo
 import os
+import bson
 
 
 class Database(object):
@@ -13,17 +14,23 @@ class Database(object):
                 print(f"\t > Find collection => {collection}")
 
         self.default_prefix = os.getenv("BASE_PREFIX")
+    
+    """
+        Guilds
+    """
 
-    def get_guild(self, guild):
-        db_guild = self.db.guilds.find_one({"id": str(guild.id)})
+    def get_guild(self, guild, cd=5):
+        db_guild = self.db.guilds.find_one({"id": bson.Int64(guild.id)})
         if db_guild:
             return db_guild
-        return self.create_guild(guild)
+        if cd > 0:
+            return self.create_guild(guild, cd-1)
+        return
 
-    def create_guild(self, guild):
+    def create_guild(self, guild, cd=5):
         self.db.guilds.insert_one(
             {
-                "id": str(guild.id),
+                "id": bson.Int64(guild.id),
                 "prefix": self.default_prefix,
                 "logs": {
                     "join": {
@@ -45,29 +52,91 @@ class Database(object):
             }
         )
 
-        return self.get_guild(guild)
+        return self.get_guild(guild, cd)
 
     def update_guild(self, guild, key, value):
-        self.db.guilds.update_one({"id": str(guild.id)}, {"$set": {key: value}})
+        self.db.guilds.update_one({"id": bson.Int64(guild.id)}, {"$set": {key: value}})
+        
+    """
+        Guild Users
+    """
 
-    def get_user(self, guild, user):
+    def get_guild_user(self, guild, user, cd=5):
         if user.bot:
             return
-        db_user = self.db.users.find_one({"gid": str(guild.id), "uid": str(user.id)})
+        db_user = self.db.guild_users.find_one({"gid": bson.Int64(guild.id), "uid": bson.Int64(user.id)})
         if db_user:
             return db_user
-        return self.create_user(guild, user)
+        if cd > 0:
+            return self.create_guild_user(guild, user, cd-1)
+        return
 
-    def create_user(self, guild, user):
-        self.db.users.insert_one(
+    def create_guild_user(self, guild, user, cd=5):
+        self.db.guild_users.insert_one(
             {
-                "gid": str(guild.id),
-                "uid": str(user.id),
+                "id": bson.Int64(user.id),
+                "guild_id": bson.Int64(guild.id),
                 "exp": 0,
-                "lvl": 0
+                "levels": 0
             }
         )
-        return self.get_user(guild, user)
+        return self.get_guild_user(guild, user, cd)
 
-    def update_user(self, guild, user, key, value):
-        self.db.users.update_one({"gid": str(guild.id), "uid": str(user.id)}, {"$set": {key: value}})
+    def update_guild_user(self, guild, user, key, value):
+        self.db.guild_users.update_one({"gid": bson.Int64(guild.id), "uid": bson.Int64(user.id)}, {"$set": {key: value}})
+
+    """
+        Users
+    """
+    
+    def get_user(self, user, cd=5):
+        if user.bot:
+            return
+        db_user = self.db.users.find_one({"id": bson.Int64(user.id)})
+        if db_user:
+            return db_user
+        if cd > 0:
+            return self.create_user(user, cd-1)
+        return
+
+    def create_user(self, user, cd=5):
+        self.db.users.insert_one(
+            {
+                "id": bson.Int64(user.id),
+                "card": {
+                    "color": "A3C7F7",
+                    "id": 0
+                    },
+            }
+        )
+        return self.get_user(user, cd)
+
+    def update_user(self, user, key, value):
+        self.db.users.update_one({"id": bson.Int64(user.id)}, {"$set": {key: value}})
+    
+    
+    """
+        Playlists
+    """
+    
+    def get_playlist(self, guild, message):
+        db_playlist = self.db.playlists.find_one({"message_id": bson.Int64(message.id), "guild_id": bson.Int64(guild.id)})
+        if db_playlist:
+            return db_playlist
+        return
+
+    def create_playlist(self, guild, message, url):
+        self.db.playlists.insert_one(
+            {
+                "url": bson.Int64(url),
+                "guild_id": bson.Int64(guild.id),
+                "message_id": bson.Int64(message.id)
+            }
+        )
+        return self.get_playlist(guild, message)
+
+    def update_playlist(self, guild, message, key, value):
+        self.db.playlists.update_one({"message_id": bson.Int64(message.id), "guild_id": bson.Int64(guild.id)}, {"$set": {key: value}})
+    
+    def delete_playlist(self, id):
+        self.db.playlists.delete_one({"message_id": bson.Int64(id)})
