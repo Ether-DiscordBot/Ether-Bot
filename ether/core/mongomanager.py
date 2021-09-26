@@ -1,8 +1,8 @@
-from logging import error
+from PIL.Image import new
 import pymongo
 import os
 import bson
-
+from .utils import MathsLevels
 
 class Database(object):
     def __init__(self):
@@ -64,7 +64,7 @@ class Database(object):
     def get_guild_user(self, guild, user, cd=5):
         if user.bot:
             return
-        db_user = self.db.guild_users.find_one({"gid": bson.Int64(guild.id), "uid": bson.Int64(user.id)})
+        db_user = self.db.guild_users.find_one({"guild_id": bson.Int64(guild.id), "id": bson.Int64(user.id)})
         if db_user:
             return db_user
         if cd > 0:
@@ -77,13 +77,22 @@ class Database(object):
                 "id": bson.Int64(user.id),
                 "guild_id": bson.Int64(guild.id),
                 "exp": 0,
-                "levels": 0
+                "levels": 1
             }
         )
         return self.get_guild_user(guild, user, cd)
 
-    def update_guild_user(self, guild, user, key, value):
-        self.db.guild_users.update_one({"gid": bson.Int64(guild.id), "uid": bson.Int64(user.id)}, {"$set": {key: value}})
+    def add_exp(self, guild, user, amount):
+        dbuser = self.get_guild_user(guild, user)
+        if dbuser:
+            new_exp=dbuser['exp']+amount
+            new_level_exp=new_exp-MathsLevels.level_to_exp(dbuser['levels']+1)
+            if new_level_exp >= 0:
+                self.db.guild_users.update_one({"guild_id": bson.Int64(guild.id), "id": bson.Int64(user.id)}, {"$set": {"exp": new_level_exp, "levels": dbuser['levels']+1}})
+                return dbuser['levels']+1
+            self.db.guild_users.update_one({"guild_id": bson.Int64(guild.id), "id": bson.Int64(user.id)}, {"$set": {"exp": new_exp}})
+            return -1
+        return
 
     """
         Users

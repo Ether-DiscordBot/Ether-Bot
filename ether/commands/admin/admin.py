@@ -1,4 +1,4 @@
-from ether import Colour
+from ether import Color
 from discord import Embed, User, utils
 from discord.ext import commands
 
@@ -14,7 +14,7 @@ class Admin(commands.Cog, name="admin"):
         db_guild = self.client.db.get_guild(ctx.guild)
         if not member:
             embed = Embed(
-                colour=Colour.ERROR, description=f"Unknown **{member.name}** !"
+                color=Color.ERROR, description=f"Unknown **{member.name}** !"
             )
             return await ctx.send(embed=embed)
 
@@ -22,7 +22,7 @@ class Admin(commands.Cog, name="admin"):
             if db_guild["logs"]["moderation"]["active"]:
                 channel = ctx.guild.get_channel(db_guild["logs"]["moderation"]["channel_id"])
                 if channel:
-                    embed = Embed(colour=Colour.KICK)
+                    embed = Embed(color=Color.KICK)
                     embed.set_author(name=f"[KICK] {member.name}#{member.discriminator}", icon_url=self.client.utils.get_avatar_url(member))
                     embed.add_field(name="User", value=f"<@{member.id}>", inline=True)
                     embed.add_field(name="Moderator", value=f"<@{ctx.author.id}>", inline=True)
@@ -34,7 +34,7 @@ class Admin(commands.Cog, name="admin"):
                     await channel.send(embed=embed)
         except Exception as exception:
             embed = Embed(
-                colour=Colour.ERROR,
+                color=Color.ERROR,
                 description="Can't do that. Probably because I don't have the "
                 "permissions for.",
             )
@@ -47,7 +47,7 @@ class Admin(commands.Cog, name="admin"):
         db_guild = self.client.db.get_guild(ctx.guild)
         if not member:
             embed = Embed(
-                colour=Colour.ERROR, description=f"Unknown **{member.name}** !"
+                color=Color.ERROR, description=f"Unknown **{member.name}** !"
             )
             return await ctx.send(embed=embed)
 
@@ -55,7 +55,7 @@ class Admin(commands.Cog, name="admin"):
             if db_guild["logs"]["moderation"]["active"]:
                 channel = ctx.guild.get_channel(db_guild["logs"]["moderation"]["channel_id"])
                 if channel:
-                    embed = Embed(colour=Colour.BAN, description="[`[unban]`](https://www.youtube.com/watch?v=dQw4w9WgXcQ)")
+                    embed = Embed(color=Color.BAN, description="[`[unban]`](https://www.youtube.com/watch?v=dQw4w9WgXcQ)")
                     embed.set_author(name=f"[BAN] {member.name}#{member.discriminator}", icon_url=self.client.utils.get_avatar_url(member))
                     embed.add_field(name="User", value=f"<@{member.id}>", inline=True)
                     embed.add_field(name="Moderator", value=f"<@{ctx.author.id}>", inline=True)
@@ -67,7 +67,7 @@ class Admin(commands.Cog, name="admin"):
                     await channel.send(embed=embed)
         except Exception as exception:
             embed = Embed(
-                colour=Colour.ERROR,
+                color=Color.ERROR,
                 description="Can't do that. Probably because I don't have the "
                 "permissions for.",
             )

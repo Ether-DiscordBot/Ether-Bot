@@ -2,8 +2,15 @@ import os
 import importlib
 from random import choice
 import praw
+import math
 
-from ether import *
+
+class MathsLevels:
+    def get_level(level, exp):
+        return int(math.sqrt(max(MathsLevels.level_to_exp(level)+exp, 1))*0.2)
+
+    def level_to_exp(level):
+        return 50*pow(level, 2)
 
 
 class RedditCommandsManager:
@@ -67,7 +74,7 @@ class Utils(object):
         if user:
             return f"https://cdn.discordapp.com/avatars/{user.id}/{user.avatar}.{format}?size={size}"
 
-class Colour:
+class Color:
     ERROR = 0xED4245
     SUCCESS = 0x57F287
     DEFAULT = 0x5865F2

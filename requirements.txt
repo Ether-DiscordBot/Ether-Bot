@@ -10,3 +10,4 @@ virtualenv==20.2.2
 wavelink==0.9.10
 python-dotenv==0.18.0
 dnspython==2.1.0
+pillow==8.3.2

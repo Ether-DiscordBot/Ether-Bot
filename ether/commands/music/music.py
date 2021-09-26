@@ -11,7 +11,7 @@ from aiohttp import ClientConnectionError
 import humanize
 import datetime
 
-from ether import Colour
+from ether import Color
 
 URL_REG = re.compile(r'https?://(?:www\.)?.+')
 
@@ -56,7 +56,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
         track = payload.player.current
         channel = self.client.get_channel(track.channel_id)
 
-        payload.player.message = await channel.send(embed=Embed(description=f"Now Playing **[{track.title}]({track.uri})**!", colour=Colour.DEFAULT))
+        payload.player.message = await channel.send(embed=Embed(description=f"Now Playing **[{track.title}]({track.uri})**!", color=Color.DEFAULT))
         
 
     @wavelink.WavelinkMixin.listener()
@@ -74,7 +74,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
             try:
                 channel = ctx.author.voice.channel
             except AttributeError:
-                return ctx.send(embed=Embed(description="Please join a channel.", colour=Colour.ERROR))
+                return ctx.send(embed=Embed(description="Please join a channel.", color=Color.ERROR))
 
         player = self.client.wavelink.get_player(ctx.guild.id)
         player.queue = asyncio.Queue(maxsize=100, loop=False)
@@ -90,7 +90,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
             try:
                 channel = ctx.author.voice.channel
             except AttributeError:
-                return await ctx.send(embed=Embed(description="You must be connected on a voice channel.", colour=Colour.ERROR))
+                return await ctx.send(embed=Embed(description="You must be connected on a voice channel.", color=Color.ERROR))
         
         player = self.client.wavelink.get_player(ctx.guild.id)
         if player.channel_id == channel.id:
@@ -103,24 +103,24 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
     @commands.command(name="play", aliases=["p"])
     async def _play(self, ctx, *, query: str):
         if not ctx.author.voice:
-            return await ctx.send(embed=Embed(description="You must be connected on a voice channel.", colour=Colour.ERROR))
+            return await ctx.send(embed=Embed(description="You must be connected on a voice channel.", color=Color.ERROR))
 
         player = self.client.wavelink.get_player(ctx.guild.id)
 
         if ctx.author.voice.channel.id != player.channel_id:
             if player.is_playing:
-                return await ctx.send(embed=Embed(description="I'm already playing music in an other channel.", colour=Colour.ERROR))
+                return await ctx.send(embed=Embed(description="I'm already playing music in an other channel.", color=Color.ERROR))
             
             await ctx.invoke(self._connect)
         
         if not URL_REG.match(query):            
             tracks = await self.client.wavelink.get_tracks(f'ytsearch:{query}')
             if not tracks:
-                return await ctx.send(embed=Embed(description='Could not find any songs with that query.', colour=Colour.ERROR), delete_after=10)
+                return await ctx.send(embed=Embed(description='Could not find any songs with that query.', color=Color.ERROR), delete_after=10)
         else:
             tracks = await self.client.wavelink.get_tracks(query)
             if not tracks:    
-                return await ctx.send(embed=Embed(description='Invalid URL.', colour=Colour.ERROR), delete_after=10)
+                return await ctx.send(embed=Embed(description='Invalid URL.', color=Color.ERROR), delete_after=10)
 
         if not player.is_connected:
             await ctx.invoke(self.connect_)
@@ -129,7 +129,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
             for t in tracks.tracks:
                 track = Track(t.id, t.info, requester=ctx.author, channel_id=ctx.channel.id)
                 await player.queue.put(track)
-            await ctx.send(embed=Embed(description=f"**[{len(tracks.tracks)} tracks]({query})** added to queue!", colour=Colour.DEFAULT))
+            await ctx.send(embed=Embed(description=f"**[{len(tracks.tracks)} tracks]({query})** added to queue!", color=Color.DEFAULT))
         else:
             track = Track(tracks[0].id, tracks[0].info, requester=ctx.author, channel_id=ctx.channel.id)
             await player.queue.put(track)
@@ -141,7 +141,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
             if isinstance(tracks, TrackPlaylist):
                 return tracks.tracks
             
-            await ctx.send(embed=Embed(description=f"Track added to queue: **[{track.title}]({track.uri})**", colour=Colour.DEFAULT))
+            await ctx.send(embed=Embed(description=f"Track added to queue: **[{track.title}]({track.uri})**", color=Color.DEFAULT))
             return track
 
 
@@ -166,9 +166,9 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
         player = self.client.wavelink.get_player(ctx.guild.id)
         if ctx.author.voice and ctx.author.voice.channel.id == player.channel_id:
             if not player.is_playing:
-                return await ctx.send(embed=Embed(description='I am not currently playing anything!', colour=Colour.ERROR), delete_after=10)
+                return await ctx.send(embed=Embed(description='I am not currently playing anything!', color=Color.ERROR), delete_after=10)
 
-            await ctx.send(embed=Embed(description='Pausing the song!', colour=Colour.DEFAULT), delete_after=10)
+            await ctx.send(embed=Embed(description='Pausing the song!', color=Color.DEFAULT), delete_after=10)
             await player.set_pause(True)
         return
 
@@ -177,9 +177,9 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
         player = self.client.wavelink.get_player(ctx.guild.id)
         if ctx.author.voice and ctx.author.voice.channel.id == player.channel_id:
             if not player.paused:
-                return await ctx.send(embed=Embed(description='I am not currently paused!', colour=Colour.ERROR), delete_after=10)
+                return await ctx.send(embed=Embed(description='I am not currently paused!', color=Color.ERROR), delete_after=10)
 
-            await ctx.send(embed=Embed(description='Resuming the player!', colour=Colour.DEFAULT), delete_after=10)
+            await ctx.send(embed=Embed(description='Resuming the player!', color=Color.DEFAULT), delete_after=10)
             return await player.set_pause(False)
 
         return
@@ -190,8 +190,8 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
         if ctx.author.voice and ctx.author.voice.channel.id == player.channel_id:
             player.queue._loop = not player.queue._loop
             if player.queue._loop:
-                return await ctx.send(embed=Embed(description='Queue is looping!', colour=Colour.DEFAULT), delete_after=10)
-            return await ctx.send(embed=Embed(description='Queue is no longer looping!', colour=Colour.DEFAULT), delete_after=10)
+                return await ctx.send(embed=Embed(description='Queue is looping!', color=Color.DEFAULT), delete_after=10)
+            return await ctx.send(embed=Embed(description='Queue is no longer looping!', color=Color.DEFAULT), delete_after=10)
 
         return
   
@@ -217,7 +217,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
         if player.channel_id == channel.id:
             random.shuffle(player.queue._queue)
 
-            await ctx.send(embed=Embed(description='Queue has been shuffled!', colour=Colour.DEFAULT), delete_after=10)
+            await ctx.send(embed=Embed(description='Queue has been shuffled!', color=Color.DEFAULT), delete_after=10)
             return player.queue._queue
     
   
@@ -256,7 +256,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
         player = self.client.wavelink.get_player(ctx.guild.id)
         if ctx.author.voice and ctx.author.voice.channel.id == player.channel_id:
             if index > len(player.queue._queue)+1 or index <= 1:
-                return await ctx.send(embed=Embed(description="Index out of range.", color=Colour.ERROR))
+                return await ctx.send(embed=Embed(description="Index out of range.", color=Color.ERROR))
             player.queue._queue.__delitem__(index-2)
             await ctx.message.add_reaction("👌")
 
@@ -270,7 +270,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
         free = humanize.naturalsize(node.stats.memory_free)
         cpu = node.stats.cpu_cores
 
-        embed = Embed(title=f'**WaveLink:** `{wavelink.__version__}`', colour=Colour.DEFAULT)
+        embed = Embed(title=f'**WaveLink:** `{wavelink.__version__}`', color=Color.DEFAULT)
 
         embed.add_field(name="Node", value=f'Connected to `{len(self.client.wavelink.nodes)}` nodes.\n' \
             f'Best available Node `{self.client.wavelink.get_best_node().__repr__()}`\n' \

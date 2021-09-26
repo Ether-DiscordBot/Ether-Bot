@@ -1,6 +1,6 @@
 from discord.ext import commands
 from discord import Embed
-from ether import Colour
+from ether import Color
 
 
 class Image(commands.Cog, name="image"):
@@ -12,11 +12,11 @@ class Image(commands.Cog, name="image"):
         post = self.client.redditCmd.get_reddit_image(sub_reddit=sub)
 
         if post is None:
-            embed = Embed(colour=Colour.ERROR, description=err_msg)
+            embed = Embed(color=Color.ERROR, description=err_msg)
         else:
             embed = Embed(title=post.title)
             embed.url = "https://reddit.com" + post.permalink
-            embed.colour = Colour.DEFAULT
+            embed.color = Color.DEFAULT
             embed.set_image(url=post.url)
             embed.set_footer(text=f"⬆️ {post.score} │ 💬 {post.num_comments}")
 
