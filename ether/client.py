@@ -113,8 +113,8 @@ class Client(cmds.Bot):
         if self.db:
             self.db.get_guild(ctx.guild)
             self.db.get_user(ctx.author)
-            if random.randint(1, 100) <= 23:
-                new_level=self.db.add_exp(ctx.guild, ctx.author, 2)
+            if random.randint(1, 100) <= 33:
+                new_level=self.db.add_exp(ctx.guild, ctx.author, 4)
                 if new_level != -1:
                     await ctx.channel.send(f'Congratulation <@{ctx.author.id}>, you just pass to level {new_level}!')
 
