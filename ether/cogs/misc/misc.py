@@ -53,7 +53,7 @@ class Misc(commands.Cog):
         ).set_image(url=user.avatar_url_as(format="png", size=256))
         return await ctx.channel.send(embed=embed)
 
-    @commands.command(aliases=["flip"], name="filpcoin")
+    @commands.command(aliases=["flip"], name="flipcoin")
     async def flipcoin(self, ctx):
         result = "Heads" if round(random()) else "Tails"
         return await ctx.channel.send(result)

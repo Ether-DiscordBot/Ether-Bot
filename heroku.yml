@@ -1,5 +1,6 @@
 build:
   docker:
-    web: Dockerfile
+    bot: Dockerfile
+    lavalink: ./Lavalink
 run:
   web: bundle exec puma -C config/puma.rb

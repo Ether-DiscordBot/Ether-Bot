@@ -74,7 +74,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
             try:
                 channel = ctx.author.voice.channel
             except AttributeError:
-                return ctx.send(embed=Embed(description="Please join a channel.", color=Color.ERROR))
+                return await ctx.send(embed=Embed(description="Please join a channel.", color=Color.ERROR))
 
         player = self.client.wavelink.get_player(ctx.guild.id)
         player.queue = asyncio.Queue(maxsize=100, loop=False)

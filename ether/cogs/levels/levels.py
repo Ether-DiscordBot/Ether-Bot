@@ -12,7 +12,7 @@ class Levels(commands.Cog, name="levels"):
         self.client = client
         self.fancy_name = "Levels"
         
-        self.ch = CardHandler() # Card handler
+        self.ch = CardHandler()
     
     @commands.command(name="profile", aliases=["me", "rank", "level"])
     async def profile(self, ctx):

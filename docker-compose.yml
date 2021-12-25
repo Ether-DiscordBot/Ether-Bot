@@ -20,5 +20,4 @@ services:
     image: fredboat/lavalink:master
     volumes:
       - ./Lavalink/application.yml:/opt/Lavalink/application.yml
-    restart: always
     entrypoint: java -Xmx2G -jar Lavalink.jar

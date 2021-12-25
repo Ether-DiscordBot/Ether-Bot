@@ -15,35 +15,12 @@ def get_prefix(client, message):
     return when_mentioned_or(os.getenv("BASE_PREFIX"))(client, message) + list(guild['prefix'])
 
 
-class App:
-    APP_VERSION = "0.0.7dev3"
-
-    def run():
-        print(
-            "\033[34m \n\n"
-            "_____ _   _\n"
-            "|  ___| | | |\n"
-            "| |__ | |_| |\n"
-            "|  __|| __| '_ \ / _ \ '__|\n"
-            "| |___| |_| | | |  __/ |\n"
-            "\____/ \__|_| |_|\___|_|\n"
-            "\n\033[37m"
-        )
-        print(f"\tVersion:\t{App.APP_VERSION}")
-
-        client = Client(
-            prefix=get_prefix,
-            token=os.getenv("BOT_TOKEN"),
-            in_container=os.environ.get('IN_DOCKER', False)
-        )
-
-        client.run(client.token)
+APP_VERSION = "0.0.7dev3"
 
 
 class Client(cmds.Bot):
-    def __init__(self, prefix: str=None, token: str=None, in_container: bool = False):
+    def __init__(self, prefix: str=None, in_container: bool = False):
         self.prefix = prefix
-        self.token = token
         self.bot_link = "https://discord.com/oauth2/authorize?client_id=693456698299383829&permissions=3757567862&scope=bot%20applications.commands"
 
         self._loader = LoaderManager(self)

@@ -44,7 +44,7 @@ class LoaderManager:
         self.bot = bot
 
     async def find_extension(self):
-        path = "ether/commands/"
+        path = "ether/cogs/"
         banned_dir = ["__pycache__"]
         name = "__init__.py"
         paths = [
