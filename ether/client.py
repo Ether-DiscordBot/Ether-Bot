@@ -21,7 +21,6 @@ APP_VERSION = "0.0.7dev3"
 class Client(cmds.Bot):
     def __init__(self, prefix: str=None, in_container: bool = False):
         self.prefix = prefix
-        self.bot_link = "https://discord.com/oauth2/authorize?client_id=693456698299383829&permissions=3757567862&scope=bot%20applications.commands"
 
         self._loader = LoaderManager(self)
         self.db = None
@@ -39,7 +38,8 @@ class Client(cmds.Bot):
         )
 
     async def load_extensions(self):
-        await self._loader.find_extension()
+        cogs_loader=CogManager(self)
+        await cogs_loader.load_cogs()
 
     async def on_ready(self):
         print(f"\n\tClient Name:\t{self.user.name}")
