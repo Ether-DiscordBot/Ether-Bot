@@ -2,7 +2,6 @@ from ether import Color
 from discord import Embed, User, utils
 from discord.ext import commands
 
-
 class Admin(commands.Cog, name="admin"):
     def __init__(self, client):
         self.fancy_name = "Admin"
@@ -68,7 +67,6 @@ class Admin(commands.Cog, name="admin"):
         except Exception as exception:
             embed = Embed(
                 color=Color.ERROR,
-                description="Can't do that. Probably because I don't have the "
-                "permissions for.",
+                description="Can't do that. Probably because I don't have the permissions for.",
             )
             return await ctx.send(embed=embed)
