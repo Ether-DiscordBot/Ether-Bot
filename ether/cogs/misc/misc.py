@@ -1,7 +1,6 @@
 from discord import Embed
 from discord.ext import commands
 from random import random
-import requests
 from requests.api import request
 
 
