@@ -231,17 +231,18 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
             embed = Embed(title=":notes: Queue:")
             embed.add_field(
                 name="Now Playing:",
-                value=f"`1.` [{player.current.title}]({player.current.uri[0: 30]}) | `{datetime.timedelta(milliseconds=player.current.length)}`",
-                inline=False
+                value=f'`1.` [{player.current.title}]({player.current.uri[:30]}) | `{"🔴 Stream" if player.current.is_stream else datetime.timedelta(milliseconds=player.current.length)}`',
+                inline=False,
             )
+
 
             next_track_label = []
             for track in player.queue._queue:
                 if track != player.current and player.queue._queue.index(track) < 10:
                     title = track.title
                     if len(track.title) > 35:
-                        title = title[0: 32] + " ..."
-                    next_track_label.append(f"`{player.queue._queue.index(track)+2}.` [{title}]({track.uri}) | `{datetime.timedelta(milliseconds=track.length)}`"),
+                        title = title[:32] + " ..."
+                    next_track_label.append(f"`{player.queue._queue.index(track)+2}.` [{title}]({track.uri}) | `{'🔴 Stream' if track.is_stream else datetime.timedelta(milliseconds=track.length)}`"),
 
             if next_track_label:
                 embed.add_field(
