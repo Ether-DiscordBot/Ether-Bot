@@ -1,4 +1,6 @@
-nextcord==2.0.0a4
+py-cord==1.7.3
+wavelink==0.9.10
+#pycord.wavelink==1.0.0b42
 humanize==3.13.1
 praw==7.5.0 
 pymongo==4.0.1
@@ -7,7 +9,6 @@ requests==2.27.0
 twine==3.7.1
 urllib3==1.26.7
 virtualenv==20.2.2
-wavelink==0.9.10
 python-dotenv==0.19.2
 dnspython==2.2.0rc1
 pillow==9.0.0

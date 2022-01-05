@@ -93,7 +93,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
 
         
         player = self.client.wavelink.get_player(ctx.guild.id)
-        player.queue = asyncio.Queue(maxsize=100, loop=False)
+        player.queue = asyncio.Queue(maxsize=100)
         await player.connect(channel.id)
         
         await ctx.guild.change_voice_state(channel=channel, self_mute=False, self_deaf=True)
