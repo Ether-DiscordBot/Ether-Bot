@@ -10,7 +10,7 @@ class Database(object):
     def __init__(self):
         client = pymongo.MongoClient(os.getenv("MONGODB_URI"))
         self.db = client["dbot"]
-        if self.db:
+        if self.db is not None:
             print("\n\tMongoDB logged")
             for collection in self.db.list_collection_names():
                 print(f"\t > Find collection => {collection}")
