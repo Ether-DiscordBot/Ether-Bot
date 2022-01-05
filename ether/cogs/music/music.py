@@ -13,6 +13,7 @@ import datetime
 
 from ether import Color
 
+
 URL_REG = re.compile(r'https?://(?:www\.)?.+')
 
 
@@ -53,14 +54,25 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
 
     @wavelink.WavelinkMixin.listener()
     async def on_track_start(self, node: wavelink.Node, payload):
+        """When a track starts, the bot sends a message in the channel where the command was sent.
+        The channel is taken on the object of the track and the message is saved in the player.
+        """
+        
         track = payload.player.current
         channel = self.client.get_channel(track.channel_id)
 
-        payload.player.message = await channel.send(embed=Embed(description=f"Now Playing **[{track.title}]({track.uri})**!", color=Color.DEFAULT))
+        payload.player.message = await channel.send(embed=Embed(
+            description=f"Now Playing **[{track.title}]({track.uri})**!",
+            color=Color.DEFAULT
+            ))
         
 
     @wavelink.WavelinkMixin.listener()
     async def on_track_end(self, node: wavelink.Node, payload:wavelink.events.TrackEnd):
+        """When a track ends, the bot delete the start message.
+        If it's the last track, the player is kill.
+        """
+        
         if not payload.player.queue.empty():
             payload.player.queue.task_done()
             await payload.player.play(await payload.player.queue.get())
@@ -70,6 +82,9 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
     @commands.command(name="join")
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def _connect(self, ctx, *, channel: discord.VoiceChannel=None):
+        """The function/command to connect the bot to a voice channel.
+        This function also create an asyncio queue used as a queue for the tracks.
+        """
         if not channel:
             try:
                 channel = ctx.author.voice.channel
@@ -89,6 +104,8 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
 
     @commands.command(name="leave")
     async def _disconnect(self, ctx, *, channel: discord.VoiceChannel=None):
+        """The function/command to leave a voice channel.
+        """
         if not channel:
             try:
                 channel = ctx.author.voice.channel
@@ -101,7 +118,6 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
 
             await ctx.message.add_reaction("👋")
             return player
-
 
     @commands.command(name="play", aliases=["p"])
     async def _play(self, ctx, *, query: str):
@@ -147,7 +163,6 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
             await ctx.send(embed=Embed(description=f"Track added to queue: **[{track.title}]({track.uri})**", color=Color.DEFAULT))
             return track
 
-
     @commands.command(name="stop")
     async def _stop(self, ctx):
         if ctx.author.voice:
@@ -162,7 +177,6 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
 
             await ctx.message.add_reaction("🛑")
             return player
-
 
     @commands.command()
     async def pause(self, ctx):

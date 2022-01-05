@@ -22,7 +22,6 @@ class Client(cmds.Bot):
     def __init__(self, prefix: str=None, in_container: bool = False):
         self.prefix = prefix
 
-        self._loader = LoaderManager(self)
         self.db = None
         self.musicCmd = None
         self.redditCmd = None
@@ -45,11 +44,11 @@ class Client(cmds.Bot):
         print(f"\n\tClient Name:\t{self.user.name}")
         print(f"\tClient ID:\t{self.user.id}")
         print(f"\tClient Disc:\t{self.user.discriminator}\n")
-  
+
         print(f"\t Is in container: {self.in_container}\n")
 
         await self.load_extensions()
-        
+
         self.redditCmd = RedditCommandsManager(
             self,
             os.getenv("REDDIT_CLIENT_ID"),
@@ -104,5 +103,5 @@ class Client(cmds.Bot):
 
         if isinstance(error, ignored):
             return
-        
+
         raise error

@@ -4,6 +4,8 @@ import os
 import bson
 from .utils import MathsLevels
 
+__all__ = ["Database"]
+
 class Database(object):
     def __init__(self):
         client = pymongo.MongoClient(os.getenv("MONGODB_URI"))
