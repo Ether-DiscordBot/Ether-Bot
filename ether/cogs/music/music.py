@@ -47,10 +47,9 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
             port=2333,
             rest_uri=f'http://{self.client.lavalink_host}:2333',
             password="pxV58RF6f292N9NK",
-            identifier='Ether',
+            identifier='ETHER GLOBAL',
             region='us_central'
         )
-
 
     @wavelink.WavelinkMixin.listener()
     async def on_track_start(self, node: wavelink.Node, payload):
@@ -132,6 +131,9 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
             
             await ctx.invoke(self._connect)
         
+        if not bool(player.node):
+            player.change_node()
+        
         if not URL_REG.match(query):            
             tracks = await self.client.wavelink.get_tracks(f'ytsearch:{query}')
             if not tracks:
@@ -142,7 +144,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
                 return await ctx.send(embed=Embed(description='Invalid URL.', color=Color.ERROR), delete_after=10)
 
         if not player.is_connected:
-            await ctx.invoke(self.connect_)
+            await ctx.invoke(self._connect)
 
         if isinstance(tracks, TrackPlaylist):
             for t in tracks.tracks:
@@ -279,7 +281,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin, name="music"):
             await ctx.message.add_reaction("👌")
 
     @commands.command(name="lavalinkinfo")
-    async def info(self, ctx):
+    async def lavalink_info(self, ctx):
         player = self.client.wavelink.get_player(ctx.guild.id)
         node = player.node
 
