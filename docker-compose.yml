@@ -6,7 +6,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    restart: on-failure
     depends_on:
       lavalink:
         condition: service_started

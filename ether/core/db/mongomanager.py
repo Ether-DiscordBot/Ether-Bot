@@ -2,7 +2,8 @@ from PIL.Image import new
 import pymongo
 import os
 import bson
-from .utils import MathsLevels
+from ether.core.utils import MathsLevels
+from .user import outside_function
 
 __all__ = ["Database"]
 
