@@ -1,10 +1,10 @@
+import random
+import os
+from typing import Optional
+
 import discord
 from discord.ext import commands as cmds
 from discord.ext.commands import when_mentioned_or
-from typing import Optional
-import random
-import os
-
 from dotenv import load_dotenv
 
 from ether.core import Utils, CogManager, RedditCommandsManager, Database
