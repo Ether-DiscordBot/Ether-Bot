@@ -1,6 +1,8 @@
 import random
 import os
 from typing import Optional
+import logging
+import sys
 
 import discord
 from discord.ext import commands as cmds
@@ -10,6 +12,21 @@ from dotenv import load_dotenv
 from ether.core import Utils, CogManager, RedditCommandsManager, Database
 
 load_dotenv()
+
+LOG_FORMAT = "[%(levelname)s] %(asctime)s \t: %(message)s"
+logging.basicConfig(filename='debug.log',
+                    level=logging.DEBUG,
+                    format=LOG_FORMAT,
+                    filemode='w')
+
+logger = logging.getLogger("ether_log")
+
+stream = logging.StreamHandler()
+stream.setLevel(logging.DEBUG)
+stream.setFormatter(logging.Formatter(LOG_FORMAT))
+
+
+logger.addHandler(stream)
 
 
 def get_prefix(client, message):
@@ -43,11 +60,11 @@ class Client(cmds.Bot):
         await cogs_loader.load_cogs()
 
     async def on_ready(self):
-        print(f"\n\tClient Name:\t{self.user.name}")
-        print(f"\tClient ID:\t{self.user.id}")
-        print(f"\tClient Disc:\t{self.user.discriminator}\n")
+        logger.debug(f"\tClient Name:\t{self.user.name}")
+        logger.debug(f"\tClient ID:\t{self.user.id}")
+        logger.debug(f"\tClient Disc:\t{self.user.discriminator}\n")
 
-        print(f"\t Is in container: {self.in_container}\n")
+        logger.debug(f"\tIs in container: {self.in_container}\n")
 
         await self.load_extensions()
 
