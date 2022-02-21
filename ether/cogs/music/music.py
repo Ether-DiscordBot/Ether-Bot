@@ -83,8 +83,7 @@ class Music(commands.Cog, name="music"):
         if not ctx.author.voice:
             await ctx.send(embed=Embed(description="Please join a channel.", color=Color.ERROR))
             return None
-        else:
-            channel = ctx.author.voice.channel
+        channel = ctx.author.voice.channel
 
         if not ctx.voice_client:
             player = Player(text_channel=ctx.channel)
@@ -256,7 +255,7 @@ class Music(commands.Cog, name="music"):
             name="Now Playing:",
             value=f'`1.` [{first_track.title}]({first_track.uri[:30]}) | '
                   f'`{datetime.timedelta(seconds=first_track.length) if not first_track.is_stream() else "🔴 Stream"}`',
-            inline=False,
+            inline=False
         )
 
         next_track_label = []
@@ -269,7 +268,7 @@ class Music(commands.Cog, name="music"):
                 title = title[:32] + " ..."
             next_track_label.append(
                 f"`{vc.queue.find_position(track) + 2}.` [{title}]({track.uri}) | "
-                f"`{'🔴 Stream' if track.is_stream() else datetime.timedelta(seconds=track.length)}`"),
+                f"`{'🔴 Stream' if track.is_stream() else datetime.timedelta(seconds=track.length)}`")
 
         if next_track_label:
             embed.add_field(
