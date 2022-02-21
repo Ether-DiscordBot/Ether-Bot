@@ -2,13 +2,11 @@
 
 ![](https://img.shields.io/badge/python-3.9-blue.svg) ![](https://img.shields.io/github/license/holy-tanuki/Ether-Bot) ![](https://img.shields.io/github/stars/holy-tanuki/Ether-Bot)
 
-Ether is a powerful bot for Discord coding in python. It can interact with an online dashboard (feature under development), it has a very complete music part using [Lavalink](https://github.com/Frederikam/Lavalink) and many other features developed or under development.
-
-The bot will be divided into two parts, one opensource and another that will communicate with a database, the latter will be private.
+Ether is a powerful python Discord bot. And has a very complete music part using [Lavalink](https://github.com/Frederikam/Lavalink) and many other features.
 
 ## Installation
 
-Only **Windows** is supported for now.
+Prefer to use **Docker-compose** to make sure the bot works properly
 
 [Warning] The bot is still in development, come back later to have all the installation steps.
 
