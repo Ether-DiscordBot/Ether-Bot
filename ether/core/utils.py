@@ -1,16 +1,15 @@
-import os
-import importlib
 from random import choice
-import praw
 import math
+
+import praw
 
 
 class MathsLevels:
-    def get_level(level, exp):
-        return int(math.sqrt(max(MathsLevels.level_to_exp(level)+exp, 1))*0.2)
+    def get_level(level: int, exp):
+        return int(math.sqrt(max(MathsLevels.level_to_exp(level) + exp, 1)) * 0.2)
 
-    def level_to_exp(level):
-        return 50*pow(level-1, 2)
+    def level_to_exp(level: int):
+        return 50 * pow(level - 1, 2)
 
 
 class RedditCommandsManager:
@@ -31,17 +30,19 @@ class RedditCommandsManager:
             post
             for post in sub.hot(limit=100)
             if post.url.endswith(".png")
-            or post.url.endswith(".jpg")
-            or post.url.endswith(".gif")
-            or post.url.endswith(".gifv")
+               or post.url.endswith(".jpg")
+               or post.url.endswith(".gif")
+               or post.url.endswith(".gifv")
         ]
 
         return choice(subs)
+
 
 class Utils(object):
     def get_avatar_url(user, format="png", size="64"):
         if user:
             return f"https://cdn.discordapp.com/avatars/{user.id}/{user.avatar}.{format}?size={size}"
+
 
 class Color:
     ERROR = 0xED4245

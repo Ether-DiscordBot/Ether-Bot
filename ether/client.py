@@ -1,12 +1,13 @@
-import ether
 import discord
 from discord.ext import commands as cmds
 from discord.ext.commands import when_mentioned_or
-import os
-from dotenv import load_dotenv
+from typing import Optional
 import random
+import os
 
-from ether.core import *
+from dotenv import load_dotenv
+
+from ether.core import Utils, CogManager, RedditCommandsManager, Database
 
 load_dotenv()
 
@@ -20,7 +21,7 @@ APP_VERSION = "0.0.8"
 
 
 class Client(cmds.Bot):
-    def __init__(self, prefix: str = None, in_container: bool = False):
+    def __init__(self, prefix: Optional[str] = None, in_container: bool = False):
         self.prefix = prefix
 
         self.db = None

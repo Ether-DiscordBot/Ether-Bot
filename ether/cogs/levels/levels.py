@@ -1,10 +1,13 @@
-from discord.ext import commands
-from discord import Embed, File
-from ether import Color, MathsLevels
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
-import io, base64
-import requests
+import base64
+import io
 import os
+
+import requests
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from discord import Embed, File
+from discord.ext import commands
+
+from ether import Color, MathsLevels
 
 
 class Levels(commands.Cog, name="levels"):

@@ -1,11 +1,9 @@
 from discord import Embed
 from discord.ext import commands
 from random import random
-from requests.api import request
 
 
 class Misc(commands.Cog):
-    SCP_URI="scp-wiki.wikidot.com/scp-{num}{lang}"
     def __init__(self, client):
         self.client = client
         self.fancy_name = "Misc"
@@ -13,7 +11,7 @@ class Misc(commands.Cog):
     @commands.command()
     async def help(self, ctx):
         embed = Embed(
-            description="Get more informations about these [commands](https://www.youtube.com/watch?v=dQw4w9WgXcQ)."
+            description="Get more information about these [commands](https://www.youtube.com/watch?v=dQw4w9WgXcQ)."
         )
         for name, cog in self.client.cogs.items():
             field = {"name": cog.fancy_name, "value": []}

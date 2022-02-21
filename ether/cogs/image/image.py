@@ -18,7 +18,7 @@ class Image(commands.Cog, name="image"):
         else:
             embed = Embed(title=post.title)
             embed.url = "https://reddit.com" + post.permalink
-            embed.color = Color.DEFAULT
+            embed.colour = Color.DEFAULT
             embed.set_image(url=post.url)
             embed.set_footer(text=f"⬆️ {post.score} │ 💬 {post.num_comments}")
 

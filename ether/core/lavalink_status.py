@@ -1,11 +1,12 @@
 import time
+
 import socket
 
 opt = ("lavalink", 2333)
 
 
 def request(timeout=5.0):
-    print("Checking lavalink status...")
+    print("Checking lavalink socket status...")
     start_time = time.perf_counter()
     while True:
         try:
