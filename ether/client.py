@@ -16,7 +16,7 @@ def get_prefix(client, message):
     return when_mentioned_or(os.getenv("BASE_PREFIX"))(client, message) + list(guild['prefix'])
 
 
-APP_VERSION = "0.0.7dev3"
+APP_VERSION = "0.0.8"
 
 
 class Client(cmds.Bot):
