@@ -120,10 +120,9 @@ class Music(commands.Cog, name="music"):
         if not vc:
             return
 
-        if ctx.author.voice.channel.id != vc.channel.id:
-            if vc.is_playing:
-                return await ctx.send(
-                    embed=Embed(description="I'm already playing music in an other channel.", color=Color.ERROR))
+        if ctx.author.voice.channel.id != vc.channel.id and vc.is_playing:
+            return await ctx.send(
+                embed=Embed(description="I'm already playing music in an other channel.", color=Color.ERROR))
 
         try:
             track = await wavelink.YouTubeTrack.search(query=query, return_first=True)
@@ -230,7 +229,7 @@ class Music(commands.Cog, name="music"):
             return
 
         shuffled_queue = vc.queue.copy()
-        shuffled_queue = [t for t in shuffled_queue]
+        shuffled_queue = list(shuffled_queue)
         random.shuffle(shuffled_queue)
         vc.queue.clear()
 
@@ -259,13 +258,13 @@ class Music(commands.Cog, name="music"):
         )
 
         next_track_label = []
-        for t in range(10):
+        for _ in range(10):
             if queue.is_empty:
                 break
             track = queue.get()
             title = track.title
             if len(track.title) > 35:
-                title = title[:32] + " ..."
+                title = f'{title[:32]} ...'
             next_track_label.append(
                 f"`{vc.queue.find_position(track) + 2}.` [{title}]({track.uri}) | "
                 f"`{'🔴 Stream' if track.is_stream() else datetime.timedelta(seconds=track.length)}`")
