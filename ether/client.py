@@ -1,4 +1,4 @@
-from ether.core import *
+import ether
 import discord
 from discord.ext import commands as cmds
 from discord.ext.commands import when_mentioned_or

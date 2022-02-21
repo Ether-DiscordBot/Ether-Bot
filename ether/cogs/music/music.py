@@ -9,7 +9,7 @@ import random
 import humanize
 import datetime
 
-from ether import Color
+from ether import Color, request
 
 URL_REG = re.compile(r'https?://(?:www\.)?.+')
 
@@ -31,6 +31,11 @@ class Music(commands.Cog, name="music"):
 
     async def connect_nodes(self):
         await self.client.wait_until_ready()
+
+        r = request()
+        if r != 0:
+            return print("Lavalink socket is not open")
+        print("Lavalink socket is open")
 
         await wavelink.NodePool.create_node(bot=self.client,
                                             host=f'{self.client.lavalink_host}',
