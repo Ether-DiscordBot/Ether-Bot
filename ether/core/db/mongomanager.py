@@ -23,8 +23,7 @@ class Database(object):
     """
 
     def get_guild(self, guild, cd=5):
-        db_guild = self.db.guilds.find_one({"id": bson.Int64(guild.id)})
-        if db_guild:
+        if db_guild := self.db.guilds.find_one({"id": bson.Int64(guild.id)}):
             return db_guild
         if cd > 0:
             return self.create_guild(guild, cd-1)
@@ -67,8 +66,9 @@ class Database(object):
     def get_guild_user(self, guild, user, cd=5):
         if user.bot:
             return
-        db_user = self.db.guild_users.find_one({"guild_id": bson.Int64(guild.id), "id": bson.Int64(user.id)})
-        if db_user:
+        if db_user := self.db.guild_users.find_one(
+            {"guild_id": bson.Int64(guild.id), "id": bson.Int64(user.id)}
+        ):
             return db_user
         if cd > 0:
             return self.create_guild_user(guild, user, cd-1)
@@ -86,8 +86,7 @@ class Database(object):
         return self.get_guild_user(guild, user, cd)
 
     def add_exp(self, guild, user, amount):
-        dbuser = self.get_guild_user(guild, user)
-        if dbuser:
+        if dbuser := self.get_guild_user(guild, user):
             new_exp=dbuser['exp']+amount
             new_level_exp=new_exp-MathsLevels.level_to_exp(dbuser['levels']+1)
             if new_level_exp >= 0:
@@ -104,8 +103,7 @@ class Database(object):
     def get_user(self, user, cd=5):
         if user.bot:
             return
-        db_user = self.db.users.find_one({"id": bson.Int64(user.id)})
-        if db_user:
+        if db_user := self.db.users.find_one({"id": bson.Int64(user.id)}):
             return db_user
         if cd > 0:
             return self.create_user(user, cd-1)
@@ -132,8 +130,12 @@ class Database(object):
     """
     
     def get_playlist(self, guild, message):
-        db_playlist = self.db.playlists.find_one({"message_id": bson.Int64(message.id), "guild_id": bson.Int64(guild.id)})
-        if db_playlist:
+        if db_playlist := self.db.playlists.find_one(
+            {
+                "message_id": bson.Int64(message.id),
+                "guild_id": bson.Int64(guild.id),
+            }
+        ):
             return db_playlist
         return
 

@@ -10,6 +10,7 @@ from ether.core import *
 
 load_dotenv()
 
+
 def get_prefix(client, message):
     guild = client.db.get_guild(message.guild)
     return when_mentioned_or(os.getenv("BASE_PREFIX"))(client, message) + list(guild['prefix'])
@@ -19,7 +20,7 @@ APP_VERSION = "0.0.7dev3"
 
 
 class Client(cmds.Bot):
-    def __init__(self, prefix: str=None, in_container: bool = False):
+    def __init__(self, prefix: str = None, in_container: bool = False):
         self.prefix = prefix
 
         self.db = None
@@ -30,14 +31,14 @@ class Client(cmds.Bot):
 
         self.utils = Utils
 
-        self.lavalink_host = "lavalink" if self.in_container else "locahost"
+        self.lavalink_host = "lavalink" if self.in_container else "localhost"
 
         super().__init__(
             command_prefix=self.prefix, help_command=None
         )
 
     async def load_extensions(self):
-        cogs_loader=CogManager(self)
+        cogs_loader = CogManager(self)
         await cogs_loader.load_cogs()
 
     async def on_ready(self):
@@ -65,8 +66,7 @@ class Client(cmds.Bot):
         guild = self.db.get_guild(member.guild)
         log = guild["logs"]["join"]
         if log["active"]:
-            channel = member.guild.get_channel(log["channel_id"])
-            if channel:
+            if channel := member.guild.get_channel(log["channel_id"]):
                 await channel.send(
                     log["message"].format(user=member, guild=member.guild)
                 )
@@ -76,8 +76,7 @@ class Client(cmds.Bot):
             guild = self.db.get_guild(member.guild)
             log = guild["logs"]["leave"]
             if log["active"]:
-                channel = member.guild.get_channel(log["channel_id"])
-                if channel:
+                if channel := member.guild.get_channel(log["channel_id"]):
                     await channel.send(
                         log["message"].format(user=member, guild=member.guild)
                     )
@@ -90,7 +89,7 @@ class Client(cmds.Bot):
             self.db.get_guild(ctx.guild)
             self.db.get_user(ctx.author)
             if random.randint(1, 100) <= 33:
-                new_level=self.db.add_exp(ctx.guild, ctx.author, 4)
+                new_level = self.db.add_exp(ctx.guild, ctx.author, 4)
                 if new_level != -1:
                     await ctx.channel.send(f'Congratulation <@{ctx.author.id}>, you just pass to level {new_level}!')
 
