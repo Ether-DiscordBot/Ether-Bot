@@ -1,2 +1,4 @@
-from .utils import Colour, Utils, LoaderManager, RedditCommandsManager
-from .mongomanager import Database
+from .utils import Color, Utils, RedditCommandsManager, MathsLevels
+from .db.mongomanager import *
+from .cog_manager import *
+from .bot_log import *

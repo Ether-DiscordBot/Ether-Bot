@@ -13,8 +13,8 @@ lavalink:
       http: true
       local: false
     bufferDurationMs: 400
-    youtubePlaylistLoadLimit: 2 # Number of pages at 100 each
-    playerUpdateInterval: 5 # How frequently to send player updates to clients, in seconds
+    youtubePlaylistLoadLimit: 1 # Number of pages at 100 each
+    playerUpdateInterval: 10 # How frequently to send player updates to clients, in seconds
     youtubeSearchEnabled: true
     soundcloudSearchEnabled: true
     gc-warnings: true
@@ -31,7 +31,7 @@ sentry:
 logging:
   file:
     max-history: 30
-    max-size: 1GB
+    max-size: 512MB
   path: ./logs/
 
   level:
