@@ -16,8 +16,7 @@ class Levels(commands.Cog, name="levels"):
     
     @commands.command(name="profile", aliases=["me", "rank", "level"])
     async def profile(self, ctx):
-        user=self.client.db.get_guild_user(ctx.guild, ctx.author)
-        if user:
+        if user := self.client.db.get_guild_user(ctx.guild, ctx.author):
             card=await self.ch.create_card(ctx.author, user)
             image=io.BytesIO(base64.b64decode(card))
             return await ctx.send(file=File(fp=image, filename=f"{ctx.author.name}_card.png"))

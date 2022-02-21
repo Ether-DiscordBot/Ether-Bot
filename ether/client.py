@@ -66,8 +66,7 @@ class Client(cmds.Bot):
         guild = self.db.get_guild(member.guild)
         log = guild["logs"]["join"]
         if log["active"]:
-            channel = member.guild.get_channel(log["channel_id"])
-            if channel:
+            if channel := member.guild.get_channel(log["channel_id"]):
                 await channel.send(
                     log["message"].format(user=member, guild=member.guild)
                 )
@@ -77,8 +76,7 @@ class Client(cmds.Bot):
             guild = self.db.get_guild(member.guild)
             log = guild["logs"]["leave"]
             if log["active"]:
-                channel = member.guild.get_channel(log["channel_id"])
-                if channel:
+                if channel := member.guild.get_channel(log["channel_id"]):
                     await channel.send(
                         log["message"].format(user=member, guild=member.guild)
                     )
