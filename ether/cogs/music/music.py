@@ -1,17 +1,21 @@
+import logging
+import datetime
+import re
+from typing import Optional
+import random
+
 import discord
 from discord.ext import commands
 from discord import Embed
 import wavelink
 from wavelink.tracks import YouTubeTrack, YouTubePlaylist
-import re
-from typing import Optional
-import random
 import humanize
-import datetime
 
 from ether import Color, request
 
 URL_REG = re.compile(r'https?://(?:www\.)?.+')
+
+logger = logging.getLogger("ether_log")
 
 
 class Player(wavelink.Player):
@@ -34,8 +38,7 @@ class Music(commands.Cog, name="music"):
 
         r = request()
         if r != 0:
-            return print("Lavalink socket is not open")
-        print("Lavalink socket is open")
+            return
 
         await wavelink.NodePool.create_node(bot=self.client,
                                             host=f'{self.client.lavalink_host}',
@@ -46,7 +49,7 @@ class Music(commands.Cog, name="music"):
     @commands.Cog.listener()
     async def on_wavelink_node_ready(self, node: wavelink.Node):
         """Event fired when a node has finished connecting."""
-        print(f'Node: <{node.identifier}> is ready!')
+        logger.debug(f'Node: <{node.identifier}> is ready!')
 
     @commands.Cog.listener()
     async def on_wavelink_track_start(self, player: Player, track: wavelink.Track):

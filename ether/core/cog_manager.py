@@ -1,3 +1,4 @@
+import logging
 import os
 
 from pathlib import Path
@@ -7,6 +8,8 @@ from typing import List
 import ether.cogs
 
 __all__ = ["CogManager"]
+
+logger = logging.getLogger("ether_log")
 
 
 class CogManager:
@@ -57,8 +60,8 @@ class CogManager:
                     )
                     try:
                         mod.setup(self.client)
-                        print(
-                            f"\t[{paths.index(path) + 1}/{len(paths)}] Commands loaded in {mod.__name__}"
+                        logger.debug(
+                            f"[{paths.index(path) + 1}/{len(paths)}] Commands loaded in {mod.__name__}"
                         )
                     except Exception as e:
                         raise e

@@ -2,7 +2,6 @@ import random
 import os
 from typing import Optional
 import logging
-import sys
 
 import discord
 from discord.ext import commands as cmds
@@ -60,11 +59,11 @@ class Client(cmds.Bot):
         await cogs_loader.load_cogs()
 
     async def on_ready(self):
-        logger.debug(f"\tClient Name:\t{self.user.name}")
-        logger.debug(f"\tClient ID:\t{self.user.id}")
-        logger.debug(f"\tClient Disc:\t{self.user.discriminator}\n")
+        logger.debug(f"Client Name:\t{self.user.name}")
+        logger.debug(f"Client ID:\t{self.user.id}")
+        logger.debug(f"Client Disc:\t{self.user.discriminator}")
 
-        logger.debug(f"\tIs in container: {self.in_container}\n")
+        logger.debug(f"Is in container: {self.in_container}")
 
         await self.load_extensions()
 
