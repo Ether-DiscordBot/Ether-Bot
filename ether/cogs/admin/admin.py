@@ -90,8 +90,12 @@ class Admin(commands.Cog, name="admin"):
     @commands.has_permissions(manage_messages=True)
     async def clear(self, ctx, amount: int):
         if not amount:
-            await ctx.send("Please specify a number.")
+            embed = Embed(description=f'Please indicate a number of messages to delete.')
+            embed.colour = Color.ERROR
+            await ctx.send(embed=embed, delete_after=5)
             return
 
         deleted = await ctx.channel.purge(limit=amount+1)
-        await ctx.send(f'Deleted {len(deleted)-1} message(s).', delete_after=5)
+        embed = Embed(description=f'Deleted {len(deleted)-1} message(s).')
+        embed.colour = Color.SUCCESS
+        await ctx.send(embed=embed, delete_after=5)
