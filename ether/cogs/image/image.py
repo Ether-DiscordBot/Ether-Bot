@@ -1,5 +1,9 @@
+import os
+
+import requests
 from discord.ext import commands
 from discord import Embed
+
 from ether import Color
 
 
@@ -7,6 +11,7 @@ class Image(commands.Cog, name="image"):
     def __init__(self, client):
         self.client = client
         self.fancy_name = "Image"
+        self.giphy_api_key = os.getenv("GIPHY_API_KEY")
 
     async def embed_response(self, ctx, sub, err_msg):
         return await ctx.send(embed=Embed(description="This command is disabled. Retry later", color=Color.ERROR))
@@ -23,6 +28,30 @@ class Image(commands.Cog, name="image"):
             embed.set_footer(text=f"⬆️ {post.score} │ 💬 {post.num_comments}")
 
         return await ctx.send(embed=embed)
+
+    @commands.command()
+    async def gif(self, ctx, *, query):
+        r = requests.get(f"https://api.giphy.com/v1/gifs/random?tag={query}&api_key={self.giphy_api_key}")
+
+        r = r.json()
+        if not r['data']:
+            await ctx.send("Sorry, I could not find any gifs with this query.")
+            return
+        gif_url = r['data']['url']
+
+        await ctx.send(gif_url)
+
+    @commands.command()
+    async def sticker(self, ctx, *, query):
+        r = requests.get(f"https://api.giphy.com/v1/stickers/random?tag={query}&api_key={self.giphy_api_key}")
+
+        r = r.json()
+        if not r['data']:
+            await ctx.send("Sorry, I could not find any stickers with this query.")
+            return
+        sticker_url = r['data']['images']['original']['url']
+
+        await ctx.send(sticker_url)
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
