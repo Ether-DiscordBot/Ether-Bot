@@ -14,10 +14,8 @@ class Admin(commands.Cog, name="admin"):
     @commands.has_permissions(ban_members=True)
     async def ban(self, ctx, member: User, *, reason: str = None):
         if not member:
-            embed = Embed(
-                color=Color.ERROR, description=f"Unknown **{member.name}** !"
-            )
-            return await ctx.send(embed=embed)
+            await ctx.send_error(f"Unknown **{member.name}** !")
+            return
 
         db_guild = self.client.db.get_guild(ctx.guild)
 
@@ -47,11 +45,8 @@ class Admin(commands.Cog, name="admin"):
 
         except Exception as e:
             print(e)
-            embed = Embed(
-                color=Color.ERROR,
-                description="Can't do that. Probably because I don't have the permissions for.",
-            )
-            return await ctx.send(embed=embed)
+            await ctx.send_error("Can't do that. Probably because I don't have the permissions for.")
+            return
 
     @commands.command()
     @commands.has_permissions(kick_members=True)
@@ -79,23 +74,18 @@ class Admin(commands.Cog, name="admin"):
 
                     await channel.send(embed=embed)
         except Exception:
-            embed = Embed(
-                color=Color.ERROR,
-                description="Can't do that. Probably because I don't have the "
-                            "permissions for.",
-            )
-            return await ctx.send(embed=embed)
+            await ctx.send_error("Can't do that. Probably because I don't have the "
+                                 "permissions for.")
+            return
 
     @commands.command(name="clear", aliases=["purge", "cleanup"])
     @commands.has_permissions(manage_messages=True)
     async def clear(self, ctx, amount: int):
         if not amount:
-            embed = Embed(description=f'Please indicate a number of messages to delete.')
-            embed.colour = Color.ERROR
-            await ctx.send(embed=embed, delete_after=5)
+            await ctx.send_error('Please indicate a number of messages to delete.', delete_after=5)
             return
 
-        deleted = await ctx.channel.purge(limit=amount+1)
-        embed = Embed(description=f'Deleted {len(deleted)-1} message(s).')
+        deleted = await ctx.channel.purge(limit=amount + 1)
+        embed = Embed(description=f'Deleted {len(deleted) - 1} message(s).')
         embed.colour = Color.SUCCESS
         await ctx.send(embed=embed, delete_after=5)

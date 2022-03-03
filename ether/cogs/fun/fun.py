@@ -4,6 +4,8 @@ import discord
 from discord import Embed, User
 from discord.ext import commands
 
+import ether
+
 
 class Fun(commands.Cog):
     HEIGHT_BALL_ANSWERS = [
@@ -52,24 +54,19 @@ class Fun(commands.Cog):
         await ctx.send(f"🎱 {choice(choice(self.HEIGHT_BALL_ANSWERS))}")
 
     @commands.command(name="say", aliases=["tell"])
-    async def say(self, ctx: commands.Context, *args):
+    async def say(self, ctx: ether.EtherContext, *, message):
         """
         Say what something the user want to.
         """
 
-        if args[len(args)-1] in ("--hide", "-h"):
-            hide = True
-            args = list(args)
-            args.pop(len(args)-1)
-        else:
-            hide = False
+        options = ctx.get_options("hide")
 
-        text = " ".join(args)
+        if options.get("hide"):
+            message = message.replace("--hide", "")
+            await ctx.message.delete()
 
-        if len(text) <= 0:
+        if len(message) <= 0:
             return await ctx.reply(f"What would you like me to say ?",
                                    allowed_mentions=discord.AllowedMentions.none())
 
-        if hide:
-            await ctx.message.delete()
-        await ctx.send(text)
+        await ctx.send(message)

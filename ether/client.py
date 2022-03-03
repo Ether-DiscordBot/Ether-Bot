@@ -1,14 +1,15 @@
+import optparse
 import random
 import os
 from typing import Optional
 import logging
 
 import discord
-from discord.ext import commands as cmds
+from discord.ext import commands
 from discord.ext.commands import when_mentioned_or
 from dotenv import load_dotenv
 
-from ether.core import Utils, CogManager, RedditCommandsManager, Database
+from ether.core import Utils, CogManager, RedditCommandsManager, Database, EtherContext
 
 load_dotenv()
 
@@ -24,7 +25,6 @@ stream = logging.StreamHandler()
 stream.setLevel(logging.DEBUG)
 stream.setFormatter(logging.Formatter(LOG_FORMAT))
 
-
 logger.addHandler(stream)
 
 
@@ -36,7 +36,7 @@ def get_prefix(client, message):
 APP_VERSION = "0.0.8"
 
 
-class Client(cmds.Bot):
+class Client(commands.Bot):
     def __init__(self, prefix: Optional[str] = None, in_container: bool = False):
         self.prefix = prefix
 
@@ -98,6 +98,9 @@ class Client(cmds.Bot):
                         log["message"].format(user=member, guild=member.guild)
                     )
 
+    async def get_context(self, message, *, cls=EtherContext):
+        return await super().get_context(message, cls=cls)
+
     async def on_message(self, ctx):
         if ctx.author.bot:
             return
@@ -113,8 +116,8 @@ class Client(cmds.Bot):
         await self.process_commands(ctx)
 
     async def on_command_error(self, ctx, error):
-        ignored = (cmds.NoPrivateMessage, cmds.DisabledCommand, cmds.CheckFailure,
-                   cmds.CommandNotFound, cmds.UserInputError, discord.HTTPException)
+        ignored = (commands.NoPrivateMessage, commands.DisabledCommand, commands.CheckFailure,
+                   commands.CommandNotFound, commands.UserInputError, discord.HTTPException)
         error = getattr(error, 'original', error)
 
         if isinstance(error, ignored):
