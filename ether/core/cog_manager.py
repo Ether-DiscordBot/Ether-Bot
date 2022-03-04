@@ -41,6 +41,9 @@ class CogManager:
 
     async def load_cogs(self):
         """Load cogs
+
+        This function goes to all folders in the ether/cogs/ folder and loads all cogs.
+        A file is folder is composed of at least one __init__.py file and the cog file.
         """
 
         paths = await self.paths()
@@ -52,7 +55,6 @@ class CogManager:
 
             for file in listdir:
                 if file == init_file:
-                    # todo
                     name = f".{os.path.basename(path)}"
                     package = "ether.cogs"
                     mod = importlib.import_module(

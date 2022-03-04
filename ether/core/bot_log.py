@@ -4,6 +4,9 @@ __all__ = ["BanLog"]
 
 
 class LogMessage:
+    """ A log message class
+
+    """
     def __init__(self,
                  client,
                  action: str,

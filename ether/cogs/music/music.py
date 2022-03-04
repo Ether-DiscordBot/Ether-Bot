@@ -11,8 +11,8 @@ import wavelink
 from wavelink.tracks import YouTubeTrack, YouTubePlaylist
 import humanize
 
-import ether
-from ether import Color, request
+import ether.core
+from ether.core import Color, request
 
 URL_REG = re.compile(r'https?://(?:www\.)?.+')
 
@@ -81,7 +81,7 @@ class Music(commands.Cog, name="music"):
 
     @commands.command(name="join")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def _connect(self, ctx: ether.EtherContext) -> Optional[Player]:
+    async def _connect(self, ctx: ether.core.EtherContext) -> Optional[Player]:
         """
         This function can return None.
 
@@ -123,7 +123,7 @@ class Music(commands.Cog, name="music"):
             return vc
 
     @commands.command(name="play", aliases=["p"])
-    async def _play(self, ctx: ether.EtherContext, *, query):
+    async def _play(self, ctx: ether.core.EtherContext, *, query):
         vc: Player = await ctx.invoke(self._connect)
 
         if not vc:

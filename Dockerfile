@@ -1,8 +1,8 @@
-FROM python:3.9
+FROM python:latest
 
-WORKDIR /ether
+WORKDIR /mochi
 
-COPY . /ether
+COPY . /mochi
 RUN pip install -r ./requirements.txt
 
-CMD ["python", "-u", "-m", "ether"]
+CMD ["python", "-m", "mochi"]

@@ -4,10 +4,10 @@ import os
 
 import requests
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
-from discord import Embed, File
+from discord import File
 from discord.ext import commands
 
-from ether import Color, MathsLevels
+from ether.core import Color, MathsLevels
 
 
 class Levels(commands.Cog, name="levels"):

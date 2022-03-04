@@ -1,10 +1,9 @@
 from random import choice
 
 import discord
-from discord import Embed, User
 from discord.ext import commands
 
-import ether
+import ether.core
 
 
 class Fun(commands.Cog):
@@ -54,7 +53,7 @@ class Fun(commands.Cog):
         await ctx.send(f"🎱 {choice(choice(self.HEIGHT_BALL_ANSWERS))}")
 
     @commands.command(name="say", aliases=["tell"])
-    async def say(self, ctx: ether.EtherContext, *, message):
+    async def say(self, ctx: ether.core.EtherContext, *, message):
         """
         Say what something the user want to.
         """
