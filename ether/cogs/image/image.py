@@ -4,7 +4,7 @@ import requests
 from discord.ext import commands
 from discord import Embed
 
-from ether import Color
+from ether.core import Color
 
 
 class Image(commands.Cog, name="image"):

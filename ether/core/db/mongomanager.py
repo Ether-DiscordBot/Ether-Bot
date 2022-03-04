@@ -17,8 +17,6 @@ class Database(object):
         self.db = client["dbot"]
         if self.db is not None:
             logger.debug("MongoDB logged")
-            for collection in self.db.list_collection_names():
-                logger.debug(f"\tFind collection => {collection}")
 
         self.default_prefix = os.getenv("BASE_PREFIX")
 

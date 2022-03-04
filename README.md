@@ -1,28 +1,12 @@
-# Mochi DiscordBot
+# Ether Bot
 
-![](https://img.shields.io/badge/python-3.9-blue.svg) ![](https://img.shields.io/badge/discord-py-blue.svg) ![](https://img.shields.io/github/license/holy-tanuki/Mochi-DiscordBot) ![](https://img.shields.io/github/stars/holy-tanuki/Mochi-DiscordBot)
+![](https://img.shields.io/badge/python-3.9-blue.svg) ![](https://img.shields.io/github/license/holy-tanuki/Ether-Bot) ![](https://img.shields.io/github/stars/holy-tanuki/Ether-Bot)
 
-Mochi is a powerful bot for Discord coding in python. It can interact with an online dashboard (feature under development), it has a very complete music part using [Lavalink](https://github.com/Frederikam/Lavalink) and many other features developed or under development.
+Ether is a powerful python Discord bot. And has a very complete music part using [Lavalink](https://github.com/Frederikam/Lavalink) and many other features.
 
-The bot will be divided into two parts, one opensource and another that will communicate with a database, the latter will be private.
-
-## To-do list
-
-Mochi is in the very early stages of development, many of the features are not there yet but they will come.
-
-For the moment only this feature is available:
-
-### Admin
-- Kick ✅, Ban ✅, Mute ❌, Unban ❌, Unmute ❌
-### Image
-- Meme ✅, Cat ✅, Dog ✅, Aww ✅, Sadcat ✅, Fans ✅, axolotl ✅
-### Misc
-- Help ✅, Ping ✅, Avatar ✅, Flipcoin ✅
-### Music
-- Join ✅, Leave ✅, Play ✅, Stop ✅, Pause ✅, Resume ✅, Loop ✅, Skip ✅, Shuffle ✅, Queue ✅, Lavalinkinfo ✅, Search ❌
 ## Installation
 
-Only **Windows** is supported for now.
+Prefer to use **Docker-compose** to make sure the bot works properly
 
 [Warning] The bot is still in development, come back later to have all the installation steps.
 
@@ -30,15 +14,32 @@ Only **Windows** is supported for now.
  - Install all the dependencies in the `requirements.txt`
  - And put the key-values in a .env file (follow the .env.example)
 
-To run the bot:
+To build the container:
 
 ```
-$ java -jar Lavalink.jar
+$ docker-compose build
 ```
 
+To run the container:
+
 ```
-$ python -m mochi
+$ docker-compose up
 ```
+
+To build and run the container:
+
+```
+$ docker-compose up --build
+```
+
+To stop/remove the container:
+
+```
+$ docker-compose kill
+$ docker-compose rm
+```
+
+on Linux add `sudo `.
 
 ## License
 

@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from discord import File
 from discord.ext import commands
 
-from ether.core import Color, MathsLevels
+from ether.core import MathsLevels
 
 
 class Levels(commands.Cog, name="levels"):

@@ -1,14 +1,22 @@
+version: "3.9"
+
 services:
-  worker:
+  bot:
+    container_name: ether
     build:
       context: .
       dockerfile: Dockerfile
-    restart: unless-stopped
     depends_on:
+      lavalink:
+        condition: service_started
+    links:
       - lavalink
+    environment:
+      - IN_DOCKER=True
 
   lavalink:
-    build:
-      context: .
-      dockerfile: lavalink/Dockerfile
-    restart: unless-stopped
+    container_name: lavalink
+    image: fredboat/lavalink:master
+    volumes:
+      - ./Lavalink/application.yml:/opt/Lavalink/application.yml
+    entrypoint: java -Xmx2G -jar Lavalink.jar

@@ -1,8 +1,7 @@
 from discord import Embed, User
 from discord.ext import commands
 
-from ether import Color
-from ether.core import BanLog
+from ether.core import BanLog, Color
 
 
 class Admin(commands.Cog, name="admin"):
