@@ -19,13 +19,14 @@ class Image(commands.Cog, name="image"):
         post = self.client.redditCmd.get_reddit_image(sub_reddit=sub)
 
         if post is None:
-            embed = Embed(color=Color.ERROR, description=err_msg)
-        else:
-            embed = Embed(title=post.title)
-            embed.url = "https://reddit.com" + post.permalink
-            embed.colour = Color.DEFAULT
-            embed.set_image(url=post.url)
-            embed.set_footer(text=f"⬆️ {post.score} │ 💬 {post.num_comments}")
+            await ctx.send_error(err_msg, delete_after=5)
+            return
+
+        embed = Embed(title=post.title)
+        embed.url = "https://reddit.com" + post.permalink
+        embed.colour = Color.DEFAULT
+        embed.set_image(url=post.url)
+        embed.set_footer(text=f"⬆️ {post.score} │ 💬 {post.num_comments}")
 
         return await ctx.send(embed=embed)
 
@@ -35,7 +36,7 @@ class Image(commands.Cog, name="image"):
 
         r = r.json()
         if not r['data']:
-            await ctx.send("Sorry, I could not find any gifs with this query.")
+            await ctx.send_error("Sorry, I could not find any gifs with this query.", delete_after=5)
             return
         gif_url = r['data']['url']
 
@@ -47,7 +48,7 @@ class Image(commands.Cog, name="image"):
 
         r = r.json()
         if not r['data']:
-            await ctx.send("Sorry, I could not find any stickers with this query.")
+            await ctx.send_error("Sorry, I could not find any stickers with this query.", delete_after=5)
             return
         sticker_url = r['data']['images']['original']['url']
 

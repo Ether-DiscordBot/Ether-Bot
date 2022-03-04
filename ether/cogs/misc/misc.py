@@ -21,6 +21,7 @@ class Misc(commands.Cog):
                 name=field["name"], value=", ".join(field["value"]), inline=False
             )
         await ctx.send(embed=embed)
+        return
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
@@ -39,7 +40,8 @@ class Misc(commands.Cog):
             ),
             inline=True,
         )
-        return await msg.edit(embed=embed)
+        await msg.edit(embed=embed)
+        return
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
@@ -51,6 +53,7 @@ class Misc(commands.Cog):
         return await ctx.channel.send(embed=embed)
 
     @commands.command(aliases=["flip"], name="flipcoin")
-    async def flipcoin(self, ctx):
+    async def flip_coin(self, ctx):
         result = "Heads" if round(random()) else "Tails"
-        return await ctx.channel.send(result)
+        await ctx.channel.send(result)
+        return

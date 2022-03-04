@@ -11,6 +11,7 @@ import wavelink
 from wavelink.tracks import YouTubeTrack, YouTubePlaylist
 import humanize
 
+import ether
 from ether import Color, request
 
 URL_REG = re.compile(r'https?://(?:www\.)?.+')
@@ -80,7 +81,7 @@ class Music(commands.Cog, name="music"):
 
     @commands.command(name="join")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def _connect(self, ctx: commands.Context) -> Optional[Player]:
+    async def _connect(self, ctx: ether.EtherContext) -> Optional[Player]:
         """
         This function can return None.
 
@@ -89,7 +90,7 @@ class Music(commands.Cog, name="music"):
         """
 
         if not ctx.author.voice:
-            await ctx.send(embed=Embed(description="Please join a channel.", color=Color.ERROR))
+            await ctx.send_error("Please join a channel.")
             return None
         channel = ctx.author.voice.channel
 
@@ -122,24 +123,20 @@ class Music(commands.Cog, name="music"):
             return vc
 
     @commands.command(name="play", aliases=["p"])
-    async def _play(self, ctx: commands.Context, *, query):
+    async def _play(self, ctx: ether.EtherContext, *, query):
         vc: Player = await ctx.invoke(self._connect)
 
         if not vc:
             return
 
         if ctx.author.voice.channel.id != vc.channel.id and vc.is_playing:
-            return await ctx.send(
-                embed=Embed(description="I'm already playing music in an other channel.", color=Color.ERROR))
+            return await ctx.send_error("I'm already playing music in an other channel.")
 
         try:
             track = await wavelink.YouTubeTrack.search(query=query, return_first=True)
         except IndexError:
             if not re.match(URL_REG, query):
-                return await ctx.send(
-                    embed=Embed(description='Could not find any songs with that query.', color=Color.ERROR),
-                    delete_after=10
-                )
+                return await ctx.send_error("Could not find any songs with that query.", delete_after=5)
             track = await vc.node.get_playlist(YouTubePlaylist, query)
 
         if isinstance(track, YouTubePlaylist):
@@ -179,8 +176,7 @@ class Music(commands.Cog, name="music"):
             return
 
         if not vc.is_playing:
-            await ctx.send(
-                embed=Embed(description='I am not currently playing anything!', color=Color.ERROR), delete_after=10)
+            await ctx.send_error("I am not currently playing anything!", delete_after=5)
             return
 
         await vc.set_pause(not vc.is_paused())
@@ -195,25 +191,11 @@ class Music(commands.Cog, name="music"):
             return
 
         if not vc.is_paused():
-            await ctx.send(
-                embed=Embed(description='I am not paused!', color=Color.ERROR), delete_after=10)
+            await ctx.send_error("I am not paused!", delete_after=5)
             return
 
         await vc.set_pause(False)
         await ctx.message.add_reaction("▶️")
-
-    # @commands.command()
-    # async def loop(self, ctx):
-    #     player = ctx.voice_client
-    #     if ctx.author.voice and ctx.author.voice.channel.id == player.channel_id:
-    #         player.queue._loop = not player.queue._loop
-    #         if player.queue._loop:
-    #             return await ctx.send(embed=Embed(description='Queue is looping!', color=Color.DEFAULT),
-    #                                   delete_after=10)
-    #         return await ctx.send(embed=Embed(description='Queue is no longer looping!', color=Color.DEFAULT),
-    #                               delete_after=10)
-    #
-    #     return
 
     @commands.command(name="skip")
     async def _skip(self, ctx):
