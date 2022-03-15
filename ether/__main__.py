@@ -11,10 +11,9 @@ from ether.core import Utils, CogManager, RedditCommandsManager, Database, Ether
 
 
 LOG_FORMAT = "[%(levelname)s] %(asctime)s \t: %(message)s"
-logging.basicConfig(filename='debug.log',
-                    level=logging.DEBUG,
-                    format=LOG_FORMAT,
-                    filemode='w')
+logging.basicConfig(
+    filename="debug.log", level=logging.DEBUG, format=LOG_FORMAT, filemode="w"
+)
 
 logger = logging.getLogger("ether_log")
 
@@ -26,7 +25,7 @@ logger.addHandler(stream)
 
 
 def get_prefix(client, message) -> str:
-    prefix = client.db.get_guild(message.guild)['prefix'] or client.base_prefix
+    prefix = client.db.get_guild(message.guild)["prefix"] or client.base_prefix
     return when_mentioned_or(prefix)(client, message)
 
 
@@ -38,7 +37,7 @@ class Client(commands.Bot):
         self.musicCmd = None
         self.redditCmd = None
 
-        self.in_container: bool = os.environ.get('IN_DOCKER', False)
+        self.in_container: bool = os.environ.get("IN_DOCKER", False)
 
         self.utils = Utils
 
@@ -47,7 +46,7 @@ class Client(commands.Bot):
         super().__init__(
             activity=discord.Game(name=f"{self.base_prefix}help"),
             command_prefix=get_prefix,
-            help_command=None
+            help_command=None,
         )
 
     async def load_extensions(self):
@@ -73,7 +72,7 @@ class Client(commands.Bot):
 
         self.db = Database()
 
-        self.musicCmd = self.get_cog('music')
+        self.musicCmd = self.get_cog("music")
 
     async def on_member_join(self, member):
         guild = self.db.get_guild(member.guild)
@@ -107,14 +106,22 @@ class Client(commands.Bot):
             if random.randint(1, 100) <= 33:
                 new_level = self.db.add_exp(ctx.guild, ctx.author, 4)
                 if new_level != -1:
-                    await ctx.channel.send(f'Congratulation <@{ctx.author.id}>, you just pass to level {new_level}!')
+                    await ctx.channel.send(
+                        f"Congratulation <@{ctx.author.id}>, you just pass to level {new_level}!"
+                    )
 
         await self.process_commands(ctx)
 
     async def on_command_error(self, ctx, error):
-        ignored = (commands.NoPrivateMessage, commands.DisabledCommand, commands.CheckFailure,
-                   commands.CommandNotFound, commands.UserInputError, discord.HTTPException)
-        error = getattr(error, 'original', error)
+        ignored = (
+            commands.NoPrivateMessage,
+            commands.DisabledCommand,
+            commands.CheckFailure,
+            commands.CommandNotFound,
+            commands.UserInputError,
+            discord.HTTPException,
+        )
+        error = getattr(error, "original", error)
 
         if isinstance(error, ignored):
             return
@@ -125,11 +132,9 @@ class Client(commands.Bot):
 def main():
     load_dotenv()
 
-    bot = Client(
-        base_prefix=os.getenv("BASE_PREFIX")
-    )
+    bot = Client(base_prefix=os.getenv("BASE_PREFIX"))
 
-    bot.run(os.getenv('BOT_TOKEN'))
+    bot.run(os.getenv("BOT_TOKEN"))
 
 
 if __name__ == "__main__":

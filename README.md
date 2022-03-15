@@ -1,6 +1,6 @@
 # Ether Bot
 
-![](https://img.shields.io/badge/python-3.9-blue.svg) ![](https://img.shields.io/github/license/holy-tanuki/Ether-Bot) ![](https://img.shields.io/github/stars/holy-tanuki/Ether-Bot)
+![](https://img.shields.io/badge/python-3.9-blue.svg) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 Ether is a powerful python Discord bot. And has a very complete music part using [Lavalink](https://github.com/Frederikam/Lavalink) and many other features.
 

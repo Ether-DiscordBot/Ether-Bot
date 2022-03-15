@@ -19,8 +19,10 @@ def request(timeout=5.0):
             time.sleep(0.01)
             if time.perf_counter() - start_time >= timeout:
                 logger.error("Lavalink socket is not open")
-                raise TimeoutError('Waited too long for the port {} on host {} to start accepting '
-                                   'connections.'.format(opt[1], opt[0])) from ex
+                raise TimeoutError(
+                    "Waited too long for the port {} on host {} to start accepting "
+                    "connections.".format(opt[1], opt[0])
+                ) from ex
 
     logger.debug("Lavalink socket is open")
     return 0

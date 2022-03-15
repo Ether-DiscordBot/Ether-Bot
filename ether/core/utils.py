@@ -21,7 +21,7 @@ class RedditCommandsManager:
             user_agent="ether Bot",
             username=reddit_name,
             password=reddit_pass,
-            check_for_async=False
+            check_for_async=False,
         )
 
     def get_reddit_image(self, sub_reddit):
@@ -30,9 +30,9 @@ class RedditCommandsManager:
             post
             for post in sub.hot(limit=100)
             if post.url.endswith(".png")
-               or post.url.endswith(".jpg")
-               or post.url.endswith(".gif")
-               or post.url.endswith(".gifv")
+            or post.url.endswith(".jpg")
+            or post.url.endswith(".gif")
+            or post.url.endswith(".gifv")
         ]
 
         return choice(subs)

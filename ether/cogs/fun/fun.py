@@ -18,22 +18,22 @@ class Fun(commands.Cog):
             "Most likely",
             "Outlook good.",
             "Yes.",
-            "Signs point to yes."
+            "Signs point to yes.",
         ],
         [
             "Reply hazy, try again.",
             "Ask again later.",
             "Better not tell you now.",
             "Cannot predict now.",
-            "Concentrate and ask again."
+            "Concentrate and ask again.",
         ],
         [
             "Don't count on it.",
             "My reply is no.",
             "My sources say no.",
             "Outlook not so good.",
-            "Very doubtful."
-        ]
+            "Very doubtful.",
+        ],
     ]
 
     def __init__(self, client):
@@ -47,8 +47,10 @@ class Fun(commands.Cog):
         """
 
         if not question:
-            return await ctx.reply(f"What would you ask to the Magic 8-Ball ?",
-                                   allowed_mentions=discord.AllowedMentions.none())
+            return await ctx.reply(
+                f"What would you ask to the Magic 8-Ball ?",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
 
         await ctx.send(f"🎱 {choice(choice(self.HEIGHT_BALL_ANSWERS))}")
 
@@ -65,7 +67,9 @@ class Fun(commands.Cog):
             await ctx.message.delete()
 
         if len(message) <= 0:
-            return await ctx.reply(f"What would you like me to say ?",
-                                   allowed_mentions=discord.AllowedMentions.none())
+            return await ctx.reply(
+                f"What would you like me to say ?",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
 
         await ctx.send(message)

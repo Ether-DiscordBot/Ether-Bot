@@ -14,7 +14,7 @@ logger = logging.getLogger("ether_log")
 
 class CogManager:
     """Directory manager for Ether's cogs.
-    
+
     This module allows the bot to load all cogs in ether/cogs/ with the __init__.py files.
     """
 
@@ -25,7 +25,7 @@ class CogManager:
 
     async def paths(self) -> list[str]:
         """Get the paths of the __init__.py files in the cogs directory
-        
+
         Returns
         -------
         List[pathlib.Path]
@@ -57,9 +57,7 @@ class CogManager:
                 if file == init_file:
                     name = f".{os.path.basename(path)}"
                     package = "ether.cogs"
-                    mod = importlib.import_module(
-                        name, package=package
-                    )
+                    mod = importlib.import_module(name, package=package)
                     try:
                         mod.setup(self.client)
                         logger.debug(

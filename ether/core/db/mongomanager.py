@@ -46,13 +46,13 @@ class Database(object):
                     "leave": {
                         "channel_id": guild.text_channels[0].id,
                         "message": "{user.name} is gone",
-                        "active": False
+                        "active": False,
                     },
                     "moderation": {
                         "channel_id": guild.text_channels[0].id,
                         "active": False,
-                    }
-                }
+                    },
+                },
             }
         )
 
@@ -69,7 +69,7 @@ class Database(object):
         if user.bot:
             return
         if db_user := self.db.guild_users.find_one(
-                {"guild_id": bson.Int64(guild.id), "id": bson.Int64(user.id)}
+            {"guild_id": bson.Int64(guild.id), "id": bson.Int64(user.id)}
         ):
             return db_user
         if cd > 0:
@@ -82,21 +82,25 @@ class Database(object):
                 "id": bson.Int64(user.id),
                 "guild_id": bson.Int64(guild.id),
                 "exp": 0,
-                "levels": 1
+                "levels": 1,
             }
         )
         return self.get_guild_user(guild, user, cd)
 
     def add_exp(self, guild, user, amount):
         if dbuser := self.get_guild_user(guild, user):
-            new_exp = dbuser['exp'] + amount
-            new_level_exp = new_exp - MathsLevels.level_to_exp(dbuser['levels'] + 1)
+            new_exp = dbuser["exp"] + amount
+            new_level_exp = new_exp - MathsLevels.level_to_exp(dbuser["levels"] + 1)
             if new_level_exp >= 0:
-                self.db.guild_users.update_one({"guild_id": bson.Int64(guild.id), "id": bson.Int64(user.id)},
-                                               {"$set": {"exp": new_level_exp, "levels": dbuser['levels'] + 1}})
-                return dbuser['levels'] + 1
-            self.db.guild_users.update_one({"guild_id": bson.Int64(guild.id), "id": bson.Int64(user.id)},
-                                           {"$set": {"exp": new_exp}})
+                self.db.guild_users.update_one(
+                    {"guild_id": bson.Int64(guild.id), "id": bson.Int64(user.id)},
+                    {"$set": {"exp": new_level_exp, "levels": dbuser["levels"] + 1}},
+                )
+                return dbuser["levels"] + 1
+            self.db.guild_users.update_one(
+                {"guild_id": bson.Int64(guild.id), "id": bson.Int64(user.id)},
+                {"$set": {"exp": new_exp}},
+            )
             return -1
         return
 
@@ -117,10 +121,7 @@ class Database(object):
         self.db.users.insert_one(
             {
                 "id": bson.Int64(user.id),
-                "card": {
-                    "color": "A3C7F7",
-                    "id": 0
-                },
+                "card": {"color": "A3C7F7", "id": 0},
             }
         )
         return self.get_user(user, cd)
@@ -134,10 +135,10 @@ class Database(object):
 
     def get_playlist(self, guild, message):
         if db_playlist := self.db.playlists.find_one(
-                {
-                    "message_id": bson.Int64(message.id),
-                    "guild_id": bson.Int64(guild.id),
-                }
+            {
+                "message_id": bson.Int64(message.id),
+                "guild_id": bson.Int64(guild.id),
+            }
         ):
             return db_playlist
         return
@@ -147,14 +148,16 @@ class Database(object):
             {
                 "url": bson.Int64(url),
                 "guild_id": bson.Int64(guild.id),
-                "message_id": bson.Int64(message.id)
+                "message_id": bson.Int64(message.id),
             }
         )
         return self.get_playlist(guild, message)
 
     def update_playlist(self, guild, message, key, value):
-        self.db.playlists.update_one({"message_id": bson.Int64(message.id), "guild_id": bson.Int64(guild.id)},
-                                     {"$set": {key: value}})
+        self.db.playlists.update_one(
+            {"message_id": bson.Int64(message.id), "guild_id": bson.Int64(guild.id)},
+            {"$set": {key: value}},
+        )
 
     def delete_playlist(self, id):
         self.db.playlists.delete_one({"message_id": bson.Int64(id)})

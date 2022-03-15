@@ -28,8 +28,7 @@ class EtherContext(commands.Context):
             return Options()
 
         for opt in opts:
-            parser.add_option(f"--{opt}",
-                              action="store_true", default=False)
+            parser.add_option(f"--{opt}", action="store_true", default=False)
 
         try:
             options = parser.parse_args(message)
@@ -38,4 +37,7 @@ class EtherContext(commands.Context):
         return Options(options[0].__dict__)
 
     async def send_error(self, message, delete_after=None):
-        await self.send(embed=Embed(description=message, colour=Color.ERROR), delete_after=delete_after)
+        await self.send(
+            embed=Embed(description=message, colour=Color.ERROR),
+            delete_after=delete_after,
+        )
