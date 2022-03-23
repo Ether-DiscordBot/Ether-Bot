@@ -13,7 +13,8 @@ logger = logging.getLogger("ether_log")
 
 class Database(object):
     def __init__(self):
-        client = pymongo.MongoClient(os.getenv("MONGODB_URI"))
+        print(os.getenv("MONGO_DB_URI"))
+        client = pymongo.MongoClient(os.getenv("MONGO_DB_URI"))
         self.db = client["dbot"]
         if self.db is not None:
             logger.debug("MongoDB logged")
