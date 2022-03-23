@@ -1,4 +1,7 @@
+from datetime import datetime
 from random import choice
+from requests import request
+import os
 
 import discord
 from discord.ext import commands
@@ -34,6 +37,21 @@ class Fun(commands.Cog):
             "Outlook not so good.",
             "Very doubtful.",
         ],
+    ]
+    
+    HOROSCOPE_SIGN = [
+        "Aries",
+        "Taurus",
+        "Gemini",
+        "Cancer",
+        "Leo",
+        "Virgo",
+        "Libra",
+        "Scorpio",
+        "Sagittarius",
+        "Capricorn",
+        "Aquarius",
+        "Pisces",
     ]
 
     def __init__(self, client):
@@ -73,3 +91,30 @@ class Fun(commands.Cog):
             )
 
         await ctx.send(message)
+        
+    @commands.command(name="horoscope", aliases=["astro", "horo"])
+    async def horoscope(self, ctx: ether.core.EtherContext, sign):
+        if not sign.capitalize() in self.HOROSCOPE_SIGN:
+            await ctx.send_error(f"Incorrect sign, the astrological signs are:\n{', '.join(self.HOROSCOPE_SIGN)}")
+            return
+
+        url = "https://sameer-kumar-aztro-v1.p.rapidapi.com/"
+
+        querystring = {"sign": sign,"day":"today"}
+
+        headers = {
+            "X-RapidAPI-Host": "sameer-kumar-aztro-v1.p.rapidapi.com",
+            "X-RapidAPI-Key": os.getenv("AZTRO_API_KEY")
+        }
+
+        response = request("POST", url, headers=headers, params=querystring)
+        r = response.json()
+        
+        embed = discord.Embed(title=f":{sign.lower()}: Horoscope", description=f"{r['description']}\n\n"
+                              f"**Compatibility:** {r['compatibility']}\n"
+                              f"**Mood:** {r['mood']}\n"
+                              f"**Luck:** Lucky number: {r['lucky_number']} | Lucky time: {r['lucky_time']}\n"
+                              f"**Color:** {r['color']}"
+                              )
+
+        await ctx.send(embed=embed)
