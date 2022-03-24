@@ -1,5 +1,5 @@
-from datetime import datetime
 from random import choice
+from typing import Optional
 from requests import request
 import os
 
@@ -93,10 +93,14 @@ class Fun(commands.Cog):
         await ctx.send(message)
         
     @commands.command(name="horoscope", aliases=["astro", "horo"])
-    async def horoscope(self, ctx: ether.core.EtherContext, sign):
+    async def horoscope(self, ctx: ether.core.EtherContext, sign: Optional[str] = None):
+        if sign is None:
+            return await ctx.reply(
+                f"What is your astrological sign ?",
+                allowed_mentions=discord.AllowedMentions.none(),
+                )
         if not sign.capitalize() in self.HOROSCOPE_SIGN:
-            await ctx.send_error(f"Incorrect sign, the astrological signs are:\n{', '.join(self.HOROSCOPE_SIGN)}")
-            return
+            return await ctx.send_error(f"Incorrect sign, the astrological signs are:\n{', '.join(self.HOROSCOPE_SIGN)}")
 
         url = "https://sameer-kumar-aztro-v1.p.rapidapi.com/"
 
