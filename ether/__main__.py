@@ -7,7 +7,7 @@ from discord.ext import commands
 from discord.ext.commands import when_mentioned_or
 from dotenv import load_dotenv
 
-from ether.core import Utils, CogManager, RedditCommandsManager, Database, EtherContext
+from ether.core import Utils, CogManager, Database, EtherContext
 
 
 LOG_FORMAT = "[%(levelname)s] %(asctime)s \t: %(message)s"
@@ -35,7 +35,6 @@ class Client(commands.Bot):
 
         self.db = None
         self.musicCmd = None
-        self.redditCmd = None
 
         self.in_container: bool = os.environ.get("IN_DOCKER", False)
 
@@ -61,14 +60,6 @@ class Client(commands.Bot):
         logger.debug(f"Is in container: {self.in_container}")
 
         await self.load_extensions()
-
-        self.redditCmd = RedditCommandsManager(
-            self,
-            os.getenv("REDDIT_CLIENT_ID"),
-            os.getenv("REDDIT_CLIENT_SECRET"),
-            os.getenv("REDDIT_NAME"),
-            os.getenv("REDDIT_PASS"),
-        )
 
         self.db = Database()
 
