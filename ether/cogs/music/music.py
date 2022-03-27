@@ -88,7 +88,7 @@ class Music(commands.Cog, name="music"):
             await player.play(player.queue.get())
         await player.message.delete()
 
-    @commands.command(name="join")
+    @commands.command(name="join", aliases=["connect"])
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def _connect(self, ctx: ether.core.EtherContext) -> Optional[Player]:
         """
