@@ -1,5 +1,6 @@
 import base64
 import io
+import logging
 import os
 
 import requests
@@ -8,6 +9,8 @@ from discord import File
 from discord.ext import commands
 
 from ether.core import MathsLevels
+
+logger = logging.getLogger("ether_log")
 
 
 class Levels(commands.Cog, name="levels"):
@@ -40,6 +43,7 @@ class CardHandler:
         )
     
     def __init__(self) -> None:
+        logger.info("Card handler initialization...")
         self.img_size = (600, 180)
         self.pp_size = (120, 120)
         self.pp_padding = (30, 30)
@@ -68,6 +72,7 @@ class CardHandler:
 
         self.max_size_bar = 265
         self.line_width = 15
+        logger.info("Card handler initialized")
 
     async def create_card(self, user, db_user):
         back = Image.new("RGBA", self.img_size, (245, 246, 250))
