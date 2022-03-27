@@ -43,15 +43,6 @@ class Misc(commands.Cog):
         await msg.edit(embed=embed)
         return
 
-    @commands.command()
-    @commands.cooldown(1, 3, commands.BucketType.user)
-    async def avatar(self, ctx):
-        user = ctx.message.mentions[0] if ctx.message.mentions else ctx.message.author
-        embed = Embed(
-            description="**{0.display_name}'s** [avatar]({0.avatar_url}):".format(user)
-        ).set_image(url=user.avatar_url_as(format="png", size=256))
-        return await ctx.channel.send(embed=embed)
-
     @commands.command(aliases=["flip"], name="flipcoin")
     async def flip_coin(self, ctx):
         result = "Heads" if round(random()) else "Tails"
