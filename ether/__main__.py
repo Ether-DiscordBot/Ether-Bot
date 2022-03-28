@@ -124,7 +124,6 @@ def main():
     load_dotenv()
 
     bot = Client(base_prefix=os.getenv("BASE_PREFIX"))
-
     bot.run(os.getenv("BOT_TOKEN"))
 
 
