@@ -33,7 +33,7 @@ class Post():
 
 
 class Fun(commands.Cog):
-    SUBREDDIT = ["memes", "cats", "DOG", "aww", "sadcats"]
+    SUBREDDIT = ["memes", "aww", "sadcats"]
     SUPPORTED_EMBED_FORMAT = ("jpg", "jpeg", "JPG", "JPEG", "png", "PNG", "gif", "gifv")
     HEIGHT_BALL_ANSWERS = [
         [
@@ -234,12 +234,6 @@ class Fun(commands.Cog):
 
     @commands.command()
     async def meme(self, ctx): await ctx.invoke(self._reddit, sub="memes")
-
-    @commands.command()
-    async def cat(self, ctx): await ctx.invoke(self._reddit, sub="cats")
-
-    @commands.command()
-    async def dog(self, ctx): await ctx.invoke(self._reddit, sub="DOG")
 
     @commands.command()
     async def aww(self, ctx): await ctx.invoke(self._reddit, sub="aww")
