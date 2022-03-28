@@ -1,5 +1,6 @@
 from discord import Embed, User
 from discord.ext import commands
+from humanize import precisedelta
 
 from ether.core import BanLog, Color
 
@@ -121,3 +122,12 @@ class Admin(commands.Cog, name="admin"):
         embed = Embed(description=f"Deleted {len(deleted) - 1} message(s).")
         embed.colour = Color.SUCCESS
         await ctx.send(embed=embed, delete_after=5)
+        
+    @commands.command(name="slowmode")
+    @commands.has_permissions(manage_channels=True)
+    async def slowmode(self, ctx, cd: int):
+        await ctx.channel.edit(slowmode_delay=cd)
+        if cd == 0:
+            await ctx.send(f"✅ Slowmode disabled!")
+            return
+        await ctx.send(f"✅ Slowmode set to `{precisedelta(cd)}`!")
