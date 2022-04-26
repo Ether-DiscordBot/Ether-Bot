@@ -1,4 +1,4 @@
-py-cord==2.0.0b4
+py-cord==2.0.0b7
 wavelink==1.1.1
 humanize==4.0.0
 praw==7.5.0
