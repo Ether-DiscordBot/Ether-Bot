@@ -1,6 +1,7 @@
 import random
 import os
 import logging
+import json
 
 import discord
 from discord.ext import commands
@@ -41,11 +42,18 @@ class Client(commands.Bot):
         self.utils = Utils
 
         self.lavalink_host = "lavalink" if self.in_container else "localhost"
-
+        
+        self.debug_guilds=json.loads(os.environ.get("SLASH_COMMANDS_GUILD_ID", default=[]))
+        print(self.debug_guilds)
+        print(type(self.debug_guilds))
+        intents = discord.Intents().all()
+        
         super().__init__(
             activity=discord.Game(name=f"{self.base_prefix}help"),
             command_prefix=get_prefix,
             help_command=None,
+            intents=intents,
+            debug_guilds=self.debug_guilds,
         )
 
     async def load_extensions(self):
@@ -56,6 +64,8 @@ class Client(commands.Bot):
         logger.debug(f"Client Name:\t{self.user.name}")
         logger.debug(f"Client ID:\t{self.user.id}")
         logger.debug(f"Client Disc:\t{self.user.discriminator}")
+        
+        logger.debug(f"Debug guilds:\t{', '.join(map(str, self.debug_guilds))}")
 
         logger.debug(f"Is in container: {self.in_container}")
 

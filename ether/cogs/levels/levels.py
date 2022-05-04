@@ -78,7 +78,7 @@ class CardHandler:
         back = Image.new("RGBA", self.img_size, (245, 246, 250))
         
         # Profile Picture
-        r = requests.get(user.avatar_url_as(format="png", size=128))
+        r = requests.get(user.display_avatar)
         pp = Image.open(io.BytesIO(r.content))
         pp = pp.resize(self.pp_size)
         

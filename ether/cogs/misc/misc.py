@@ -1,6 +1,9 @@
-from discord import Embed
-from discord.ext import commands
 from random import random
+import os
+import json
+
+from discord import Embed, SlashCommand, slash_command
+from discord.ext import commands
 
 
 class Misc(commands.Cog):
@@ -23,8 +26,11 @@ class Misc(commands.Cog):
         await ctx.send(embed=embed)
         return
 
-    @commands.command()
-    @commands.cooldown(1, 3, commands.BucketType.user)
+    async def help_slash(self, ctx): 
+        await self.help(ctx)
+
+    @slash_command(guild_ids=json.loads(os.environ.get("SLASH_COMMANDS_GUILD_ID", default=[])))
+    # @commands.cooldown(1, 3, commands.BucketType.user)
     async def ping(self, ctx):
         bot_latency = round(self.client.latency * 1000)
         embed = Embed(description=":ping_pong: Pong !")
