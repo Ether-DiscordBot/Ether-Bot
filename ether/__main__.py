@@ -1,6 +1,5 @@
 import random
 import os
-import logging
 import json
 
 import discord
@@ -8,21 +7,10 @@ from discord.ext import commands
 from discord.ext.commands import when_mentioned_or
 from dotenv import load_dotenv
 
-from ether.core import Utils, CogManager, Database, EtherContext
-
-
-LOG_FORMAT = "[%(levelname)s] %(asctime)s \t: %(message)s"
-logging.basicConfig(
-    filename="debug.log", level=logging.DEBUG, format=LOG_FORMAT, filemode="w"
-)
-
-logger = logging.getLogger("ether_log")
-
-stream = logging.StreamHandler()
-stream.setLevel(logging.DEBUG)
-stream.setFormatter(logging.Formatter(LOG_FORMAT))
-
-logger.addHandler(stream)
+from ether.core.cog_manager import CogManager
+from ether.core.context import EtherContext
+from ether.core.db.mongomanager import Database
+from ether.core.logging import log
 
 
 def get_prefix(client, message) -> str:
@@ -39,16 +27,12 @@ class Client(commands.Bot):
 
         self.in_container: bool = os.environ.get("IN_DOCKER", False)
 
-        self.utils = Utils
-
         self.lavalink_host = "lavalink" if self.in_container else "localhost"
-        
-        guilds=json.loads(os.environ.get("SLASH_COMMANDS_GUILD_ID", default=[]))
+
+        guilds = json.loads(os.environ.get("SLASH_COMMANDS_GUILD_ID", default=[]))
         self.debug_guilds: list[int] = [g for g in guilds]
-        print(self.debug_guilds)
-        print(type(self.debug_guilds[0]))
         intents = discord.Intents().all()
-        
+
         super().__init__(
             activity=discord.Game(name=f"{self.base_prefix}help"),
             command_prefix=get_prefix,
@@ -62,11 +46,11 @@ class Client(commands.Bot):
         await cogs_loader.load_cogs()
 
     async def on_ready(self):
-        logger.debug(f"Client Name:\t{self.user.name}")
-        logger.debug(f"Client ID:\t{self.user.id}")
-        logger.debug(f"Client Disc:\t{self.user.discriminator}")
+        log.info(f"Client Name:\t{self.user.name}")
+        log.info(f"Client ID:\t{self.user.id}")
+        log.info(f"Client Disc:\t{self.user.discriminator}")
 
-        logger.debug(f"Is in container: {self.in_container}")
+        log.info(f"Is in container: {self.in_container}")
 
         await self.load_extensions()
 

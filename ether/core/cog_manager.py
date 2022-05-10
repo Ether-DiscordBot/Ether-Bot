@@ -1,4 +1,3 @@
-import logging
 import os
 
 from pathlib import Path
@@ -6,10 +5,9 @@ import importlib
 from typing import List
 
 import ether.cogs
+from ether.core.logging import log
 
 __all__ = ["CogManager"]
-
-logger = logging.getLogger("ether_log")
 
 
 class CogManager:
@@ -60,7 +58,7 @@ class CogManager:
                     mod = importlib.import_module(name, package=package)
                     try:
                         mod.setup(self.client)
-                        logger.debug(
+                        log.info(
                             f"[{paths.index(path) + 1}/{len(paths)}] Commands loaded in {mod.__name__}"
                         )
                     except Exception as e:

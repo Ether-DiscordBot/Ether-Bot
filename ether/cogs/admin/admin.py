@@ -2,7 +2,8 @@ from discord import Embed, User
 from discord.ext import commands
 from humanize import precisedelta
 
-from ether.core import BanLog, Color
+from ether.core.bot_log import BanLog
+from ether.core.constants import Colors
 
 
 class Admin(commands.Cog, name="admin"):
@@ -41,7 +42,7 @@ class Admin(commands.Cog, name="admin"):
                 )
                 if channel:
                     embed = Embed(
-                        color=Color.BAN,
+                        color=Colors.BAN,
                         description="[`[unban]`](https://www.youtube.com/watch?v=dQw4w9WgXcQ)",
                     )
                     embed.set_author(
@@ -75,7 +76,7 @@ class Admin(commands.Cog, name="admin"):
     async def kick(self, ctx, member: User, *, reason=None):
         db_guild = self.client.db.get_guild(ctx.guild)
         if not member:
-            embed = Embed(color=Color.ERROR, description=f"Unknown **{member.name}** !")
+            embed = Embed(color=Colors.ERROR, description=f"Unknown **{member.name}** !")
             return await ctx.send(embed=embed)
 
         try:
@@ -84,7 +85,7 @@ class Admin(commands.Cog, name="admin"):
                     db_guild["logs"]["moderation"]["channel_id"]
                 )
                 if channel:
-                    embed = Embed(color=Color.KICK)
+                    embed = Embed(color=Colors.KICK)
                     embed.set_author(
                         name=f"[KICK] {member.name}#{member.discriminator}",
                         icon_url=self.client.utils.get_avatar_url(member),
@@ -120,9 +121,9 @@ class Admin(commands.Cog, name="admin"):
 
         deleted = await ctx.channel.purge(limit=amount + 1)
         embed = Embed(description=f"Deleted {len(deleted) - 1} message(s).")
-        embed.colour = Color.SUCCESS
+        embed.colour = Colors.SUCCESS
         await ctx.send(embed=embed, delete_after=5)
-        
+
     @commands.command(name="slowmode")
     @commands.has_permissions(manage_channels=True)
     async def slowmode(self, ctx, cd: int):

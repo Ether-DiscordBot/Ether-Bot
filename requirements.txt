@@ -1,7 +1,7 @@
 py-cord==2.0.0b7
 wavelink==1.1.1
 humanize==4.0.0
-praw==7.5.0
+asyncpraw==7.5.0
 pymongo[srv]==4.0.2
 requests==2.27.1
 twine==3.8.0
@@ -11,3 +11,5 @@ python-dotenv==0.19.2
 dnspython==2.2.1
 pillow-simd==9.0.0.post1
 aiohttp==3.8.1
+rich==12.3.0
+pynacl==1.5.00

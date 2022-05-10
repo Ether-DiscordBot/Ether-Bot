@@ -8,7 +8,7 @@ class Misc(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.fancy_name = "Misc"
-    
+
     # misc = SlashCommandGroup("misc", "Miscelanious commands!")
 
     @commands.command()
@@ -26,7 +26,7 @@ class Misc(commands.Cog):
         await ctx.send(embed=embed)
         return
 
-    async def help_slash(self, ctx): 
+    async def help_slash(self, ctx):
         await self.help(ctx)
 
     @commands.command()

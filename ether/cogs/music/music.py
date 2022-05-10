@@ -1,4 +1,3 @@
-import logging
 import datetime
 import re
 from typing import Optional
@@ -11,12 +10,12 @@ import wavelink
 from wavelink.tracks import YouTubeTrack, YouTubePlaylist
 import humanize
 
-import ether.core
-from ether.core import Color, request
+from ether.core.constants import Colors
+from ether.core.lavalink_status import request
+from ether.core.logging import log
+from ether.core.context import EtherContext
 
 URL_REG = re.compile(r"https?://(?:www\.)?.+")
-
-logger = logging.getLogger("ether_log")
 
 
 class Player(wavelink.Player):
@@ -51,7 +50,7 @@ class Music(commands.Cog, name="music"):
     @commands.Cog.listener()
     async def on_wavelink_node_ready(self, node: wavelink.Node):
         """Event fired when a node has finished connecting."""
-        logger.debug(f"Node: <{node.identifier}> is ready!")
+        log.info(f"Node: <{node.identifier}> is ready!")
 
     @commands.Cog.listener()
     async def on_wavelink_track_start(self, player: Player, track: wavelink.Track):
@@ -63,7 +62,7 @@ class Music(commands.Cog, name="music"):
         message: discord.Message = await channel.send(
             embed=Embed(
                 description=f"Now Playing **[{track.title}]({track.uri})**!",
-                color=Color.DEFAULT,
+                color=Colors.DEFAULT,
             )
         )
         player.message = message
@@ -80,7 +79,7 @@ class Music(commands.Cog, name="music"):
             return await player.text_channel.send(
                 embed=Embed(
                     description=f"Track finished for reason `{reason}`",
-                    color=Color.ERROR,
+                    color=Colors.ERROR,
                 )
             )
 
@@ -90,7 +89,7 @@ class Music(commands.Cog, name="music"):
 
     @commands.command(name="join", aliases=["connect"])
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def _connect(self, ctx: ether.core.EtherContext) -> Optional[Player]:
+    async def _connect(self, ctx: EtherContext) -> Optional[Player]:
         """
         This function can return None.
 
@@ -133,7 +132,7 @@ class Music(commands.Cog, name="music"):
             return vc
 
     @commands.command(name="play", aliases=["p"])
-    async def _play(self, ctx: ether.core.EtherContext, *, query):
+    async def _play(self, ctx: EtherContext, *, query):
         vc: Player = await ctx.invoke(self._connect)
 
         if not vc:
@@ -160,7 +159,7 @@ class Music(commands.Cog, name="music"):
             await ctx.send(
                 embed=Embed(
                     description=f"**[{len(track.tracks)} tracks]** added to queue!",
-                    color=Color.DEFAULT,
+                    color=Colors.DEFAULT,
                 )
             )
         elif isinstance(track, YouTubeTrack):
@@ -169,7 +168,7 @@ class Music(commands.Cog, name="music"):
             await ctx.send(
                 embed=Embed(
                     description=f"Track added to queue: **[{track.title}]({track.uri})**",
-                    color=Color.DEFAULT,
+                    color=Colors.DEFAULT,
                 )
             )
 
@@ -249,7 +248,7 @@ class Music(commands.Cog, name="music"):
 
         await ctx.send(
             embed=Embed(
-                description="The queue has been shuffled!", color=Color.DEFAULT
+                description="The queue has been shuffled!", color=Colors.DEFAULT
             ),
             delete_after=10,
         )
@@ -307,7 +306,7 @@ class Music(commands.Cog, name="music"):
         cpu = node.stats.cpu_cores
 
         embed = Embed(
-            title=f"**WaveLink:** `{wavelink.__version__}`", color=Color.DEFAULT
+            title=f"**WaveLink:** `{wavelink.__version__}`", color=Colors.DEFAULT
         )
 
         embed.add_field(

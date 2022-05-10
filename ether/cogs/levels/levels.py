@@ -1,6 +1,5 @@
 import base64
 import io
-import logging
 import os
 
 import requests
@@ -8,9 +7,8 @@ from PIL import Image, ImageDraw, ImageFont
 from discord import File
 from discord.ext import commands
 
-from ether.core import MathsLevels
-
-logger = logging.getLogger("ether_log")
+from ether.core.utils import MathsLevels
+from ether.core.logging import log
 
 
 class Levels(commands.Cog, name="levels"):
@@ -33,28 +31,28 @@ class Levels(commands.Cog, name="levels"):
 
 class CardHandler:
     BASE_FONT = ImageFont.truetype(
-            os.path.abspath("ether/src/fonts/whitneybold.otf"), 25
-        )
+        os.path.abspath("ether/assets/fonts/whitneybold.otf"), 25
+    )
     EXP_FONT = ImageFont.truetype(
-            os.path.abspath("ether/src/fonts/whitneybold.otf"), 15
-        )
+        os.path.abspath("ether/assets/fonts/whitneybold.otf"), 15
+    )
     LEVEL_FONT = ImageFont.truetype(
-            os.path.abspath("ether/src/fonts/whitneybold.otf"), 35
-        )
-    
+        os.path.abspath("ether/assets/fonts/whitneybold.otf"), 35
+    )
+
     def __init__(self) -> None:
-        logger.info("Card handler initialization...")
+        log.info("Card handler initialization...")
         self.img_size = (600, 180)
         self.pp_size = (120, 120)
         self.pp_padding = (30, 30)
 
-        mask = Image.open("ether/src/mask.png", 'r').convert('L').resize(self.img_size)
+        mask = Image.open("ether/assets/mask.png", "r").convert("L").resize(self.img_size)
         background = Image.new("RGBA", self.img_size, 0)
-        
-        base_card = Image.new('RGBA', self.img_size, (48, 50, 56))
-        
+
+        base_card = Image.new("RGBA", self.img_size, (48, 50, 56))
+
         draw = ImageDraw.Draw(base_card)
-        
+
         level_padding = 445
         # "Level" label
         draw.text(
@@ -64,36 +62,36 @@ class CardHandler:
             fill=(190, 190, 190),
             font=self.BASE_FONT,
         )
-        
+
         self.base_card = Image.composite(base_card, background, mask)
-            
+
         self.pseudo_left_padding = 165
         self.pseudo_top_padding = 70
 
         self.max_size_bar = 265
         self.line_width = 15
-        logger.info("Card handler initialized")
+        log.info("Card handler initialized")
 
     async def create_card(self, user, db_user):
         back = Image.new("RGBA", self.img_size, (245, 246, 250))
-        
+
         # Profile Picture
         r = requests.get(user.display_avatar)
         pp = Image.open(io.BytesIO(r.content))
         pp = pp.resize(self.pp_size)
-        
+
         back_draw = ImageDraw.Draw(back)
-        
-        # Advancement        
+
+        # Advancement
         exp_advancement = (
             self.max_size_bar
             * db_user["exp"]
             / MathsLevels.level_to_exp(db_user["levels"] + 1)
         )
-        
+
         back_draw.rounded_rectangle(
             xy=(
-                (165-2, 105),
+                (165 - 2, 105),
                 (
                     self.pseudo_left_padding + max(self.line_width, exp_advancement),
                     120,
@@ -104,17 +102,19 @@ class CardHandler:
             width=0,
             outline=None,
         )
-        
+
         back.paste(pp, self.pp_padding)
         img = Image.alpha_composite(back, self.base_card)
-        
-        
+
         draw = ImageDraw.Draw(img)
-        
+
         # Pseudo
         # Name
         draw.text(
-            xy=(self.pseudo_left_padding, self.pseudo_top_padding - self.BASE_FONT.size / 2),
+            xy=(
+                self.pseudo_left_padding,
+                self.pseudo_top_padding - self.BASE_FONT.size / 2,
+            ),
             text=f"{user.name[:13]}",
             fill=(255, 255, 255),
             font=self.BASE_FONT,
@@ -137,7 +137,7 @@ class CardHandler:
         # User level
         draw.text(
             xy=(
-                505, # min 500
+                505,  # min 500
                 120 - self.LEVEL_FONT.size + 2,
             ),
             text=f"{db_user['levels']}",
@@ -148,9 +148,7 @@ class CardHandler:
         # Write exp
         # User exp
         draw.text(
-            xy=(
-                self.pseudo_left_padding, 120
-            ),
+            xy=(self.pseudo_left_padding, 120),
             text=f"{db_user['exp']}",
             fill=(255, 255, 255),
             font=self.EXP_FONT,
@@ -159,8 +157,9 @@ class CardHandler:
         # Max exp
         draw.text(
             xy=(
-                self.pseudo_left_padding + self.EXP_FONT.getsize(f"{db_user['exp']}")[0],
-                120
+                self.pseudo_left_padding
+                + self.EXP_FONT.getsize(f"{db_user['exp']}")[0],
+                120,
             ),
             text=f"/{MathsLevels.level_to_exp(db_user['levels'] + 1)} exp",
             fill=(190, 190, 190),

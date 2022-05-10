@@ -4,7 +4,7 @@ import typing
 from discord import Embed
 from discord.ext import commands
 
-from ether.core import Color
+from ether.core.constants import Colors
 
 
 class Options:
@@ -38,6 +38,6 @@ class EtherContext(commands.Context):
 
     async def send_error(self, message, delete_after=None):
         await self.send(
-            embed=Embed(description=message, colour=Color.ERROR),
+            embed=Embed(description=message, colour=Colors.ERROR),
             delete_after=delete_after,
         )

@@ -1,14 +1,12 @@
 import os
 import bson
-import logging
 
 import pymongo
 
 from ether.core.utils import MathsLevels
+from ether.core.logging import log
 
 __all__ = ["Database"]
-
-logger = logging.getLogger("ether_log")
 
 
 class Database(object):
@@ -16,7 +14,7 @@ class Database(object):
         client = pymongo.MongoClient(os.getenv("MONGO_DB_URI"))
         self.db = client["dbot"]
         if self.db is not None:
-            logger.debug("MongoDB logged")
+            log.info("MongoDB logged")
 
         self.default_prefix = os.getenv("BASE_PREFIX")
 
