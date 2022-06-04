@@ -18,6 +18,12 @@ from ether.core.logging import log
 nest_asyncio.apply()
 bot = None
 
+#
+#               Ether - Discord Bot
+#
+#              Made by Holy Crusader
+#
+
 
 def get_prefix(client, message) -> str:
     prefix = client.base_prefix
