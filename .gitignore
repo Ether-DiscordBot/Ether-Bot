@@ -143,3 +143,4 @@ ENV/
 
 # Pre-commit hooks
 /.pre-commit-config.yaml
+*.pickle

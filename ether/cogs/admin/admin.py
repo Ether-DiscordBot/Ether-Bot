@@ -76,7 +76,9 @@ class Admin(commands.Cog, name="admin"):
     async def kick(self, ctx, member: User, *, reason=None):
         db_guild = self.client.db.get_guild(ctx.guild)
         if not member:
-            embed = Embed(color=Colors.ERROR, description=f"Unknown **{member.name}** !")
+            embed = Embed(
+                color=Colors.ERROR, description=f"Unknown **{member.name}** !"
+            )
             return await ctx.send(embed=embed)
 
         try:

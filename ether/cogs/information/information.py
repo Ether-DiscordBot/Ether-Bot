@@ -1,16 +1,11 @@
-from discord import Embed, Member
+from typing import Optional
+from discord import Embed, Member, SlashCommandGroup, user_command
 from discord.ext import commands
 from humanize import naturaldate, naturalsize
 
 
-class Information(commands.Cog, name="information"):
-    def __init__(self, client):
-        self.fancy_name = "Information"
-        self.client = client
-
-    @commands.command(name="user", alises=["member"])
-    async def user(self, ctx, *, member: Member = None):
-        member = member if member else ctx.author
+class InformationHandler:
+    def get_user_infos(member: Member) -> Embed:
         avatar = member.display_avatar
 
         embed = Embed(description=f"**ID:** {member.id}")
@@ -26,10 +21,31 @@ class Information(commands.Cog, name="information"):
         embed.add_field(
             name="Server join date", value=naturaldate(member.joined_at), inline=False
         )
+        
+        return embed
 
-        await ctx.send(embed=embed)
+    def get_user_avatar(self, user) -> Embed:
+        return Embed(
+            description="**{0.display_name}'s** [avatar]({0.avatar_url}):".format(user)
+        ).set_image(url=user.display_avatar)
 
-    @commands.command(name="server", aliases=["guild"])
+class Information(commands.Cog, name="information"):
+    def __init__(self, client):
+        self.fancy_name = "Information"
+        self.client = client
+    
+    infos = SlashCommandGroup("infos", "Infos commands!")
+
+    @infos.command(name="user")
+    async def user(self, ctx, *, member: Member = None):
+        member = member if member else ctx.author
+        await ctx.respond(embed=InformationHandler.get_user_infos(member))
+    
+    @user_command(name="User infos")
+    async def user_infos(self, ctx, *, member: Member):
+        await ctx.respond(embed=InformationHandler.get_user_infos(member))
+
+    @infos.command(name="server")
     async def server(self, ctx):
         guild = ctx.guild
 
@@ -54,12 +70,14 @@ class Information(commands.Cog, name="information"):
             inline=False,
         )
 
-        await ctx.send(embed=embed)
+        await ctx.respond(embed=embed)
 
-    @commands.command(name="avatar", aliases=["pp"])
-    async def avatar(self, ctx):
-        user = ctx.message.mentions[0] if ctx.message.mentions else ctx.message.author
-        embed = Embed(
-            description="**{0.display_name}'s** [avatar]({0.avatar_url}):".format(user)
-        ).set_image(url=user.display_avatar)
-        return await ctx.channel.send(embed=embed)
+    @infos.command(name="avatar")
+    async def avatar(self, ctx, member: Optional[Member] = None):
+        user = member if member else ctx.author
+        return await ctx.respond(embed=InformationHandler.get_user_avatar(user))
+    
+    @user_command(name="User avatar")
+    async def user_avatar(self, ctx, member: Member):
+        return await ctx.respond(embed=InformationHandler.get_user_avatar(member))
+

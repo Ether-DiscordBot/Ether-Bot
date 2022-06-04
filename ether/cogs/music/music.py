@@ -5,15 +5,15 @@ import random
 
 import discord
 from discord.ext import commands
-from discord import Embed
-import wavelink
-from wavelink.tracks import YouTubeTrack, YouTubePlaylist
+from discord import Embed, Interaction, SlashCommandGroup
+import pycord.wavelink as wavelink
+from pycord.wavelink.tracks import YouTubeTrack, YouTubePlaylist
 import humanize
 
 from ether.core.constants import Colors
 from ether.core.lavalink_status import request
 from ether.core.logging import log
-from ether.core.context import EtherContext
+from ether.core.context import EtherEmbeds
 
 URL_REG = re.compile(r"https?://(?:www\.)?.+")
 
@@ -46,6 +46,8 @@ class Music(commands.Cog, name="music"):
             port=2333,
             password="pxV58RF6f292N9NK",
         )
+    
+    music = SlashCommandGroup("music", "Music commands!")
 
     @commands.Cog.listener()
     async def on_wavelink_node_ready(self, node: wavelink.Node):
@@ -76,20 +78,14 @@ class Music(commands.Cog, name="music"):
         """
 
         if reason not in ("FINISHED", "STOPPED"):
-            return await player.text_channel.send(
-                embed=Embed(
-                    description=f"Track finished for reason `{reason}`",
-                    color=Colors.ERROR,
-                )
-            )
+            return await player.text_channel.send(embed=EtherEmbeds.error(f"Track finished for reason `{reason}`"))
 
         if not player.queue.is_empty:
             await player.play(player.queue.get())
         await player.message.delete()
 
-    @commands.command(name="join", aliases=["connect"])
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def _connect(self, ctx: EtherContext) -> Optional[Player]:
+    @music.command(name="join")
+    async def _connect(self, interaction: Interaction) -> Optional[Player]:
         """
         This function can return None.
 
@@ -97,66 +93,67 @@ class Music(commands.Cog, name="music"):
         This function also create a wavelink queue for the tracks store in the voice client.
         """
 
-        if not ctx.author.voice:
-            await ctx.send_error("Please join a channel.")
+        if not interaction.author.voice:
+            await interaction.send_error("Please join a channel.")
             return None
-        channel = ctx.author.voice.channel
+        channel = interaction.author.voice.channel
 
-        if not ctx.voice_client:
-            player = Player(text_channel=ctx.channel)
-            vc: Player = await ctx.author.voice.channel.connect(cls=player)
+        if not interaction.voice_client:
+            player = Player(text_channel=interaction.channel)
+            vc: Player = await interaction.user.voice.channel.connect(cls=player)
             vc.queue = wavelink.Queue(max_size=100)
-            vc.text_channel = ctx.channel
-            await ctx.guild.change_voice_state(
+            vc.text_channel = interaction.channel
+            await interaction.guild.change_voice_state(
                 channel=channel, self_mute=False, self_deaf=True
             )
 
-            if ctx.command == "join":
-                await ctx.message.add_reaction("👌")
+            if interaction.command.qualified_name == "music join":
+                await interaction.response.send_message(embed=Embed(description=f"`{interaction.author.voice.channel}` joined"))
         else:
-            vc: Player = ctx.voice_client
+            vc: Player = interaction.guild.voice_client
 
         return vc
 
-    @commands.command(name="leave")
-    async def _disconnect(self, ctx):
+    @music.command(name="leave")
+    async def _disconnect(self, interaction: Interaction):
         """The function/command to leave a voice channel."""
 
-        vc: Player = await ctx.invoke(self._connect)
+        vc: Player = await self._connect(interaction)
 
         # Check if the voice client channel is the same as the user's voice channel.
         if vc.channel.id == vc.channel.id:
             await vc.disconnect()
 
-            await ctx.message.add_reaction("👋")
+            await interaction.response.send_message(embed=Embed(description=f"`{interaction.author.voice.channel}` leave"))
             return vc
+    
+    @music.command(name="search")
+    async def search(self, interaction: Interaction, *, search: wavelink.YouTubeTrack):
+        print(search)
 
-    @commands.command(name="play", aliases=["p"])
-    async def _play(self, ctx: EtherContext, *, query):
-        vc: Player = await ctx.invoke(self._connect)
+    @music.command(name="play")
+    async def _play(self, interaction: Interaction, *, query: str):
+        vc: Player = await self._connect(interaction)
 
         if not vc:
             return
 
-        if ctx.author.voice.channel.id != vc.channel.id and vc.is_playing:
-            return await ctx.send_error(
-                "I'm already playing music in an other channel."
-            )
+        if interaction.user.voice.channel.id != vc.channel.id and vc.is_playing:
+            return await interaction.response.send_message(embed=EtherEmbeds.error("I'm already playing music in an other channel."), delete_after=5)
+        
+        print(query)
 
-        try:
-            track = await wavelink.YouTubeTrack.search(query=query, return_first=True)
-        except IndexError:
+        track = await vc.node.get_tracks(cls=wavelink.YouTubeTrack, query=f'ytsearch:{query}')
+        if not track:
             if not re.match(URL_REG, query):
-                return await ctx.send_error(
-                    "Could not find any songs with that query.", delete_after=5
-                )
-            track = await vc.node.get_playlist(YouTubePlaylist, query)
+                return await interaction.response.send_message(embed=EtherEmbeds.error("Could not find any songs with that query."), delete_after=5)
+            track = await wavelink.YouTubeTrack.search(query)
 
         if isinstance(track, YouTubePlaylist):
             for t in track.tracks:
                 vc.queue.put(t)
 
-            await ctx.send(
+            await interaction.send(
                 embed=Embed(
                     description=f"**[{len(track.tracks)} tracks]** added to queue!",
                     color=Colors.DEFAULT,
@@ -165,7 +162,7 @@ class Music(commands.Cog, name="music"):
         elif isinstance(track, YouTubeTrack):
             vc.queue.put(track)
 
-            await ctx.send(
+            await interaction.send(
                 embed=Embed(
                     description=f"Track added to queue: **[{track.title}]({track.uri})**",
                     color=Colors.DEFAULT,
@@ -176,9 +173,9 @@ class Music(commands.Cog, name="music"):
             track = vc.queue.get()
             await vc.play(track)
 
-    @commands.command(name="stop")
-    async def _stop(self, ctx):
-        vc: Player = await ctx.invoke(self._connect)
+    @music.command(name="stop")
+    async def _stop(self, interaction: Interaction):
+        vc: Player = await self._connect(interaction)
 
         if not vc:
             return
@@ -186,40 +183,42 @@ class Music(commands.Cog, name="music"):
         vc.queue.clear()
         await vc.stop()
 
-        await ctx.message.add_reaction("🛑")
+        await interaction.response.send_message(embed=Embed(description="🛑 Stopped"), delete_after=5)
 
-    @commands.command(name="pause")
-    async def pause(self, ctx):
-        vc: Player = await ctx.invoke(self._connect)
+    @music.command(name="pause")
+    async def pause(self, interaction: Interaction):
+        vc: Player = await self._connect(interaction)
 
         if not vc:
             return
 
         if not vc.is_playing:
-            await ctx.send_error("I am not currently playing anything!", delete_after=5)
+            await interaction.response.send_message(embed=EtherEmbeds.error("I am not currently playing anything!"), delete_after=5)
             return
 
         await vc.set_pause(not vc.is_paused())
-        reaction = "▶️" if vc.is_paused() else "⏸️"
-        await ctx.message.add_reaction(reaction)
+        action = "▶️ Paused" if vc.is_paused() else "⏸️ Resume"
+        await interaction.response.send_message(embed=Embed(description=action), delete_after=5)
 
-    @commands.command(name="resume")
-    async def resume(self, ctx):
-        vc: Player = await ctx.invoke(self._connect)
+
+    @music.command(name="resume")
+    async def resume(self, interaction: Interaction):
+        vc: Player = await self._connect(interaction)
 
         if not vc:
             return
 
         if not vc.is_paused():
-            await ctx.send_error("I am not paused!", delete_after=5)
+            await interaction.response.send_message(embed=EtherEmbeds.error("I am not paused!"), delete_after=5)
             return
 
         await vc.set_pause(False)
-        await ctx.message.add_reaction("▶️")
+        await interaction.response.send_message(embed=Embed(description="⏸️ Resume"), delete_after=5)
 
-    @commands.command(name="skip")
-    async def _skip(self, ctx):
-        vc: Player = await ctx.invoke(self._connect)
+
+    @music.command(name="skip")
+    async def _skip(self, interaction: Interaction):
+        vc: Player = await self._connect(interaction)
 
         if not vc:
             return
@@ -228,12 +227,12 @@ class Music(commands.Cog, name="music"):
             return
 
         await vc.play(vc.queue.get(), replace=True)
-        await ctx.message.add_reaction("⏭️")
+        await interaction.message.add_reaction("⏭️")
         return
 
-    @commands.command(name="shuffle")
-    async def _shuffle(self, ctx):
-        vc: Player = await ctx.invoke(self._connect)
+    @music.command(name="shuffle")
+    async def _shuffle(self, interaction: Interaction):
+        vc: Player = await self._connect(interaction)
 
         if not vc:
             return
@@ -246,7 +245,7 @@ class Music(commands.Cog, name="music"):
         for tracks in shuffled_queue:
             vc.queue.put(tracks)
 
-        await ctx.send(
+        await interaction.response.send_message(
             embed=Embed(
                 description="The queue has been shuffled!", color=Colors.DEFAULT
             ),
@@ -254,9 +253,9 @@ class Music(commands.Cog, name="music"):
         )
         return vc.queue
 
-    @commands.command(name="queue", aliases=["q", "list"])
-    async def queue(self, ctx):
-        vc: Player = await ctx.invoke(self._connect)
+    @music.command(name="queue")
+    async def queue(self, interaction: Interaction):
+        vc: Player = await self._connect(interaction)
 
         if not vc:
             return
@@ -290,14 +289,15 @@ class Music(commands.Cog, name="music"):
                 name="Next 10 Tracks:", value="\n".join(next_track_label), inline=False
             )
 
-        await ctx.send(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
         return
 
+    @music.command(name="lavalinkinfo")
     @commands.is_owner()
-    @commands.command(name="lavalinkinfo")
-    async def lavalink_info(self, ctx):
-        player = ctx.voice_client
+    async def lavalink_info(self, interaction: Interaction):
+        player = interaction.guild.voice_client
+        if not player: return 
         node = player.node
 
         used = humanize.naturalsize(node.stats.memory_used)
@@ -317,4 +317,4 @@ class Music(commands.Cog, name="music"):
             inline=False,
         )
 
-        await ctx.send(embed=embed)
+        await interaction.response.send_message(embed=embed)

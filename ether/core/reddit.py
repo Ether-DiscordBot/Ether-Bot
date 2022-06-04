@@ -16,20 +16,21 @@ from ether.core.logging import log
 class RedditPostCacher:
     def __init__(self, subreddit_names: List[str], cache_location) -> None:
         self.subreddit_names = subreddit_names
-        
+
         self.file_path = cache_location
-        
+
         self.reddit = Reddit(
             client_id=os.getenv("REDDIT_CLIENT_ID"),
             client_secret=os.getenv("REDDIT_CLIENT_SECRET"),
             user_agent="Ether Bot",
         )
-        
-        self.cache_posts()
+
+        self.run()
     
-    async def cache_subreddit(
-        self, subreddit: Subreddit
-    ) -> Tuple[str, List[str]]:
+    def run(self):
+        asyncio.run(self.cache_posts())
+
+    async def cache_subreddit(self, subreddit: Subreddit) -> Tuple[str, List[str]]:
         """Caches top posts from a subreddit
         Parameters
         ----------
@@ -51,26 +52,21 @@ class RedditPostCacher:
         )
         posts = [post.id for post in posts]
         return (subreddit.display_name, posts)
-    
-    
+
     @tasks.loop(minutes=30)
     async def cache_posts(self) -> None:
         subreddits = [
-            await self.reddit.subreddit(subreddit)
-            for subreddit in self.subreddit_names
+            await self.reddit.subreddit(subreddit) for subreddit in self.subreddit_names
         ]
-        tasks = tuple(
-            self.cache_subreddit(subreddit) for subreddit in subreddits
-        )
+        tasks = tuple(self.cache_subreddit(subreddit) for subreddit in subreddits)
         all_sub_content = await asyncio.gather(*tasks)
         data_to_dump = dict(all_sub_content)
 
         async with aiofiles.open(self.file_path, mode="wb+") as f:
             await f.write(pickle.dumps(data_to_dump))
-            
-        log.info(f'Posts from {len(subreddits)} subreddits has been cached.')
 
-        
+        log.info(f"Posts from {len(subreddits)} subreddits has been cached.")
+
     async def get_random_post(self, subreddit: str) -> Submission:
         """Fetches a post from the internal cache
         Parameters
@@ -86,6 +82,10 @@ class RedditPostCacher:
         ValueError
             The subreddit was not in the internal cache
         """
+        if not os.path.exists(self.file_path):
+            print("path doesn't exist")
+            await self.cache_posts()
+
         async with aiofiles.open(self.file_path, mode="rb") as f:
             cache = pickle.loads(await f.read())
             try:

@@ -1,20 +1,28 @@
 import random
 import os
 import json
+import asyncio
 
 import discord
 from discord.ext import commands
 from discord.ext.commands import when_mentioned_or
 from dotenv import load_dotenv
+import nest_asyncio
 
 from ether.core.cog_manager import CogManager
 from ether.core.context import EtherContext
-from ether.core.db.mongomanager import Database
+from ether.core.db import Database
+from ether.core.db.models import Guild, GuildUser, User
 from ether.core.logging import log
+
+nest_asyncio.apply()
+bot = None
 
 
 def get_prefix(client, message) -> str:
-    prefix = client.db.get_guild(message.guild)["prefix"] or client.base_prefix
+    prefix = client.base_prefix
+    if Database.client:
+        prefix = Database.get_guild(message.guild)["prefix"] or client.base_prefix
     return when_mentioned_or(prefix)(client, message)
 
 
@@ -22,7 +30,6 @@ class Client(commands.Bot):
     def __init__(self, base_prefix):
         self.base_prefix = base_prefix
 
-        self.db = None
         self.musicCmd = None
 
         self.in_container: bool = os.environ.get("IN_DOCKER", False)
@@ -52,10 +59,6 @@ class Client(commands.Bot):
 
         log.info(f"Is in container: {self.in_container}")
 
-        await self.load_extensions()
-
-        self.db = Database()
-
         self.musicCmd = self.get_cog("music")
 
     async def on_member_join(self, member):
@@ -83,12 +86,12 @@ class Client(commands.Bot):
     async def on_message(self, ctx):
         if ctx.author.bot:
             return
-
-        if self.db:
-            self.db.get_guild(ctx.guild)
-            self.db.get_user(ctx.author)
+    
+        if Database.client != None:
+            await Guild.from_guild_object(ctx.guild)
+            await GuildUser.from_user_object(ctx.author)
             if random.randint(1, 100) <= 33:
-                new_level = self.db.add_exp(ctx.guild, ctx.author, 4)
+                new_level = Database.GuildUser.add_exp(ctx.guild, ctx.author, 4)
                 if new_level != -1:
                     await ctx.channel.send(
                         f"Congratulation <@{ctx.author.id}>, you just pass to level {new_level}!"
@@ -117,6 +120,8 @@ def main():
     load_dotenv()
 
     bot = Client(base_prefix=os.getenv("BASE_PREFIX"))
+    
+    asyncio.run(bot.load_extensions())
     bot.run(os.getenv("BOT_TOKEN"))
 
 

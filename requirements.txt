@@ -1,8 +1,8 @@
-py-cord==2.0.0b7
-wavelink==1.1.1
+py-cord[voice]==2.0.0rc1
+pycord.wavelink==1.0.0b55
 humanize==4.0.0
 asyncpraw==7.5.0
-pymongo[srv]==4.0.2
+pymongo==3.12
 requests==2.27.1
 twine==3.8.0
 urllib3==1.26.8
@@ -13,3 +13,7 @@ pillow-simd==9.0.0.post1
 aiohttp==3.8.1
 rich==12.3.0
 pynacl==1.5.00
+motor[srv]==2.5
+beanie==1.11.0
+pydantic==1.9.0
+nest_asyncio==1.5.5

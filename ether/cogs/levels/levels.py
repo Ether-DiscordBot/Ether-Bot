@@ -4,11 +4,13 @@ import os
 
 import requests
 from PIL import Image, ImageDraw, ImageFont
-from discord import File
+from discord import File, Interaction, slash_command
 from discord.ext import commands
 
 from ether.core.utils import MathsLevels
 from ether.core.logging import log
+from ether.core.context import EtherEmbeds
+from ether.core.db import Database, models
 
 
 class Levels(commands.Cog, name="levels"):
@@ -18,14 +20,15 @@ class Levels(commands.Cog, name="levels"):
 
         self.ch = CardHandler()
 
-    @commands.command(name="profile", aliases=["me", "rank", "level"])
-    async def profile(self, ctx):
-        if not (user := self.client.db.get_guild_user(ctx.guild, ctx.author)):
-            return await ctx.send_error("Error when trying to get your profile!")
-        card = await self.ch.create_card(ctx.author, user)
+    @slash_command(name="profile")
+    async def profile(self, interaction: Interaction):
+        user = Database.GuildUser.get_or_create(interaction.user.id, interaction.guild_id)
+        if not user:
+            return await interaction.response.send_message(embed=EtherEmbeds.error("Error when trying to get your profile!"))
+        card = await self.ch.create_card(interaction.user, user)
         image = io.BytesIO(base64.b64decode(card))
-        return await ctx.send(
-            file=File(fp=image, filename=f"{ctx.author.name}_card.png")
+        return await interaction.response.send_message(
+            file=File(fp=image, filename=f"{interaction.user.name}_card.png")
         )
 
 
@@ -46,7 +49,9 @@ class CardHandler:
         self.pp_size = (120, 120)
         self.pp_padding = (30, 30)
 
-        mask = Image.open("ether/assets/mask.png", "r").convert("L").resize(self.img_size)
+        mask = (
+            Image.open("ether/assets/mask.png", "r").convert("L").resize(self.img_size)
+        )
         background = Image.new("RGBA", self.img_size, 0)
 
         base_card = Image.new("RGBA", self.img_size, (48, 50, 56))

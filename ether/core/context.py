@@ -19,6 +19,11 @@ class Options:
         return getattr(self, attr, False)
 
 
+class EtherEmbeds():
+    def error(message):
+        return Embed(description=message, colour=Colors.ERROR)
+
+
 class EtherContext(commands.Context):
     def get_options(self, *opts):
         parser = optparse.OptionParser()
