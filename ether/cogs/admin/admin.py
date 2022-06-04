@@ -1,9 +1,10 @@
-from discord import Embed, User
+from discord import Embed, User, slash_command
 from discord.ext import commands
 from humanize import precisedelta
 
 from ether.core.bot_log import BanLog
 from ether.core.constants import Colors
+from ether.core.context import EtherEmbeds
 
 
 class Admin(commands.Cog, name="admin"):
@@ -11,13 +12,9 @@ class Admin(commands.Cog, name="admin"):
         self.fancy_name = "Admin"
         self.client = client
 
-    @commands.command()
+    @slash_command()
     @commands.has_permissions(ban_members=True)
     async def ban(self, ctx, member: User, *, reason: str = None):
-        if not member:
-            await ctx.send_error(f"Unknown **{member.name}** !")
-            return
-
         db_guild = self.client.db.get_guild(ctx.guild)
 
         if db_guild["logs"]["moderation"]["active"]:
@@ -63,6 +60,7 @@ class Admin(commands.Cog, name="admin"):
                     await channel.send(embed=embed)
 
             await ctx.guild.ban(member)
+            await ctx.repond("✅ Done")
 
         except Exception as e:
             print(e)
@@ -71,15 +69,10 @@ class Admin(commands.Cog, name="admin"):
             )
             return
 
-    @commands.command()
+    @slash_command()
     @commands.has_permissions(kick_members=True)
     async def kick(self, ctx, member: User, *, reason=None):
         db_guild = self.client.db.get_guild(ctx.guild)
-        if not member:
-            embed = Embed(
-                color=Colors.ERROR, description=f"Unknown **{member.name}** !"
-            )
-            return await ctx.send(embed=embed)
 
         try:
             if db_guild["logs"]["moderation"]["active"]:
@@ -105,32 +98,27 @@ class Admin(commands.Cog, name="admin"):
 
                     await ctx.guild.kick(member)
 
-                    await channel.send(embed=embed)
+                    await channel.respond(embed=embed)
+                    await ctx.repond("✅ Done")
         except Exception:
-            await ctx.send_error(
-                "Can't do that. Probably because I don't have the " "permissions for."
+            await ctx.respond(
+                embed=EtherEmbeds.error("Can't do that. Probably because I don't have the " "permissions for.")
             )
             return
 
-    @commands.command(name="clear", aliases=["purge", "cleanup"])
+    @slash_command(name="clear")
     @commands.has_permissions(manage_messages=True)
     async def clear(self, ctx, amount: int):
-        if not amount:
-            await ctx.send_error(
-                "Please indicate a number of messages to delete.", delete_after=5
-            )
-            return
-
         deleted = await ctx.channel.purge(limit=amount + 1)
         embed = Embed(description=f"Deleted {len(deleted) - 1} message(s).")
         embed.colour = Colors.SUCCESS
-        await ctx.send(embed=embed, delete_after=5)
+        await ctx.respond(embed=embed, delete_after=5)
 
-    @commands.command(name="slowmode")
+    @slash_command(name="slowmode")
     @commands.has_permissions(manage_channels=True)
-    async def slowmode(self, ctx, cd: int):
-        await ctx.channel.edit(slowmode_delay=cd)
-        if cd == 0:
-            await ctx.send(f"✅ Slowmode disabled!")
+    async def slowmode(self, ctx, cooldown: int):
+        await ctx.channel.edit(slowmode_delay=cooldown)
+        if cooldown == 0:
+            await ctx.respond(f"✅ Slowmode disabled!")
             return
-        await ctx.send(f"✅ Slowmode set to `{precisedelta(cd)}`!")
+        await ctx.respond(f"✅ Slowmode set to `{precisedelta(cooldown)}`!")
