@@ -67,23 +67,24 @@ class Client(commands.Bot):
         self.musicCmd = self.get_cog("music")
 
     async def on_member_join(self, member):
-        guild = self.db.get_guild(member.guild)
-        log = guild["logs"]["join"]
-        if log["active"]:
-            if channel := member.guild.get_channel(log["channel_id"]):
+        guild = await Database.Guild.get_or_create(member.guild.id)
+
+        if guild.logs and guild.logs.join:
+            if guild.logs.join.enabled:
+                channel = member.guild.get_channel(guild.logs.join.channel_id)
                 await channel.send(
-                    log["message"].format(user=member, guild=member.guild)
+                    guild.logs.join.message.format(user=member, guild=member.guild)
                 )
 
     async def on_member_remove(self, member):
-        if member.id != self.user.id:
-            guild = self.db.get_guild(member.guild)
-            log = guild["logs"]["leave"]
-            if log["active"]:
-                if channel := member.guild.get_channel(log["channel_id"]):
-                    await channel.send(
-                        log["message"].format(user=member, guild=member.guild)
-                    )
+        guild = await Database.Guild.get_or_create(member.guild.id)
+        
+        if guild.logs and guild.logs.leave:
+            if guild.logs.leave.enabled:
+                channel = member.guild.get_channel(guild.logs.leave.channel_id)
+                await channel.send(
+                    guild.logs.leave.message.format(user=member, guild=member.guild)
+                )
 
     async def get_context(self, message, *, cls=EtherContext):
         return await super().get_context(message, cls=cls)
