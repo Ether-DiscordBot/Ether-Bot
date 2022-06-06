@@ -8,6 +8,7 @@ from discord.ext import commands
 from discord.ext.commands import when_mentioned_or
 from dotenv import load_dotenv
 import nest_asyncio
+nest_asyncio.apply()
 
 from ether.core.cog_manager import CogManager
 from ether.core.context import EtherContext
@@ -15,8 +16,6 @@ from ether.core.db import Database
 from ether.core.db.models import Guild, GuildUser, User
 from ether.core.logging import log
 
-nest_asyncio.apply()
-bot = None
 
 #
 #               Ether - Discord Bot
@@ -25,11 +24,11 @@ bot = None
 #
 
 
-def get_prefix(client, message) -> str:
-    prefix = client.base_prefix
-    if Database.client:
-        prefix = Database.get_guild(message.guild)["prefix"] or client.base_prefix
-    return when_mentioned_or(prefix)(client, message)
+# def get_prefix(client, message) -> str:
+#     prefix = client.base_prefix
+#     if Database.client:
+#         prefix = Database.get_guild(message.guild)["prefix"] or client.base_prefix
+#     return when_mentioned_or(prefix)(client, message)
 
 
 class Client(commands.Bot):
@@ -48,7 +47,7 @@ class Client(commands.Bot):
 
         super().__init__(
             activity=discord.Game(name=f"{self.base_prefix}help"),
-            command_prefix=get_prefix,
+            command_prefix=base_prefix,
             help_command=None,
             debug_guilds=[697735468875513876],
             intents=intents,
@@ -97,8 +96,8 @@ class Client(commands.Bot):
             await Guild.from_guild_object(ctx.guild)
             await GuildUser.from_user_object(ctx.author)
             if random.randint(1, 100) <= 33:
-                new_level = Database.GuildUser.add_exp(ctx.guild, ctx.author, 4)
-                if new_level != -1:
+                new_level = await Database.GuildUser.add_exp(ctx.author.id, ctx.guild.id, 4)
+                if new_level:
                     await ctx.channel.send(
                         f"Congratulation <@{ctx.author.id}>, you just pass to level {new_level}!"
                     )

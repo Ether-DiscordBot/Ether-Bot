@@ -1,12 +1,12 @@
 import math
 
 
-class MathsLevels:
+class LevelsHandler:
     def get_level(level: int, exp):
-        return int(math.sqrt(max(MathsLevels.level_to_exp(level) + exp, 1)) * 0.2)
+        return int(math.sqrt(max(LevelsHandler.level_to_exp(level) + exp, 1)) * 0.2)
 
-    def level_to_exp(level: int):
-        return 50 * pow(level - 1, 2)
+    def get_next_level(level: int):
+        return 50 * pow(level, 2)
 
 
 class Utils(object):

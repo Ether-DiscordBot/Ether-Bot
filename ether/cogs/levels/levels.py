@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 from discord import File, Interaction, slash_command
 from discord.ext import commands
 
-from ether.core.utils import MathsLevels
+from ether.core.utils import LevelsHandler
 from ether.core.logging import log
 from ether.core.context import EtherEmbeds
 from ether.core.db import Database, models
@@ -22,7 +22,7 @@ class Levels(commands.Cog, name="levels"):
 
     @slash_command(name="profile")
     async def profile(self, interaction: Interaction):
-        user = Database.GuildUser.get_or_create(interaction.user.id, interaction.guild_id)
+        user = await Database.GuildUser.get_or_create(interaction.user.id, interaction.guild_id)
         if not user:
             return await interaction.response.send_message(embed=EtherEmbeds.error("Error when trying to get your profile!"))
         card = await self.ch.create_card(interaction.user, user)
@@ -90,8 +90,8 @@ class CardHandler:
         # Advancement
         exp_advancement = (
             self.max_size_bar
-            * db_user["exp"]
-            / MathsLevels.level_to_exp(db_user["levels"] + 1)
+            * db_user.exp
+            / LevelsHandler.get_next_level(db_user.levels)
         )
 
         back_draw.rounded_rectangle(
@@ -145,7 +145,7 @@ class CardHandler:
                 505,  # min 500
                 120 - self.LEVEL_FONT.size + 2,
             ),
-            text=f"{db_user['levels']}",
+            text=f"{db_user.levels}",
             fill=(255, 255, 255),
             font=self.LEVEL_FONT,
         )
@@ -154,7 +154,7 @@ class CardHandler:
         # User exp
         draw.text(
             xy=(self.pseudo_left_padding, 120),
-            text=f"{db_user['exp']}",
+            text=f"{db_user.exp}",
             fill=(255, 255, 255),
             font=self.EXP_FONT,
         )
@@ -163,10 +163,10 @@ class CardHandler:
         draw.text(
             xy=(
                 self.pseudo_left_padding
-                + self.EXP_FONT.getsize(f"{db_user['exp']}")[0],
+                + self.EXP_FONT.getsize(f"{db_user.exp}")[0],
                 120,
             ),
-            text=f"/{MathsLevels.level_to_exp(db_user['levels'] + 1)} exp",
+            text=f"/{LevelsHandler.get_next_level(db_user.levels)} exp",
             fill=(190, 190, 190),
             font=self.EXP_FONT,
         )

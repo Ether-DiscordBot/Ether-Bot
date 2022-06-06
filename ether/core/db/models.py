@@ -33,19 +33,15 @@ class Logs(BaseModel):
     join: Optional[JoinLog] = None
     leave: Optional[LeaveLog] = None
     moderation: Optional[ModerationLog] = None
-
+    
 
 class Guild(Document):
-    id: int
-    prefix: Optional[str] = os.getenv("BASE_PREFIX")
-    logs: Logs
-    auto_role: Optional[int] = None
-    welcome_channel: Optional[int] = None
-    welcome_card_enalbed: bool = False
-    welcome_card_type: int = 0
+    class Settings:
+        name = "guilds"
 
-    class DocumentMeta:
-        collection_name = "guilds"
+    id: int
+    logs: Logs = None
+    auto_role: Optional[int] = None
 
     async def from_id(guild_id: int):
         return await _database.Guild.get_or_create(guild_id)
@@ -58,14 +54,15 @@ class Guild(Document):
 
 
 class GuildUser(Document):
+    class Settings:
+        name = "guild_users"
+
     id: int
     guild_id: int
     description: str = ""
     exp: int = 0
-    levels: int = 0
+    levels: int = 1
 
-    class DocumentMeta:
-        collection_name = "guild_users"
 
     async def from_id(user_id: int, guild_id: int):
         return await _database.GuildUser.get_or_create(user_id, guild_id)
@@ -78,12 +75,12 @@ class GuildUser(Document):
 
 
 class User(Document):
+    class Settings:
+        name = "users"
+
     id: int
     description: Optional[str] = None
     card_color: int = 0xa5d799
-
-    class DocumentMeta:
-        collection_name = "users"
 
     async def from_id(user_id: int):
         return await _database.User.get_or_create(user_id)
@@ -96,11 +93,11 @@ class User(Document):
 
 
 class Playlist(Document):
+    class Settings:
+        name = "playlists"
+
     message_id: int
     playlist_link: str
-
-    class DocumentMeta:
-        collection_name = "playlists"
 
 
 class ReactionRoleOption(BaseModel):
@@ -109,8 +106,8 @@ class ReactionRoleOption(BaseModel):
 
 
 class ReactionRole(Document):
+    class Settings:
+        name = "reaction_roles"
+
     message_id: int
     options: List[ReactionRoleOption]
-
-    class DocumentMeta:
-        collection_name = "reaction_roles"

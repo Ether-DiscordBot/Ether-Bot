@@ -2,10 +2,11 @@ import asyncio
 import os
 from beanie import init_beanie
 import bson
+from dotenv import load_dotenv
 
-import motor
+from motor.motor_asyncio import AsyncIOMotorClient
 
-from ether.core.utils import MathsLevels
+from ether.core.utils import LevelsHandler
 import ether.core.db.models as models
 
 class Database:   
@@ -15,19 +16,20 @@ class Database:
 
     class Guild:
         async def create(guild_id: int):
-            logs = models.Logs(models.JoinLog(), models.LeaveLog(), models.ModerationLog())
-            guild = models.Guild(id=guild_id, logs=logs)
+            # logs = models.Logs(models.JoinLog(), models.LeaveLog(), models.ModerationLog())
+            # guild = models.Guild(id=guild_id, logs=logs)
+            guild = models.Guild(id=guild_id)
             
             await guild.insert()
             
-            return Database.Guild.get_or_none(guild_id)
+            return await Database.Guild.get_or_none(guild_id)
             
         async def get_or_create(guild_id: int):
             guild = await Database.Guild.get_or_none(guild_id)
             if guild:
                 return guild
             
-            return Database.Guild.create(guild_id)
+            return await Database.Guild.create(guild_id)
         
         async def get_or_none(guild_id: int):
             guild = await models.Guild.find_one(models.Guild.id == guild_id)
@@ -42,14 +44,14 @@ class Database:
             
             await user.insert()
             
-            return Database.GuildUser.get_or_none(user_id, guild_id)
+            return await Database.GuildUser.get_or_none(user_id, guild_id)
             
         async def get_or_create(user_id: int, guild_id: int):
             user = await Database.GuildUser.get_or_none(user_id, guild_id)
             if user:
                 return user
             
-            return Database.GuildUser.create(user_id)
+            return await Database.GuildUser.create(user_id, guild_id)
         
         async def get_or_none(user_id: int, guild_id: int):
             user = await models.GuildUser.find_one(models.GuildUser.id == user_id, models.GuildUser.guild_id == guild_id)
@@ -58,19 +60,19 @@ class Database:
             
             return None
 
-        async def add_exp(self, user_id, guild_id, amount):
+        async def add_exp(user_id, guild_id, amount):
             user = await Database.GuildUser.get_or_none(user_id, guild_id)
             
             if not user:
                 return
             
             new_exp = user.exp + amount
-            new_level_exp = new_exp - MathsLevels.level_to_exp(user.levels + 1)
-            if new_level_exp >= 0:
-                user.set({models.GuildUser.exp: new_exp, models.GuildUser.levels: new_level_exp + 1})
-                return new_level_exp + 1
+            next_level = LevelsHandler.get_next_level(user.levels)
+            if next_level <= new_exp:
+                await user.set({models.GuildUser.exp: new_exp - next_level, models.GuildUser.levels: user.levels + 1})
+                return user.levels
             
-            user.set({models.GuildUser.exp: new_exp})
+            await user.set({models.GuildUser.exp: new_exp})
         
         
     def update_guild(self, guild, key, value):
@@ -162,13 +164,14 @@ class Database:
 
 
 async def init_database():
-    Database.client = motor.motor_asyncio.AsyncIOMotorClient(os.getenv("MONGO_DB_URI"))
+    load_dotenv()
+    Database.client = AsyncIOMotorClient(os.getenv("MONGO_DB_URI")).dbot
     
     # FIXME
     await init_beanie(
-        database=Database.client.db_name, document_models=[models.Guild, models.GuildUser, models.User]
+        database=Database.client, document_models=[models.Guild, models.GuildUser, models.User]
     )
     
     models._database = Database
 
-# asyncio.run(init_database())
+asyncio.run(init_database())
