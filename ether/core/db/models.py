@@ -11,7 +11,7 @@ _database = None
 
 
 class JoinLog(BaseModel):
-    channel_id: Optional[int] = None
+    channel_id: int
     message: str = "Welcome to {user.name}!"
     enabled: bool = False
     private: bool = False
@@ -19,13 +19,13 @@ class JoinLog(BaseModel):
 
 
 class LeaveLog(BaseModel):
-    channel_id: Optional[int] = None
+    channel_id: int
     message: str = "{user.name} is gone!"
     enabled: bool = False
 
 
 class ModerationLog(BaseModel):
-    channel_id: Optional[int] = None
+    channel_id: int
     enabled: bool = False
 
 

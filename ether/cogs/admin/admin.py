@@ -1,10 +1,16 @@
-from discord import Embed, User, slash_command
+import logging
+from typing import Optional
+from discord import Embed, Member, User, slash_command
+import discord
 from discord.ext import commands
 from humanize import precisedelta
 
 from ether.core.bot_log import BanLog
 from ether.core.constants import Colors
 from ether.core.context import EtherEmbeds
+from ether.core.db.client import Database
+from ether.core.db.models import Guild
+from ether.core.utils import Utils
 
 
 class Admin(commands.Cog, name="admin"):
@@ -71,40 +77,41 @@ class Admin(commands.Cog, name="admin"):
 
     @slash_command()
     @commands.has_permissions(kick_members=True)
-    async def kick(self, ctx, member: User, *, reason=None):
-        db_guild = self.client.db.get_guild(ctx.guild)
+    async def kick(self, ctx, member: Member, *, reason=None):
+        guild = await Database.Guild.get_or_none(ctx.guild_id)
+        
+        if not guild:
+            ctx.respond(embed=EtherEmbeds.error("Sorry, an unexpected error has occurred!"), delete_after=5)
 
         try:
-            if db_guild["logs"]["moderation"]["active"]:
-                channel = ctx.guild.get_channel(
-                    db_guild["logs"]["moderation"]["channel_id"]
-                )
-                if channel:
-                    embed = Embed(color=Colors.KICK)
-                    embed.set_author(
-                        name=f"[KICK] {member.name}#{member.discriminator}",
-                        icon_url=self.client.utils.get_avatar_url(member),
+            await ctx.guild.kick(member)
+            if guild.logs and guild.logs.moderation:
+                if guild.logs.moderation.enabled:
+                    channel = ctx.guild.get_channel(
+                        guild.logs.moderation.channel_id
                     )
-                    embed.add_field(name="User", value=f"<@{member.id}>", inline=True)
-                    embed.add_field(
-                        name="Moderator", value=f"<@{ctx.author.id}>", inline=True
-                    )
-                    embed.add_field(
-                        name="Channel", value=f"<#{ctx.channel.id}>", inline=True
-                    )
-                    embed.add_field(
-                        name="Reason", value=reason or "No reason.", inline=True
-                    )
-
-                    await ctx.guild.kick(member)
-
-                    await channel.respond(embed=embed)
-                    await ctx.repond("✅ Done")
-        except Exception:
+                    if channel:
+                        embed = Embed(color=Colors.KICK)
+                        embed.set_author(
+                            name=f"[KICK] {member.name}#{member.discriminator}",
+                            icon_url=Utils.get_avatar_url(member),
+                        )
+                        embed.add_field(name="User", value=f"<@{member.id}>", inline=True)
+                        embed.add_field(
+                            name="Moderator", value=f"<@{ctx.author.id}>", inline=True
+                        )
+                        embed.add_field(
+                            name="Channel", value=f"<#{ctx.channel.id}>", inline=True
+                        )
+                        embed.add_field(
+                            name="Reason", value=reason or "No reason.", inline=True
+                        )
+                        await channel.send(embed=embed)
+            return await ctx.respond("✅ Done")
+        except discord.errors.Forbidden:
             await ctx.respond(
-                embed=EtherEmbeds.error("Can't do that. Probably because I don't have the " "permissions for.")
+                embed=EtherEmbeds.error("Can't do that. Probably because I don't have the permissions for.")
             )
-            return
 
     @slash_command(name="clear")
     @commands.has_permissions(manage_messages=True)
@@ -122,3 +129,20 @@ class Admin(commands.Cog, name="admin"):
             await ctx.respond(f"✅ Slowmode disabled!")
             return
         await ctx.respond(f"✅ Slowmode set to `{precisedelta(cooldown)}`!")
+
+    @slash_command(name="logs")
+    @commands.has_permissions(manage_channels=True)
+    async def logs(self, ctx, active: bool, channel: Optional[discord.TextChannel] = None):
+        
+        if channel:
+            res = await Database.Guild.Logs.Moderation.set(ctx.guild.id, active, channel.id)
+        else:
+            res = await Database.Guild.Logs.Moderation.set(ctx.guild.id, active)
+            
+        if not res:
+            ctx.respond(embed=EtherEmbeds.error("Sorry, an unexpected error has occurred!"), delete_after=5)
+            
+        if active:
+            return await ctx.respond(f"✅ Logs set enabled!")
+        
+        return await ctx.respond(f"✅ Logs set disabled!")
