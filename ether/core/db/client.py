@@ -1,5 +1,6 @@
 import asyncio
 import os
+from typing import Optional
 from beanie import init_beanie
 import bson
 from dotenv import load_dotenv
@@ -37,6 +38,31 @@ class Database:
                 return guild
             
             return None
+        
+        class Logs:
+            class Moderation:
+                async def set(guild_id: int, enabled: bool, channel_id: Optional[int] = None):
+                    guild = await Database.Guild.get_or_none(guild_id)
+                    
+                    if not guild:
+                        return None
+                    
+                    if channel_id:
+                        moderation_logs = models.ModerationLog(channel_id=channel_id, enabled=enabled)
+                    else:
+                        if not (guild.logs and guild.logs.moderation):
+                            return None
+                        moderation_logs = models.ModerationLog(channel_id=guild.logs.moderation.channel_id, enabled=enabled)
+                    
+                    if guild.logs:
+                        await guild.set({models.Guild.logs.moderation: moderation_logs})
+                    else:
+                        await guild.set({models.Guild.logs: models.Logs(moderation=moderation_logs)})
+                        
+                    return True
+                    
+                    
+                    
     
     class GuildUser:
         async def create(user_id: int, guild_id: int):
