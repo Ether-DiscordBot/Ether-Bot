@@ -17,8 +17,6 @@ class Database:
 
     class Guild:
         async def create(guild_id: int):
-            # logs = models.Logs(models.JoinLog(), models.LeaveLog(), models.ModerationLog())
-            # guild = models.Guild(id=guild_id, logs=logs)
             guild = models.Guild(id=guild_id)
             
             await guild.insert()
