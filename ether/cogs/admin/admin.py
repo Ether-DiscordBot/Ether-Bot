@@ -22,6 +22,8 @@ class Admin(commands.Cog, name="admin"):
         if not guild:
             ctx.respond(embed=EtherEmbeds.error("Sorry, an unexpected error has occurred!"), delete_after=5)
 
+        #TODO replace try/except by a condition to check permissions
+
         try:
             await ctx.guild.ban(member)
             if guild.logs and guild.logs.moderation:
@@ -45,6 +47,8 @@ class Admin(commands.Cog, name="admin"):
         
         if not guild:
             ctx.respond(embed=EtherEmbeds.error("Sorry, an unexpected error has occurred!"), delete_after=5)
+
+        #TODO replace try/except by a condition to check permissions
 
         try:
             await ctx.guild.kick(member)
