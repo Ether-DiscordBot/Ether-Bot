@@ -45,8 +45,7 @@ class Client(commands.Bot):
         )
 
     async def load_extensions(self):
-        cogs_loader = CogManager(self)
-        await cogs_loader.load_cogs()
+        await CogManager.load_cogs(self)
 
     async def on_ready(self):
         log.info(f"Client Name:\t{self.user.name}")
