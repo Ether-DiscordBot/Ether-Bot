@@ -4,7 +4,7 @@ from discord import Embed, Interaction, SlashCommandGroup
 from discord.ext import commands
 
 from ether.core.constants import Colors
-from ether.core.context import EtherEmbeds
+from ether.core.utils import EtherEmbeds
 from ether.core.reddit import RedditPostCacher
 from ether.core.logging import logging
 

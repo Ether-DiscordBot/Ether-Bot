@@ -13,7 +13,7 @@ import humanize
 from ether.core.constants import Colors
 from ether.core.lavalink_status import request
 from ether.core.logging import log
-from ether.core.context import EtherEmbeds
+from ether.core.utils import EtherEmbeds
 
 URL_REG = re.compile(r"https?://(?:www\.)?.+")
 

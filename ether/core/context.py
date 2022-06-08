@@ -10,6 +10,4 @@ from ether.core.constants import Colors
 
 # TODO EtherLogs
 
-class EtherEmbeds():
-    def error(message):
-        return Embed(description=message, colour=Colors.ERROR)
+

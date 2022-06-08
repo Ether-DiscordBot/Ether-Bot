@@ -5,7 +5,7 @@ import os
 from discord import Embed, Interaction, Option, OptionChoice, SlashCommandGroup
 from discord.ext import commands
 
-from ether.core.context import EtherEmbeds
+from ether.core.utils import EtherEmbeds
 
 
 class Fun(commands.Cog):

@@ -7,9 +7,8 @@ from PIL import Image, ImageDraw, ImageFont
 from discord import File, Interaction, slash_command
 from discord.ext import commands
 
-from ether.core.utils import LevelsHandler
+from ether.core.utils import LevelsHandler, EtherEmbeds
 from ether.core.logging import log
-from ether.core.context import EtherEmbeds
 from ether.core.db import Database, models
 
 

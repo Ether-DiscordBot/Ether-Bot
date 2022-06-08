@@ -5,15 +5,13 @@ import asyncio
 
 import discord
 from discord.ext import commands
-from discord.ext.commands import when_mentioned_or
 from dotenv import load_dotenv
 import nest_asyncio
 nest_asyncio.apply()
 
 from ether.core.cog_manager import CogManager
-from ether.core.context import EtherContext
 from ether.core.db import Database
-from ether.core.db.models import Guild, GuildUser, User
+from ether.core.db.models import Guild, GuildUser
 from ether.core.logging import log
 
 
@@ -22,13 +20,6 @@ from ether.core.logging import log
 #
 #              Made by Holy Crusader
 #
-
-
-# def get_prefix(client, message) -> str:
-#     prefix = client.base_prefix
-#     if Database.client:
-#         prefix = Database.get_guild(message.guild)["prefix"] or client.base_prefix
-#     return when_mentioned_or(prefix)(client, message)
 
 
 class Client(commands.Bot):
@@ -85,9 +76,6 @@ class Client(commands.Bot):
                 await channel.send(
                     guild.logs.leave.message.format(user=member, guild=member.guild)
                 )
-
-    async def get_context(self, message, *, cls=EtherContext):
-        return await super().get_context(message, cls=cls)
 
     async def on_message(self, ctx):
         if ctx.author.bot:
