@@ -82,7 +82,7 @@ class Client(commands.Bot):
     
         if Database.client != None:
             await Guild.from_guild_object(ctx.guild)
-            await GuildUser.from_user_object(ctx.author)
+            await GuildUser.from_member_object(ctx.author)
             if random.randint(1, 100) <= 33:
                 new_level = await Database.GuildUser.add_exp(ctx.author.id, ctx.guild.id, 4)
                 if new_level:

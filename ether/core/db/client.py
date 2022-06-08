@@ -78,7 +78,7 @@ class Database:
             return await Database.GuildUser.create(user_id, guild_id)
         
         async def get_or_none(user_id: int, guild_id: int):
-            user = await models.GuildUser.find_one(models.GuildUser.id == user_id, models.GuildUser.guild_id == guild_id)
+            user = await models.GuildUser.find_one(models.GuildUser.id == user_id and models.GuildUser.guild_id == guild_id)
             if user:
                 return user
             

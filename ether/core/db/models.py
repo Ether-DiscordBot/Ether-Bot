@@ -1,8 +1,7 @@
-import os
-
 from typing import List, Optional
 from discord import Guild as GuildModel
 from discord import User as UserModel
+from discord import Member as MemberModel
 from discord.ext.commands import Context
 from beanie import Document
 from pydantic import BaseModel
@@ -67,8 +66,8 @@ class GuildUser(Document):
     async def from_id(user_id: int, guild_id: int):
         return await _database.GuildUser.get_or_create(user_id, guild_id)
 
-    async def from_user_object(user: UserModel):
-        return await GuildUser.from_id(user.id, user.guild.id)
+    async def from_member_object(member: MemberModel):
+        return await GuildUser.from_id(member.id, member.guild.id)
 
     async def from_context(ctx: Context):
         return await GuildUser.from_id(ctx.author.id, ctx.guild.id)
