@@ -6,14 +6,14 @@ lavalink:
     password: pxV58RF6f292N9NK
     sources:
       youtube: true
-      bandcamp: true
+      bandcamp: false
       soundcloud: true
-      twitch: true
-      vimeo: true
-      http: true
+      twitch: false
+      vimeo: false
+      http: false
       local: false
     bufferDurationMs: 400
-    youtubePlaylistLoadLimit: 1 # Number of pages at 100 each
+    youtubePlaylistLoadLimit: 2 # Number of pages at 100 each
     playerUpdateInterval: 10 # How frequently to send player updates to clients, in seconds
     youtubeSearchEnabled: true
     soundcloudSearchEnabled: true
