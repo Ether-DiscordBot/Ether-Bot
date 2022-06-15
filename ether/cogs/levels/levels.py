@@ -9,7 +9,7 @@ from discord.ext import commands
 
 from ether.core.utils import LevelsHandler, EtherEmbeds
 from ether.core.logging import log
-from ether.core.db import Database, models
+from ether.core.db import Database
 
 
 class Levels(commands.Cog, name="levels"):

@@ -10,7 +10,7 @@ import nest_asyncio
 nest_asyncio.apply()
 
 from ether.core.cog_manager import CogManager
-from ether.core.db import Database
+from ether.core.db import Database, Guild, GuildUser
 from ether.core.logging import log
 
 
