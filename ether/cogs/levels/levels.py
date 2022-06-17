@@ -8,7 +8,6 @@ from discord import File, Interaction, slash_command
 from discord.ext import commands
 
 from ether.core.utils import LevelsHandler, EtherEmbeds
-from ether.core.logging import log
 from ether.core.db import Database
 
 
@@ -30,9 +29,10 @@ class Levels(commands.Cog, name="levels"):
 
 
 class CardHandler:
-    BASE_FONT = ImageFont.truetype(os.path.abspath("ether/assets/fonts/whitneymedium.otf"), 44)
-    DISC_FONT = ImageFont.truetype(os.path.abspath("ether/assets/fonts/whitneymedium.otf"), 29)
-    LEVEL_FONT = ImageFont.truetype( os.path.abspath("ether/assets/fonts/whitneybold.otf"), 24)
+    BASE_FONT = ImageFont.truetype(os.path.abspath("ether/assets/fonts/Inter-Medium.ttf"), 44)
+    DISC_FONT = ImageFont.truetype(os.path.abspath("ether/assets/fonts/Inter-Medium.ttf"), 29)
+    LEVEL_FONT = ImageFont.truetype( os.path.abspath("ether/assets/fonts/Inter-Bold.ttf"), 22)
+    EXP_FONT = ImageFont.truetype( os.path.abspath("ether/assets/fonts/Inter-Bold.ttf"), 19)
     MASK = Image.open("ether/assets/mask.png", "r").convert("L")
     MAX_SIZE_BAR = 634
 
@@ -115,6 +115,21 @@ class CardHandler:
             text=f"#{user.discriminator}",
             fill=(175, 175, 175),
             font=CardHandler.DISC_FONT,
+        )
+        
+        # Experience
+        exp_size = draw.textsize(str(db_user.exp), CardHandler.EXP_FONT)
+        draw.text(
+            xy=(228, 183),
+            text=f"{db_user.exp}",
+            fill=(255, 255, 255),
+            font=CardHandler.EXP_FONT
+        )
+        draw.text(
+            xy=(228+exp_size[0], 183),
+            text=f"/{LevelsHandler.get_next_level(db_user.levels)}exp",
+            fill=(175, 175, 175),
+            font=CardHandler.EXP_FONT
         )
 
         # Convert to Base64
