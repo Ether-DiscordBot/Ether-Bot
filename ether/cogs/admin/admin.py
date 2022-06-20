@@ -6,7 +6,8 @@ from humanize import precisedelta
 
 from ether.core.constants import Colors
 from ether.core.db.client import Database
-from ether.core.utils import EtherEmbeds, EtherLogs
+from ether.core.utils import EtherEmbeds
+from ether.core.logs import EtherLogs
 
 
 class Admin(commands.Cog, name="admin"):
