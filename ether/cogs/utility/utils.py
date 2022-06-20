@@ -1,9 +1,16 @@
 from random import random, choice
-from typing import List, Optional
+import re
+import requests
+from typing import Optional
+
 from discord import ApplicationContext, Embed
 from discord.commands import SlashCommandGroup, slash_command
 from discord.ext import commands
-from typer import Option
+
+from ether.core.utils import EtherEmbeds
+
+URBAN_PATTERN = r"\[(.*?)]"
+
 
 class Utils(commands.Cog):
     def __init__(self, client):
@@ -56,3 +63,39 @@ class Utils(commands.Cog):
         items = [first, second, third, fourth, fifth, sisth, seventh, eighth, ninth, tenth]
         list = [i for i in items if i]
         return await ctx.respond(choice(list))
+
+    @utils.command(name="urban")
+    async def urban(self, ctx: ApplicationContext, term: str):        
+        r = requests.get(f"https://api.urbandictionary.com/v0/define?term={term}")
+        res = r.json()
+        
+        if len(res["list"]) > 0:
+            link = f"https://www.urbandictionary.com/define.php?term={term}"
+                        
+            embed = Embed(title=f"Definition of \"{term}\":", url=link)
+            embed.set_footer(text="Powered by Urban Dictionary", icon_url="https://img.utdstc.com/icon/4af/833/4af833b6befdd4c69d7ebac403bfa087159601c9c129e4686b8b664e49a7f349")
+
+            definition = res["list"][0]['definition']
+            if len(definition) > 1024:
+                definition = f"\t{definition[:1023]}..."
+                
+            linked_definition = ""
+            substring = re.finditer(URBAN_PATTERN, definition)
+            splitted = re.split(URBAN_PATTERN, definition)
+            
+            i=0
+            for s in substring:
+                b_before = splitted[i]
+                before = definition[s.span()[0]:s.span()[1]]
+                
+                link = f"https://www.urbandictionary.com/define.php?term={splitted[i+1]}".replace(" ", "%20")
+                i+=2
+                
+                linked_definition += b_before + before + f"({link})"
+            
+            
+            embed.description = linked_definition
+                
+            await ctx.respond(embed=embed)
+        else:
+            await ctx.respond(embed=EtherEmbeds.error(f"Could not find any definition of **\"{term}\"**!"), delete_after=5)
