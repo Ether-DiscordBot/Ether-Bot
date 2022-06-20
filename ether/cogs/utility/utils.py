@@ -32,7 +32,7 @@ class Utils(commands.Cog):
 
     utils = SlashCommandGroup("utils", "Utils commands!")
     
-    @slash_command(name="help", guild_ids=[697735468875513876])
+    @slash_command(name="help")
     async def help(self, ctx: ApplicationContext) -> None:
         await ctx.respond(embed=self.help_embed)
 
