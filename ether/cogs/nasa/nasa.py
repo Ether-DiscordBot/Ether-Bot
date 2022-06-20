@@ -1,7 +1,8 @@
 import os
+import random
 import requests
 
-from discord import Embed, SlashCommandGroup
+from discord import Embed, Option, OptionChoice, SlashCommandGroup
 from discord.ext import commands
 
 from ether.core.utils import EtherEmbeds
@@ -61,6 +62,26 @@ class Nasa(commands.Cog, name="nasa"):
         
         embed = Embed(title="Epic", description=res['caption'])
         embed.set_image(url=image)
+        embed.set_footer(text="Powered by Nasa")
+        
+        await ctx.respond(embed=embed)
+    
+    @nasa.command(name="mars")
+    async def mars(self, ctx, rover: Option(str, "Rover on Mars", required=True, choices=[
+        OptionChoice("Curiosity", value="curiosity"),
+        OptionChoice("Opportunity", value="opportunity"),
+        OptionChoice("Spirit", value="spirit")])):
+        r = requests.get(f"https://api.nasa.gov/mars-photos/api/v1/rovers/{rover}/photos?sol=1000&api_key={self.api_key}")
+        
+                
+        if not r.ok:
+            return ctx.respond(embed=EtherEmbeds.error("Sorry, an error has occurred."), delete_after=5)
+        
+        res = r.json()
+        photo = random.choice(res['photos'])
+        
+        embed = Embed(title=f"Mars {rover} photo", description=f"**camera:** {photo['camera']['full_name']}\n**date:** {photo['earth_date']}")
+        embed.set_image(url=photo['img_src'])
         embed.set_footer(text="Powered by Nasa")
         
         await ctx.respond(embed=embed)
