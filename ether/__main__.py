@@ -22,24 +22,28 @@ from ether.core.logging import log
 
 
 class Client(commands.Bot):
-    def __init__(self, base_prefix):
-        self.base_prefix = base_prefix
-
-        self.musicCmd = None
-
+    def __init__(self):
         self.in_container: bool = os.environ.get("IN_DOCKER", False)
-
         self.lavalink_host = "lavalink" if self.in_container else "localhost"
 
+        intents = discord.Intents().all()
         guilds = json.loads(os.environ.get("SLASH_COMMANDS_GUILD_ID", default=[]))
         self.debug_guilds: list[int] = [g for g in guilds]
-        intents = discord.Intents().all()
+        self.global_slash_commands = bool(os.environ["GLOBAL_SLASH_COMMANDS"])
+        
+        if self.global_slash_commands == True:
+            print("gsc")
+            super().__init__(
+                activity=discord.Game(name=f"/help"),
+                help_command=None,
+                intents=intents,
+            )
+            return
 
         super().__init__(
-            activity=discord.Game(name=f"{self.base_prefix}help"),
-            command_prefix=base_prefix,
+            activity=discord.Game(name=f"/help"),
             help_command=None,
-            debug_guilds=[697735468875513876],
+            debug_guilds=self.debug_guilds,
             intents=intents,
         )
 
@@ -52,6 +56,9 @@ class Client(commands.Bot):
         log.info(f"Client Disc:\t{self.user.discriminator}")
 
         log.info(f"Is in container: {self.in_container}")
+        
+        gsc = os.environ["GLOBAL_SLASH_COMMANDS"]
+        log.info(f"Global slash commands: {gsc}")
 
         self.musicCmd = self.get_cog("music")
 
@@ -111,7 +118,7 @@ class Client(commands.Bot):
 def main():
     load_dotenv()
 
-    bot = Client(base_prefix=os.getenv("BASE_PREFIX"))
+    bot = Client()
     
     asyncio.run(bot.load_extensions())
     bot.run(os.getenv("BOT_TOKEN"))
