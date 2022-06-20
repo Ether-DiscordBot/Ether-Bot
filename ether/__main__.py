@@ -32,13 +32,7 @@ class Client(commands.Bot):
         self.global_slash_commands = bool(os.environ["GLOBAL_SLASH_COMMANDS"])
         
         if self.global_slash_commands == True:
-            print("gsc")
-            super().__init__(
-                activity=discord.Game(name=f"/help"),
-                help_command=None,
-                intents=intents,
-            )
-            return
+            self.debug_guilds = None
 
         super().__init__(
             activity=discord.Game(name=f"/help"),
