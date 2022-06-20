@@ -31,7 +31,7 @@ class Nasa(commands.Cog, name="nasa"):
         elif res['media_type'] == "image":
             image = res['hdurl']
         else:
-            return ctx.respond(embed=EtherEmbeds.error("Sorry, unknow media type."))
+            return ctx.respond(embed=EtherEmbeds.error("Sorry, unknow media type."), delete_after=5)
         
         embed = Embed(
             title=res["title"],
@@ -40,5 +40,27 @@ class Nasa(commands.Cog, name="nasa"):
         embed.set_footer(text="Powered by Nasa")
         if image:
             embed.set_image(url=image)
+        
+        await ctx.respond(embed=embed)
+    
+    @nasa.command(name="epic")
+    async def epic(self, ctx, faces:int=1):
+        if faces > 20:
+            return ctx.respond(embed=EtherEmbeds.error("Faces must be between 1 and 20."), delete_after=5)
+        
+        r = requests.get(f"https://api.nasa.gov/EPIC/api/natural/images?api_key={self.api_key}")
+        
+        if not r.ok:
+            return ctx.respond(embed=EtherEmbeds.error("Sorry, an error has occurred."), delete_after=5)
+
+        res = r.json()
+        res = res[faces]
+        
+        date = res['date'].split(" ")[0].split("-")
+        image = f"https://epic.gsfc.nasa.gov/archive/natural/{date[0]}/{date[1]}/{date[2]}/png/{res['image']}.png"
+        
+        embed = Embed(title="Epic", description=res['caption'])
+        embed.set_image(url=image)
+        embed.set_footer(text="Powered by Nasa")
         
         await ctx.respond(embed=embed)
