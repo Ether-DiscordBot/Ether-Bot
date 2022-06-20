@@ -1,12 +1,11 @@
 from random import choice
-from typing import Optional
-from requests import request, get
+from requests import get, request
 import os
 
-from discord import Embed, AllowedMentions
+from discord import Embed, Interaction, Option, OptionChoice, SlashCommandGroup
 from discord.ext import commands
 
-from ether.core.reddit import RedditPostCacher
+from ether.core.utils import EtherEmbeds
 
 
 class Fun(commands.Cog):
@@ -39,105 +38,83 @@ class Fun(commands.Cog):
             "Very doubtful.",
         ],
     ]
-    HOROSCOPE_SIGN = [
-        "Aries",
-        "Taurus",
-        "Gemini",
-        "Cancer",
-        "Leo",
-        "Virgo",
-        "Libra",
-        "Scorpio",
-        "Sagittarius",
-        "Capricorn",
-        "Aquarius",
-        "Pisces",
-    ]
 
     def __init__(self, client):
         self.fancy_name = "Fun"
         self.client = client
 
         self.giphy_api_key = os.getenv("GIPHY_API_KEY")
+        
+    fun = SlashCommandGroup("fun", "Fun commands!")
 
-
-    @commands.command()
-    async def gif(self, ctx, *, query):
+    @fun.command()
+    async def gif(self, interaction: Interaction, *, query):
         r = get(
             f"https://api.giphy.com/v1/gifs/random?tag={query}&api_key={self.giphy_api_key}"
         )
 
         r = r.json()
         if not r["data"]:
-            await ctx.send_error(
+            await interaction.response.send_message(embed=EtherEmbeds.error(
                 "Sorry, I could not find any gifs with this query.", delete_after=5
-            )
+            ))
             return
         gif_url = r["data"]["url"]
 
-        await ctx.send(gif_url)
+        await interaction.response.send_message(gif_url)
 
-    @commands.command()
-    async def sticker(self, ctx, *, query):
+    @fun.command()
+    async def sticker(self, interaction: Interaction, *, query):
         r = get(
             f"https://api.giphy.com/v1/stickers/random?tag={query}&api_key={self.giphy_api_key}"
         )
 
         r = r.json()
         if not r["data"]:
-            await ctx.send_error(
-                "Sorry, I could not find any stickers with this query.", delete_after=5
-            )
+            await interaction.response.send_message(embed=EtherEmbeds.error(
+                "Sorry, I could not find any gifs with this query.", delete_after=5
+            ))
             return
         sticker_url = r["data"]["images"]["original"]["url"]
 
-        await ctx.send(sticker_url)
+        await interaction.response.send_message(sticker_url)
 
-    @commands.command(name="8ball", aliases=["8-ball"])
-    async def height_ball(self, ctx, question: str = None):
+    @fun.command(name="8-ball")
+    async def height_ball(self, interaction: Interaction, question: str):
         """
         Based on the standard Magic 8 Ball.
         """
 
-        if not question:
-            return await ctx.reply(
-                f"What would you ask to the Magic 8-Ball ?",
-                allowed_mentions=AllowedMentions.none(),
-            )
+        await interaction.response.send_message(f"🎱 {choice(choice(self.HEIGHT_BALL_ANSWERS))}")
 
-        await ctx.send(f"🎱 {choice(choice(self.HEIGHT_BALL_ANSWERS))}")
-
-    @commands.command(name="say", aliases=["tell"])
-    async def say(self, ctx, *, message):
+    @fun.command(name="say")
+    async def say(self, interaction: Interaction, message: str, hide: Option(bool, "Hide ?", default=False)):
         """
         Say what something the user want to.
         """
 
-        options = ctx.get_options("hide")
-
-        if options.get("hide"):
-            message = message.replace("--hide", "")
-            await ctx.message.delete()
-
-        if len(message) <= 0:
-            return await ctx.reply(
-                f"What would you like me to say ?",
-                allowed_mentions=AllowedMentions.none(),
-            )
-
-        await ctx.send(message)
-
-    @commands.command(name="horoscope", aliases=["astro", "horo"])
-    async def horoscope(self, ctx, sign: Optional[str] = None):
-        if sign is None:
-            return await ctx.reply(
-                f"What is your astrological sign ?",
-                allowed_mentions=AllowedMentions.none(),
-            )
-        if not sign.capitalize() in self.HOROSCOPE_SIGN:
-            return await ctx.send_error(
-                f"Incorrect sign, the astrological signs are:\n{', '.join(self.HOROSCOPE_SIGN)}"
-            )
+        if hide:
+            await interaction.response.send_message("👌 Done! (only you can see this message)", ephemeral=True, delete_after=5)
+            await interaction.channel.send(message)
+            return
+        
+        await interaction.response.send_message(message)
+    
+    @fun.command(name="horoscope")
+    async def horoscope(self, interaction: Interaction, sign: Option(str, "choose an astrological sign", required=True, choices=[
+            OptionChoice("♈ Aries", value="aries"),
+            OptionChoice("♉ Taurus", value="taurus"),
+            OptionChoice("♊ Gemini", value="gemini"),
+            OptionChoice("♋ Cancer", value="cancer"),
+            OptionChoice("♌ Leo", value="leo"),
+            OptionChoice("♍ Virgo", value="virgo"),
+            OptionChoice("♎ Libra", value="libra"),
+            OptionChoice("♏ Scorpius", value="scorpio"),
+            OptionChoice("♐ Sagittarius", value="sagittarius"),
+            OptionChoice("♑ Capricorn", value="capricorn"),
+            OptionChoice("♒ Aquarius", value="aquarius"),
+            OptionChoice("♓ Pisces", value="pisces"),
+        ])):
 
         url = "https://sameer-kumar-aztro-v1.p.rapidapi.com/"
 
@@ -160,4 +137,4 @@ class Fun(commands.Cog):
             f"**Color:** {r['color']}",
         )
 
-        await ctx.send(embed=embed)
+        await interaction.response.send_message(embed=embed)

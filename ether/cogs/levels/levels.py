@@ -4,11 +4,11 @@ import os
 
 import requests
 from PIL import Image, ImageDraw, ImageFont
-from discord import File
+from discord import File, Interaction, slash_command
 from discord.ext import commands
 
-from ether.core.utils import MathsLevels
-from ether.core.logging import log
+from ether.core.utils import LevelsHandler, EtherEmbeds
+from ether.core.db import Database
 
 
 class Levels(commands.Cog, name="levels"):
@@ -16,154 +16,120 @@ class Levels(commands.Cog, name="levels"):
         self.client = client
         self.fancy_name = "Levels"
 
-        self.ch = CardHandler()
-
-    @commands.command(name="profile", aliases=["me", "rank", "level"])
-    async def profile(self, ctx):
-        if not (user := self.client.db.get_guild_user(ctx.guild, ctx.author)):
-            return await ctx.send_error("Error when trying to get your profile!")
-        card = await self.ch.create_card(ctx.author, user)
+    @slash_command(name="profile")
+    async def profile(self, interaction: Interaction):
+        user = await Database.GuildUser.get_or_create(interaction.user.id, interaction.guild_id)
+        if not user:
+            return await interaction.response.send_message(embed=EtherEmbeds.error("Error when trying to get your profile!"))
+        card = CardHandler.create_card(interaction.user, user)
         image = io.BytesIO(base64.b64decode(card))
-        return await ctx.send(
-            file=File(fp=image, filename=f"{ctx.author.name}_card.png")
+        return await interaction.response.send_message(
+            file=File(fp=image, filename=f"{interaction.user.name}_card.png")
         )
 
 
 class CardHandler:
-    BASE_FONT = ImageFont.truetype(
-        os.path.abspath("ether/assets/fonts/whitneybold.otf"), 25
-    )
-    EXP_FONT = ImageFont.truetype(
-        os.path.abspath("ether/assets/fonts/whitneybold.otf"), 15
-    )
-    LEVEL_FONT = ImageFont.truetype(
-        os.path.abspath("ether/assets/fonts/whitneybold.otf"), 35
-    )
+    BASE_FONT = ImageFont.truetype(os.path.abspath("ether/assets/fonts/Inter-Medium.ttf"), 44)
+    DISC_FONT = ImageFont.truetype(os.path.abspath("ether/assets/fonts/Inter-Medium.ttf"), 29)
+    LEVEL_FONT = ImageFont.truetype( os.path.abspath("ether/assets/fonts/Inter-Bold.ttf"), 22)
+    EXP_FONT = ImageFont.truetype( os.path.abspath("ether/assets/fonts/Inter-Bold.ttf"), 19)
+    MASK = Image.open("ether/assets/mask.png", "r").convert("L")
+    MAX_SIZE_BAR = 634
 
-    def __init__(self) -> None:
-        log.info("Card handler initialization...")
-        self.img_size = (600, 180)
-        self.pp_size = (120, 120)
-        self.pp_padding = (30, 30)
-
-        mask = Image.open("ether/assets/mask.png", "r").convert("L").resize(self.img_size)
-        background = Image.new("RGBA", self.img_size, 0)
-
-        base_card = Image.new("RGBA", self.img_size, (48, 50, 56))
-
-        draw = ImageDraw.Draw(base_card)
-
-        level_padding = 445
-        # "Level" label
-        draw.text(
-            xy=(level_padding, 120 - self.BASE_FONT.size + 2),
-            # xy=(level_padding, self.blevel_y - self.BASE_FONT.size + 3),
-            text="Level",
-            fill=(190, 190, 190),
-            font=self.BASE_FONT,
-        )
-
-        self.base_card = Image.composite(base_card, background, mask)
-
-        self.pseudo_left_padding = 165
-        self.pseudo_top_padding = 70
-
-        self.max_size_bar = 265
-        self.line_width = 15
-        log.info("Card handler initialized")
-
-    async def create_card(self, user, db_user):
-        back = Image.new("RGBA", self.img_size, (245, 246, 250))
-
+    def create_card(user, db_user):
+        img = Image.open("ether/assets/background.png").convert('RGBA')
         # Profile Picture
         r = requests.get(user.display_avatar)
         pp = Image.open(io.BytesIO(r.content))
-        pp = pp.resize(self.pp_size)
-
-        back_draw = ImageDraw.Draw(back)
+        pp = pp.resize(CardHandler.MASK.size)
+        
 
         # Advancement
         exp_advancement = (
-            self.max_size_bar
-            * db_user["exp"]
-            / MathsLevels.level_to_exp(db_user["levels"] + 1)
+            CardHandler.MAX_SIZE_BAR
+            * db_user.exp
+            / LevelsHandler.get_next_level(db_user.levels)
         )
 
-        back_draw.rounded_rectangle(
-            xy=(
-                (165 - 2, 105),
-                (
-                    self.pseudo_left_padding + max(self.line_width, exp_advancement),
-                    120,
-                ),
-            ),
-            radius=self.line_width,
-            fill=(246, 185, 59),
-            width=0,
-            outline=None,
-        )
-
-        back.paste(pp, self.pp_padding)
-        img = Image.alpha_composite(back, self.base_card)
-
+        img.paste(pp, (34, 56), CardHandler.MASK)
+        
         draw = ImageDraw.Draw(img)
+        
+        draw.rectangle(
+            xy=(
+                (228+4, 157),
+                (228+exp_advancement, 157+14+3),
+            ),
+            fill=(236, 185, 125)
+        )
+        
+        draw.rectangle(
+            xy=(
+                (228+4, 157),
+                (228+634, 157+14+3),
+            ),
+            fill=None,
+            width=4,
+            outline=(255, 255, 255),
+        )
+
+        draw.ellipse(
+            xy=(
+                228+exp_advancement-20+2, 144,
+                228+exp_advancement+20+2, 144+40
+                ),
+            fill=(236, 185, 125),
+            width=4,
+            outline=(255, 255, 255),
+        )
+        
+        level_size = draw.textsize(str(db_user.levels), font=CardHandler.LEVEL_FONT)
+        
+        draw.text(
+            xy=(
+                228+exp_advancement-(level_size[0]/2)+3,
+                162-(level_size[1]/2),
+            ),
+            text=f"{db_user.levels}",
+            fill=(64, 64, 64),
+            font=CardHandler.LEVEL_FONT,
+        )
 
         # Pseudo
         # Name
         draw.text(
-            xy=(
-                self.pseudo_left_padding,
-                self.pseudo_top_padding - self.BASE_FONT.size / 2,
-            ),
+            xy=(228, 89),
             text=f"{user.name[:13]}",
             fill=(255, 255, 255),
-            font=self.BASE_FONT,
+            font=CardHandler.BASE_FONT,
         )
 
         # Discriminator
         draw.text(
             xy=(
-                self.pseudo_left_padding
-                + self.BASE_FONT.getsize(f"{user.name[:13]}")[0]
+                228
+                + CardHandler.BASE_FONT.getsize(f"{user.name[:13]}")[0]
                 + 5,
-                self.pseudo_top_padding - self.BASE_FONT.size / 2,
+                101,
             ),
             text=f"#{user.discriminator}",
-            fill=(210, 210, 210),
-            font=self.BASE_FONT,
+            fill=(175, 175, 175),
+            font=CardHandler.DISC_FONT,
         )
-
-        # Write level
-        # User level
+        
+        # Experience
+        exp_size = draw.textsize(str(db_user.exp), CardHandler.EXP_FONT)
         draw.text(
-            xy=(
-                505,  # min 500
-                120 - self.LEVEL_FONT.size + 2,
-            ),
-            text=f"{db_user['levels']}",
+            xy=(228, 183),
+            text=f"{db_user.exp}",
             fill=(255, 255, 255),
-            font=self.LEVEL_FONT,
+            font=CardHandler.EXP_FONT
         )
-
-        # Write exp
-        # User exp
         draw.text(
-            xy=(self.pseudo_left_padding, 120),
-            text=f"{db_user['exp']}",
-            fill=(255, 255, 255),
-            font=self.EXP_FONT,
-        )
-
-        # Max exp
-        draw.text(
-            xy=(
-                self.pseudo_left_padding
-                + self.EXP_FONT.getsize(f"{db_user['exp']}")[0],
-                120,
-            ),
-            text=f"/{MathsLevels.level_to_exp(db_user['levels'] + 1)} exp",
-            fill=(190, 190, 190),
-            font=self.EXP_FONT,
+            xy=(228+exp_size[0], 183),
+            text=f"/{LevelsHandler.get_next_level(db_user.levels)}exp",
+            fill=(175, 175, 175),
+            font=CardHandler.EXP_FONT
         )
 
         # Convert to Base64

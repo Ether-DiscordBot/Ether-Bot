@@ -1,49 +1,48 @@
 import random
 import os
 import json
+import asyncio
 
 import discord
 from discord.ext import commands
-from discord.ext.commands import when_mentioned_or
 from dotenv import load_dotenv
+import nest_asyncio
+nest_asyncio.apply()
 
 from ether.core.cog_manager import CogManager
-from ether.core.context import EtherContext
-from ether.core.db.mongomanager import Database
+from ether.core.db import Database, Guild, GuildUser
 from ether.core.logging import log
 
 
-def get_prefix(client, message) -> str:
-    prefix = client.db.get_guild(message.guild)["prefix"] or client.base_prefix
-    return when_mentioned_or(prefix)(client, message)
+#
+#               Ether - Discord Bot
+#
+#              Made by Holy Crusader
+#
 
 
 class Client(commands.Bot):
-    def __init__(self, base_prefix):
-        self.base_prefix = base_prefix
-
-        self.db = None
-        self.musicCmd = None
-
+    def __init__(self):
         self.in_container: bool = os.environ.get("IN_DOCKER", False)
-
         self.lavalink_host = "lavalink" if self.in_container else "localhost"
 
+        intents = discord.Intents().all()
         guilds = json.loads(os.environ.get("SLASH_COMMANDS_GUILD_ID", default=[]))
         self.debug_guilds: list[int] = [g for g in guilds]
-        intents = discord.Intents().all()
+        self.global_slash_commands = bool(os.environ["GLOBAL_SLASH_COMMANDS"])
+        
+        if self.global_slash_commands == True:
+            self.debug_guilds = None
 
         super().__init__(
-            activity=discord.Game(name=f"{self.base_prefix}help"),
-            command_prefix=get_prefix,
+            activity=discord.Game(name=f"/help"),
             help_command=None,
-            debug_guilds=[697735468875513876],
+            debug_guilds=self.debug_guilds,
             intents=intents,
         )
 
     async def load_extensions(self):
-        cogs_loader = CogManager(self)
-        await cogs_loader.load_cogs()
+        await CogManager.load_cogs(self)
 
     async def on_ready(self):
         log.info(f"Client Name:\t{self.user.name}")
@@ -51,45 +50,42 @@ class Client(commands.Bot):
         log.info(f"Client Disc:\t{self.user.discriminator}")
 
         log.info(f"Is in container: {self.in_container}")
-
-        await self.load_extensions()
-
-        self.db = Database()
+        
+        gsc = os.environ["GLOBAL_SLASH_COMMANDS"]
+        log.info(f"Global slash commands: {gsc}")
 
         self.musicCmd = self.get_cog("music")
 
     async def on_member_join(self, member):
-        guild = self.db.get_guild(member.guild)
-        log = guild["logs"]["join"]
-        if log["active"]:
-            if channel := member.guild.get_channel(log["channel_id"]):
+        guild = await Database.Guild.get_or_create(member.guild.id)
+
+        if guild.logs and guild.logs.join:
+            if guild.logs.join.enabled:
+                channel = member.guild.get_channel(guild.logs.join.channel_id)
                 await channel.send(
-                    log["message"].format(user=member, guild=member.guild)
+                    guild.logs.join.message.format(user=member, guild=member.guild)
                 )
 
     async def on_member_remove(self, member):
-        if member.id != self.user.id:
-            guild = self.db.get_guild(member.guild)
-            log = guild["logs"]["leave"]
-            if log["active"]:
-                if channel := member.guild.get_channel(log["channel_id"]):
-                    await channel.send(
-                        log["message"].format(user=member, guild=member.guild)
-                    )
-
-    async def get_context(self, message, *, cls=EtherContext):
-        return await super().get_context(message, cls=cls)
+        guild = await Database.Guild.get_or_create(member.guild.id)
+        
+        if guild.logs and guild.logs.leave:
+            if guild.logs.leave.enabled:
+                channel = member.guild.get_channel(guild.logs.leave.channel_id)
+                await channel.send(
+                    guild.logs.leave.message.format(user=member, guild=member.guild)
+                )
 
     async def on_message(self, ctx):
         if ctx.author.bot:
             return
-
-        if self.db:
-            self.db.get_guild(ctx.guild)
-            self.db.get_user(ctx.author)
+    
+        if Database.client != None:
+            await Guild.from_guild_object(ctx.guild)
+            await GuildUser.from_member_object(ctx.author)
             if random.randint(1, 100) <= 33:
-                new_level = self.db.add_exp(ctx.guild, ctx.author, 4)
-                if new_level != -1:
+                new_level = await Database.GuildUser.add_exp(ctx.author.id, ctx.guild.id, 4)
+                if new_level:
                     await ctx.channel.send(
                         f"Congratulation <@{ctx.author.id}>, you just pass to level {new_level}!"
                     )
@@ -116,7 +112,9 @@ class Client(commands.Bot):
 def main():
     load_dotenv()
 
-    bot = Client(base_prefix=os.getenv("BASE_PREFIX"))
+    bot = Client()
+    
+    asyncio.run(bot.load_extensions())
     bot.run(os.getenv("BOT_TOKEN"))
 
 

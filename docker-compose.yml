@@ -16,7 +16,7 @@ services:
 
   lavalink:
     container_name: lavalink
-    image: fredboat/lavalink:master
+    image: fredboat/lavalink:dev
     volumes:
       - ./Lavalink/application.yml:/opt/Lavalink/application.yml
     entrypoint: java -Xmx2G -jar Lavalink.jar

@@ -7,7 +7,6 @@ from ether.core.logging import log
 opt = ("lavalink", 2333)
 
 
-
 def request(timeout=5.0):
     log.info("Checking lavalink socket status...")
     start_time = time.perf_counter()
