@@ -14,7 +14,7 @@ You have 3 ways to host Ether:
 
 ## Installing Ether
 
- 1. Create a .env file and  (follow the .env.example)
+ 1. Rename `.env.example` by `.env` and set a value to all variables.
 
  2. Update/install submodule with this command
     ```shell
