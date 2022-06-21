@@ -45,10 +45,22 @@ This is not the best way to run ether but probably the fastest.
     > py -m venv etherenv
     ```
  2. And activate it with this command
+    * On Windows:    
+        ```bat
+        > call ./etherenv/Scripts/activate.bat
+        ```
+    * On Linux/MacOS:
+        ```shell
+        > source ./etherenv/Scripts/activate.bat
+        ```
+ 3. *(Optional)* If you have install [Lavalink](https://github.com/freyacodes/Lavalink), start the lavalink server (you must have Java 13 installed)
     ```shell
-    > [call|source] ./etherenv/Scripts/activate.bat
+    (etherenv)> java -jar Lavalink.jar
     ```
-
+ 4. Run Ether in the virtual environment with this command
+    ```shell
+    (etherenv)> py -m ether
+    ```
 
 Prefer to use **Docker-compose** to make sure the bot works properly
 
@@ -59,32 +71,23 @@ Prefer to use **Docker-compose** to make sure the bot works properly
 
 ## Using Docker Compose
 
-To build the container:
+ 1. Build the container with this command
+    ```shell
+    > docker-compose build
+    ```
+ 2. And start the container with this command
+    ```shell
+    > docker-compose up
+    ```
 
-```
-$ docker-compose build
-```
-
-To run the container:
-
-```
-$ docker-compose up
-```
-
-To build and run the container:
-
-```
-$ docker-compose up --build
+You can execute these two commands in one with this command
+```shell
+> docker-compose up --build
 ```
 
-To stop/remove the container:
+For more commands go check the [docker-compose documentation]().
 
-```
-$ docker-compose kill
-$ docker-compose rm
-```
-
-on Linux add `sudo `.
+on Linux add `sudo` before the command.
 
 # License
 
