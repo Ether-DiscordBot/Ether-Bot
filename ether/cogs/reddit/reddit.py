@@ -15,10 +15,7 @@ class Reddit(commands.Cog):
         self.client = client
         self.subreddits = ("memes", "aww", "sadcats")
         cog_path = os.path.abspath("ether/cogs/reddit")
-        self.cache = RedditPostCacher(
-            self.subreddits, f"{cog_path}/cache.pickle"
-        )
-
+        self.cache = RedditPostCacher(self.subreddits, f"{cog_path}/cache.pickle")
 
     reddit = SlashCommandGroup("reddit", "Reddit commands!")
 
@@ -30,7 +27,12 @@ class Reddit(commands.Cog):
 
         if post is None:
             logging.error(f"Reddit post image error with sub: {subrd}")
-            return await interaction.response.send_message(embed=EtherEmbeds.error("😕 We are sorry, we have done a lot of research but we can't find any image."), delete_after=5)
+            return await interaction.response.send_message(
+                embed=EtherEmbeds.error(
+                    "😕 We are sorry, we have done a lot of research but we can't find any image."
+                ),
+                delete_after=5,
+            )
 
         embed = Embed(title=post.title)
         if hasattr(post, "text"):

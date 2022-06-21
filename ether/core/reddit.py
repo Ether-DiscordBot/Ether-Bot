@@ -26,7 +26,7 @@ class RedditPostCacher:
         )
 
         self.run()
-    
+
     def run(self):
         asyncio.run(self.cache_posts())
 

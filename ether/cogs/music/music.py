@@ -15,8 +15,12 @@ from ether.core.lavalink_status import request
 from ether.core.logging import log
 from ether.core.utils import EtherEmbeds
 
-PLAYLIST_REG = re.compile(r"^(?:http:\/\/|https:\/\/)?(?:www\.)?youtube\.com\/playlist\?list(?:\S+)?$")
-URL_REG = re.compile(r"(?:https:\/\/|http:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b[-a-zA-Z0-9@:%_\+.~#?&//=]*")
+PLAYLIST_REG = re.compile(
+    r"^(?:http:\/\/|https:\/\/)?(?:www\.)?youtube\.com\/playlist\?list(?:\S+)?$"
+)
+URL_REG = re.compile(
+    r"(?:https:\/\/|http:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b[-a-zA-Z0-9@:%_\+.~#?&//=]*"
+)
 
 
 class Player(wavelink.Player):
@@ -47,7 +51,7 @@ class Music(commands.Cog, name="music"):
             port=2333,
             password="pxV58RF6f292N9NK",
         )
-    
+
     music = SlashCommandGroup("music", "Music commands!")
 
     @commands.Cog.listener()
@@ -79,7 +83,9 @@ class Music(commands.Cog, name="music"):
         """
 
         if reason not in ("FINISHED", "STOPPED", "REPLACED"):
-            return await player.text_channel.send(embed=EtherEmbeds.error(f"Track finished for reason `{reason}`"))
+            return await player.text_channel.send(
+                embed=EtherEmbeds.error(f"Track finished for reason `{reason}`")
+            )
 
         if not player.queue.is_empty:
             await player.play(player.queue.get())
@@ -110,7 +116,9 @@ class Music(commands.Cog, name="music"):
             )
 
             if ctx.command.qualified_name == "music join":
-                await ctx.respond(embed=Embed(description=f"`{ctx.author.voice.channel}` joined"))
+                await ctx.respond(
+                    embed=Embed(description=f"`{ctx.author.voice.channel}` joined")
+                )
         else:
             vc: Player = ctx.guild.voice_client
 
@@ -127,9 +135,11 @@ class Music(commands.Cog, name="music"):
         if vc.channel.id == vc.channel.id:
             await vc.disconnect()
 
-            await ctx.respond(embed=Embed(description=f"`{ctx.author.voice.channel}` leave"))
+            await ctx.respond(
+                embed=Embed(description=f"`{ctx.author.voice.channel}` leave")
+            )
             return vc
-    
+
     @music.command(name="search")
     @commands.guild_only()
     async def search(self, ctx: ApplicationContext, *, search: wavelink.YouTubeTrack):
@@ -144,12 +154,19 @@ class Music(commands.Cog, name="music"):
             return
 
         if ctx.user.voice.channel.id != vc.channel.id and vc.is_playing:
-            return await ctx.respond(embed=EtherEmbeds.error("I'm already playing music in an other channel."), delete_after=5)
-        
+            return await ctx.respond(
+                embed=EtherEmbeds.error(
+                    "I'm already playing music in an other channel."
+                ),
+                delete_after=5,
+            )
+
         # Search for playlist
         if re.match(PLAYLIST_REG, query):
             try:
-                playlist = await vc.node.get_playlist(cls=wavelink.YouTubePlaylist, identifier=query)
+                playlist = await vc.node.get_playlist(
+                    cls=wavelink.YouTubePlaylist, identifier=query
+                )
                 if playlist:
                     for t in playlist.tracks:
                         vc.queue.put(t)
@@ -161,17 +178,34 @@ class Music(commands.Cog, name="music"):
                         )
                     )
             except wavelink.errors.LavalinkException:
-                return await ctx.respond(embed=EtherEmbeds.error("I did not find any playlists with this url."), delete_after=5)
+                return await ctx.respond(
+                    embed=EtherEmbeds.error(
+                        "I did not find any playlists with this url."
+                    ),
+                    delete_after=5,
+                )
         else:
-            tracks = await vc.node.get_tracks(cls=wavelink.YouTubeTrack, query=f'ytsearch:{query}')
-            
+            tracks = await vc.node.get_tracks(
+                cls=wavelink.YouTubeTrack, query=f"ytsearch:{query}"
+            )
+
             if not tracks:
                 if re.match(URL_REG, query):
-                    return await ctx.respond(embed=EtherEmbeds.error("I did not find any songs with this url."), delete_after=5)
+                    return await ctx.respond(
+                        embed=EtherEmbeds.error(
+                            "I did not find any songs with this url."
+                        ),
+                        delete_after=5,
+                    )
                 else:
-                    return await ctx.respond(embed=EtherEmbeds.error("I did not find any songs with this query."), delete_after=5)
+                    return await ctx.respond(
+                        embed=EtherEmbeds.error(
+                            "I did not find any songs with this query."
+                        ),
+                        delete_after=5,
+                    )
             track = tracks[0]
-            
+
             vc.queue.put(track)
 
             await ctx.respond(
@@ -207,13 +241,15 @@ class Music(commands.Cog, name="music"):
             return
 
         if not vc.is_playing:
-            await ctx.respond(embed=EtherEmbeds.error("I am not currently playing anything!"), delete_after=5)
+            await ctx.respond(
+                embed=EtherEmbeds.error("I am not currently playing anything!"),
+                delete_after=5,
+            )
             return
 
         await vc.set_pause(not vc.is_paused())
         action = "▶️ Paused" if vc.is_paused() else "⏸️ Resume"
         await ctx.respond(embed=Embed(description=action), delete_after=5)
-
 
     @music.command(name="resume")
     @commands.guild_only()
@@ -224,12 +260,13 @@ class Music(commands.Cog, name="music"):
             return
 
         if not vc.is_paused():
-            await ctx.respond(embed=EtherEmbeds.error("I am not paused!"), delete_after=5)
+            await ctx.respond(
+                embed=EtherEmbeds.error("I am not paused!"), delete_after=5
+            )
             return
 
         await vc.set_pause(False)
         await ctx.respond(embed=Embed(description="⏸️ Resume"), delete_after=5)
-
 
     @music.command(name="skip")
     @commands.guild_only()
@@ -315,7 +352,8 @@ class Music(commands.Cog, name="music"):
     @commands.is_owner()
     async def lavalink_info(self, ctx: ApplicationContext):
         player = ctx.guild.voice_client
-        if not player: return 
+        if not player:
+            return
         node = player.node
 
         used = humanize.naturalsize(node.stats.memory_used)
