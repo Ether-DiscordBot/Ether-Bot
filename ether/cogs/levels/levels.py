@@ -4,7 +4,7 @@ import os
 
 import requests
 from PIL import Image, ImageDraw, ImageFont
-from discord import File, Interaction, slash_command
+from discord import File, Interaction, SlashCommandGroup, slash_command
 from discord.ext import commands
 
 from ether.core.utils import LevelsHandler, EtherEmbeds
@@ -15,8 +15,10 @@ class Levels(commands.Cog, name="levels"):
     def __init__(self, client):
         self.client = client
         self.fancy_name = "📈 Levels"
+    
+    levels = SlashCommandGroup("levels", "levels commands!")
 
-    @slash_command(name="profile")
+    @levels.commands(name="profile")
     async def profile(self, interaction: Interaction):
         user = await Database.GuildUser.get_or_create(interaction.user.id, interaction.guild_id)
         if not user:
