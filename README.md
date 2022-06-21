@@ -14,11 +14,18 @@ You have 3 ways to host Ether:
 
 ## Installing Ether
 
-**Skip these steps if you are using docker.**
+ 1. Create a .env file and  (follow the .env.example)
 
-1. If you want to use the music cog, install [Lavalink](https://github.com/freyacodes/Lavalink) and put the `Lavalink.jar` file in the lavalink folder.
+ 2. Update/install submodule with this command
+    ```shell
+    > git submodule update --remote
+    ```
 
-2. Install all requirements
+**Skip next steps if you are using docker.**
+
+ 3. If you want to use the music cog, install [Lavalink](https://github.com/freyacodes/Lavalink) and put the `Lavalink.jar` file in the lavalink folder.
+
+ 4. Install all requirements
     ```shell
     > pip install -r requirements.txt
     ``` 
@@ -61,13 +68,6 @@ This is not the best way to run ether but probably the fastest.
     ```shell
     (etherenv)> py -m ether
     ```
-
-Prefer to use **Docker-compose** to make sure the bot works properly
-
- - Install [Lavalink](https://github.com/freyacodes/Lavalink) and create an application.yml file in the main directory.
- - Install all the dependencies in the `requirements.txt`
- - And put the key-values in a .env file (follow the .env.example)
-
 
 ## Using Docker Compose
 
