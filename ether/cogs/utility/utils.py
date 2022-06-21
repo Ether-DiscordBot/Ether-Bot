@@ -22,7 +22,7 @@ class Utils(commands.Cog):
         )
         for _name, cog in self.client.cogs.items():
             field = {"name": cog.fancy_name, "value": []}
-            for cmd in cog.get_commands():
+            for cmd in cog.walk_commands():
                 field["value"].append(cmd.name)
             help_embed.add_field(
                 name=field["name"], value=", ".join(field["value"]), inline=False
