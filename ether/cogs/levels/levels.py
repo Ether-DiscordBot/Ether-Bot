@@ -14,7 +14,7 @@ from ether.core.db import Database
 class Levels(commands.Cog, name="levels"):
     def __init__(self, client):
         self.client = client
-        self.fancy_name = "Levels"
+        self.fancy_name = "📈 Levels"
 
     @slash_command(name="profile")
     async def profile(self, interaction: Interaction):

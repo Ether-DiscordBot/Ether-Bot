@@ -10,7 +10,7 @@ class DnD(commands.Cog, name="dnd"):
     DND_API_URL = "https://www.dnd5eapi.co/api/"
     
     def __init__(self, client) -> None:
-        self.fancy_name = "DnD"
+        self.fancy_name = "🎲 DnD"
         self.client = client
         
     

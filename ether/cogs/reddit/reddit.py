@@ -11,7 +11,7 @@ from ether.core.logging import logging
 
 class Reddit(commands.Cog):
     def __init__(self, client) -> None:
-        self.fancy_name = "Reddit"
+        self.fancy_name = "🤖 Reddit"
         self.client = client
         self.subreddits = ("memes", "aww", "sadcats")
         cog_path = os.path.abspath("ether/cogs/reddit")

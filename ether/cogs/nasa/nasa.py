@@ -10,7 +10,7 @@ from ether.core.utils import EtherEmbeds
 
 class Nasa(commands.Cog, name="nasa"):
     def __init__(self, client) -> None:
-        self.fancy_name = "Nasa"
+        self.fancy_name = "🛰️ Nasa"
         self.client = client
         self.api_key = os.environ["NASA_API_KEY"]
     

@@ -12,7 +12,7 @@ from ether.core.logs import EtherLogs
 
 class Admin(commands.Cog, name="admin"):
     def __init__(self, client):
-        self.fancy_name = "Admin"
+        self.fancy_name = "🛡️ Admin"
         self.client = client
     
     admin = SlashCommandGroup("admin", "Admin commands!")

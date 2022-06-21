@@ -15,7 +15,7 @@ URBAN_PATTERN = r"\[(.*?)]"
 class Utils(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.fancy_name = "Utility"
+        self.fancy_name = "🔧 Utility"
         
         help_embed = Embed(
             description="Get more information about these [commands](https://www.youtube.com/watch?v=dQw4w9WgXcQ)."
