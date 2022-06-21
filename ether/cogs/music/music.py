@@ -1,17 +1,22 @@
-import discord
-from discord.ext import commands
-from discord import Embed
-import wavelink
-from wavelink.tracks import YouTubeTrack, YouTubePlaylist
+import datetime
 import re
 from typing import Optional
 import random
+
+import discord
+from discord.ext import commands
+from discord import ApplicationContext, Embed, Interaction, SlashCommandGroup
+import wavelink
+from wavelink.tracks import YouTubeTrack, YouTubePlaylist
 import humanize
-import datetime
 
-from ether import Color
+from ether.core.constants import Colors
+from ether.core.lavalink_status import request
+from ether.core.logging import log
+from ether.core.utils import EtherEmbeds
 
-URL_REG = re.compile(r'https?://(?:www\.)?.+')
+PLAYLIST_REG = re.compile(r"^(?:http:\/\/|https:\/\/)?(?:www\.)?youtube\.com\/playlist\?list(?:\S+)?$")
+URL_REG = re.compile(r"(?:https:\/\/|http:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b[-a-zA-Z0-9@:%_\+.~#?&//=]*")
 
 
 class Player(wavelink.Player):
@@ -32,16 +37,23 @@ class Music(commands.Cog, name="music"):
     async def connect_nodes(self):
         await self.client.wait_until_ready()
 
-        await wavelink.NodePool.create_node(bot=self.client,
-                                            host=f'{self.client.lavalink_host}',
-                                            port=2333,
-                                            password="pxV58RF6f292N9NK",
-                                            )
+        r = request()
+        if r != 0:
+            return
+
+        await wavelink.NodePool.create_node(
+            bot=self.client,
+            host=f"{self.client.lavalink_host}",
+            port=2333,
+            password="pxV58RF6f292N9NK",
+        )
+    
+    music = SlashCommandGroup("music", "Music commands!")
 
     @commands.Cog.listener()
     async def on_wavelink_node_ready(self, node: wavelink.Node):
         """Event fired when a node has finished connecting."""
-        print(f'Node: <{node.identifier}> is ready!')
+        log.info(f"Node: <{node.identifier}> is ready!")
 
     @commands.Cog.listener()
     async def on_wavelink_track_start(self, player: Player, track: wavelink.Track):
@@ -50,29 +62,32 @@ class Music(commands.Cog, name="music"):
         """
         channel = player.text_channel
 
-        message: discord.Message = await channel.send(embed=Embed(
-            description=f"Now Playing **[{track.title}]({track.uri})**!",
-            color=Color.DEFAULT
-        ))
+        message: discord.Message = await channel.send(
+            embed=Embed(
+                description=f"Now Playing **[{track.title}]({track.uri})**!",
+                color=Colors.DEFAULT,
+            )
+        )
         player.message = message
 
     @commands.Cog.listener()
-    async def on_wavelink_track_end(self, player: Player, track: wavelink.Track, reason):
+    async def on_wavelink_track_end(
+        self, player: Player, track: wavelink.Track, reason
+    ):
         """When a track ends, the bot delete the start message.
         If it's the last track, the player is kill.
         """
 
-        if reason not in ("FINISHED", "STOPPED"):
-            return await player.text_channel.send(embed=Embed(description=f"Track finished for reason `{reason}`",
-                                                              color=Color.ERROR))
+        if reason not in ("FINISHED", "STOPPED", "REPLACED"):
+            return await player.text_channel.send(embed=EtherEmbeds.error(f"Track finished for reason `{reason}`"))
 
         if not player.queue.is_empty:
             await player.play(player.queue.get())
         await player.message.delete()
 
-    @commands.command(name="join")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def _connect(self, ctx: commands.Context) -> Optional[Player]:
+    @music.command(name="join")
+    @commands.guild_only()
+    async def _connect(self, ctx: ApplicationContext) -> Optional[Player]:
         """
         This function can return None.
 
@@ -81,79 +96,99 @@ class Music(commands.Cog, name="music"):
         """
 
         if not ctx.author.voice:
-            await ctx.send(embed=Embed(description="Please join a channel.", color=Color.ERROR))
+            await ctx.respond(embed=EtherEmbeds.error("Please join a channel."))
             return None
         channel = ctx.author.voice.channel
 
         if not ctx.voice_client:
             player = Player(text_channel=ctx.channel)
-            vc: Player = await ctx.author.voice.channel.connect(cls=player)
+            vc: Player = await ctx.user.voice.channel.connect(cls=player)
             vc.queue = wavelink.Queue(max_size=100)
             vc.text_channel = ctx.channel
-            await ctx.guild.change_voice_state(channel=channel, self_mute=False, self_deaf=True)
+            await ctx.guild.change_voice_state(
+                channel=channel, self_mute=False, self_deaf=True
+            )
 
-            if ctx.command == "join":
-                await ctx.message.add_reaction("👌")
+            if ctx.command.qualified_name == "music join":
+                await ctx.respond(embed=Embed(description=f"`{ctx.author.voice.channel}` joined"))
         else:
-            vc: Player = ctx.voice_client
+            vc: Player = ctx.guild.voice_client
 
         return vc
 
-    @commands.command(name="leave")
-    async def _disconnect(self, ctx):
-        """The function/command to leave a voice channel.
-        """
+    @music.command(name="leave")
+    @commands.guild_only()
+    async def _disconnect(self, ctx: ApplicationContext):
+        """The function/command to leave a voice channel."""
 
-        vc: Player = await ctx.invoke(self._connect)
+        vc: Player = await self._connect(ctx)
 
         # Check if the voice client channel is the same as the user's voice channel.
         if vc.channel.id == vc.channel.id:
             await vc.disconnect()
 
-            await ctx.message.add_reaction("👋")
+            await ctx.respond(embed=Embed(description=f"`{ctx.author.voice.channel}` leave"))
             return vc
+    
+    @music.command(name="search")
+    @commands.guild_only()
+    async def search(self, ctx: ApplicationContext, *, search: wavelink.YouTubeTrack):
+        print(search)
 
-    @commands.command(name="play", aliases=["p"])
-    async def _play(self, ctx: commands.Context, *, query):
-        vc: Player = await ctx.invoke(self._connect)
+    @music.command(name="play")
+    @commands.guild_only()
+    async def _play(self, ctx: ApplicationContext, *, query: str):
+        vc: Player = await self._connect(ctx)
 
         if not vc:
             return
 
-        if ctx.author.voice.channel.id != vc.channel.id and vc.is_playing:
-            return await ctx.send(
-                embed=Embed(description="I'm already playing music in an other channel.", color=Color.ERROR))
+        if ctx.user.voice.channel.id != vc.channel.id and vc.is_playing:
+            return await ctx.respond(embed=EtherEmbeds.error("I'm already playing music in an other channel."), delete_after=5)
+        
+        # Search for playlist
+        if re.match(PLAYLIST_REG, query):
+            try:
+                playlist = await vc.node.get_playlist(cls=wavelink.YouTubePlaylist, identifier=query)
+                if playlist:
+                    for t in playlist.tracks:
+                        vc.queue.put(t)
 
-        try:
-            track = await wavelink.YouTubeTrack.search(query=query, return_first=True)
-        except IndexError:
-            if not re.match(URL_REG, query):
-                return await ctx.send(
-                    embed=Embed(description='Could not find any songs with that query.', color=Color.ERROR),
-                    delete_after=10
-                )
-            track = await vc.node.get_playlist(YouTubePlaylist, query)
-
-        if isinstance(track, YouTubePlaylist):
-            for t in track.tracks:
-                vc.queue.put(t)
-
-            await ctx.send(embed=Embed(description=f"**[{len(track.tracks)} tracks]** added to queue!",
-                                       color=Color.DEFAULT))
-        elif isinstance(track, YouTubeTrack):
+                    await ctx.respond(
+                        embed=Embed(
+                            description=f"**[{len(playlist.tracks)} tracks]** added to queue!",
+                            color=Colors.DEFAULT,
+                        )
+                    )
+            except wavelink.errors.LavalinkException:
+                return await ctx.respond(embed=EtherEmbeds.error("I did not find any playlists with this url."), delete_after=5)
+        else:
+            tracks = await vc.node.get_tracks(cls=wavelink.YouTubeTrack, query=f'ytsearch:{query}')
+            
+            if not tracks:
+                if re.match(URL_REG, query):
+                    return await ctx.respond(embed=EtherEmbeds.error("I did not find any songs with this url."), delete_after=5)
+                else:
+                    return await ctx.respond(embed=EtherEmbeds.error("I did not find any songs with this query."), delete_after=5)
+            track = tracks[0]
+            
             vc.queue.put(track)
 
-            await ctx.send(embed=Embed(
-                description=f"Track added to queue: **[{track.title}]({track.uri})**",
-                color=Color.DEFAULT))
+            await ctx.respond(
+                embed=Embed(
+                    description=f"Track added to queue: **[{track.title}]({track.uri})**",
+                    color=Colors.DEFAULT,
+                )
+            )
 
         if not vc.is_playing():
             track = vc.queue.get()
             await vc.play(track)
 
-    @commands.command(name="stop")
-    async def _stop(self, ctx):
-        vc: Player = await ctx.invoke(self._connect)
+    @music.command(name="stop")
+    @commands.guild_only()
+    async def _stop(self, ctx: ApplicationContext):
+        vc: Player = await self._connect(ctx)
 
         if not vc:
             return
@@ -161,55 +196,45 @@ class Music(commands.Cog, name="music"):
         vc.queue.clear()
         await vc.stop()
 
-        await ctx.message.add_reaction("🛑")
+        await ctx.respond(embed=Embed(description="🛑 Stopped"), delete_after=5)
 
-    @commands.command(name="pause")
-    async def pause(self, ctx):
-        vc: Player = await ctx.invoke(self._connect)
+    @music.command(name="pause")
+    @commands.guild_only()
+    async def pause(self, ctx: ApplicationContext):
+        vc: Player = await self._connect(ctx)
 
         if not vc:
             return
 
         if not vc.is_playing:
-            await ctx.send(
-                embed=Embed(description='I am not currently playing anything!', color=Color.ERROR), delete_after=10)
+            await ctx.respond(embed=EtherEmbeds.error("I am not currently playing anything!"), delete_after=5)
             return
 
         await vc.set_pause(not vc.is_paused())
-        reaction = "▶️" if vc.is_paused() else "⏸️"
-        await ctx.message.add_reaction(reaction)
+        action = "▶️ Paused" if vc.is_paused() else "⏸️ Resume"
+        await ctx.respond(embed=Embed(description=action), delete_after=5)
 
-    @commands.command(name="resume")
-    async def resume(self, ctx):
-        vc: Player = await ctx.invoke(self._connect)
+
+    @music.command(name="resume")
+    @commands.guild_only()
+    async def resume(self, ctx: ApplicationContext):
+        vc: Player = await self._connect(ctx)
 
         if not vc:
             return
 
         if not vc.is_paused():
-            await ctx.send(
-                embed=Embed(description='I am not paused!', color=Color.ERROR), delete_after=10)
+            await ctx.respond(embed=EtherEmbeds.error("I am not paused!"), delete_after=5)
             return
 
         await vc.set_pause(False)
-        await ctx.message.add_reaction("▶️")
+        await ctx.respond(embed=Embed(description="⏸️ Resume"), delete_after=5)
 
-    # @commands.command()
-    # async def loop(self, ctx):
-    #     player = ctx.voice_client
-    #     if ctx.author.voice and ctx.author.voice.channel.id == player.channel_id:
-    #         player.queue._loop = not player.queue._loop
-    #         if player.queue._loop:
-    #             return await ctx.send(embed=Embed(description='Queue is looping!', color=Color.DEFAULT),
-    #                                   delete_after=10)
-    #         return await ctx.send(embed=Embed(description='Queue is no longer looping!', color=Color.DEFAULT),
-    #                               delete_after=10)
-    #
-    #     return
 
-    @commands.command(name="skip")
-    async def _skip(self, ctx):
-        vc: Player = await ctx.invoke(self._connect)
+    @music.command(name="skip")
+    @commands.guild_only()
+    async def _skip(self, ctx: ApplicationContext):
+        vc: Player = await self._connect(ctx)
 
         if not vc:
             return
@@ -218,12 +243,12 @@ class Music(commands.Cog, name="music"):
             return
 
         await vc.play(vc.queue.get(), replace=True)
-        await ctx.message.add_reaction("⏭️")
-        return
+        return await ctx.respond(embed=Embed(description="⏭️ Skip"), delete_after=5)
 
-    @commands.command(name="shuffle")
-    async def _shuffle(self, ctx):
-        vc: Player = await ctx.invoke(self._connect)
+    @music.command(name="shuffle")
+    @commands.guild_only()
+    async def _shuffle(self, ctx: ApplicationContext):
+        vc: Player = await self._connect(ctx)
 
         if not vc:
             return
@@ -236,25 +261,31 @@ class Music(commands.Cog, name="music"):
         for tracks in shuffled_queue:
             vc.queue.put(tracks)
 
-        await ctx.send(embed=Embed(description='The queue has been shuffled!', color=Color.DEFAULT), delete_after=10)
+        await ctx.respond(
+            embed=Embed(
+                description="The queue has been shuffled!", color=Colors.DEFAULT
+            ),
+            delete_after=10,
+        )
         return vc.queue
 
-    @commands.command(name="queue", aliases=["q", "list"])
-    async def queue(self, ctx):
-        vc: Player = await ctx.invoke(self._connect)
+    @music.command(name="queue")
+    @commands.guild_only()
+    async def queue(self, ctx: ApplicationContext):
+        vc: Player = await self._connect(ctx)
 
         if not vc:
             return
 
         queue = vc.queue.copy()
 
-        first_track = queue.get()
+        first_track = vc.track
         embed = Embed(title=":notes: Queue:")
         embed.add_field(
             name="Now Playing:",
-            value=f'`1.` [{first_track.title}]({first_track.uri[:30]}) | '
-                  f'`{datetime.timedelta(seconds=first_track.length) if not first_track.is_stream() else "🔴 Stream"}`',
-            inline=False
+            value=f"`1.` [{first_track.title}]({first_track.uri[:30]}) | "
+            f'`{datetime.timedelta(seconds=first_track.length) if not first_track.is_stream() else "🔴 Stream"}`',
+            inline=False,
         )
 
         next_track_label = []
@@ -264,26 +295,27 @@ class Music(commands.Cog, name="music"):
             track = queue.get()
             title = track.title
             if len(track.title) > 35:
-                title = f'{title[:32]} ...'
+                title = f"{title[:32]} ..."
             next_track_label.append(
                 f"`{vc.queue.find_position(track) + 2}.` [{title}]({track.uri}) | "
-                f"`{'🔴 Stream' if track.is_stream() else datetime.timedelta(seconds=track.length)}`")
+                f"`{'🔴 Stream' if track.is_stream() else datetime.timedelta(seconds=track.length)}`"
+            )
 
         if next_track_label:
             embed.add_field(
-                name="Next 10 Tracks:",
-                value="\n".join(next_track_label),
-                inline=False
+                name="Next 10 Tracks:", value="\n".join(next_track_label), inline=False
             )
 
-        await ctx.send(embed=embed)
+        await ctx.respond(embed=embed)
 
         return
 
+    @music.command(name="lavalinkinfo")
+    @commands.guild_only()
     @commands.is_owner()
-    @commands.command(name="lavalinkinfo")
-    async def lavalink_info(self, ctx):
-        player = ctx.voice_client
+    async def lavalink_info(self, ctx: ApplicationContext):
+        player = ctx.guild.voice_client
+        if not player: return 
         node = player.node
 
         used = humanize.naturalsize(node.stats.memory_used)
@@ -291,11 +323,16 @@ class Music(commands.Cog, name="music"):
         free = humanize.naturalsize(node.stats.memory_free)
         cpu = node.stats.cpu_cores
 
-        embed = Embed(title=f'**WaveLink:** `{wavelink.__version__}`', color=Color.DEFAULT)
+        embed = Embed(
+            title=f"**WaveLink:** `{wavelink.__version__}`", color=Colors.DEFAULT
+        )
 
-        embed.add_field(name="Server", value=f'Server Memory: `{used}/{total}` | `({free} free)`\n'
-                                             f'Server CPU: `{cpu}`\n' 
-                                             f'Server Uptime: `{datetime.timedelta(milliseconds=node.stats.uptime)}`',
-                        inline=False)
+        embed.add_field(
+            name="Server",
+            value=f"Server Memory: `{used}/{total}` | `({free} free)`\n"
+            f"Server CPU: `{cpu}`\n"
+            f"Server Uptime: `{datetime.timedelta(milliseconds=node.stats.uptime)}`",
+            inline=False,
+        )
 
-        await ctx.send(embed=embed)
+        await ctx.respond(embed=embed)
