@@ -18,7 +18,7 @@ class Levels(commands.Cog, name="levels"):
 
     levels = SlashCommandGroup("levels", "levels commands!")
 
-    @levels.commands(name="profile")
+    @levels.command(name="profile")
     async def profile(self, interaction: Interaction):
         user = await Database.GuildUser.get_or_create(
             interaction.user.id, interaction.guild_id
