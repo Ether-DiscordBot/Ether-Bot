@@ -9,13 +9,7 @@ class Steam(commands.Cog):
     def __init__(self, client) -> None:
         self.fancy_name = "🕹️ Steam"
         self.client = client
-        log.info("Fetching the steam app list...")
-        r = requests.get("https://api.steampowered.com/ISteamApps/GetAppList/v2/")
-        if not r.ok:
-            log.error("Failed to fetch steam app list")
-        r = r.json()
-        
-        self.steam_app_list = r["applist"]["apps"]
+        self.fetch_app_list.start()
         
     steam = SlashCommandGroup("steam", "Steam commands!")
     
