@@ -84,3 +84,23 @@ class Steam(commands.Cog):
         embed.description = description
         
         await ctx.respond(embed=embed)
+    
+    @steam.command(name="specials")
+    async def specials(self, ctx: ApplicationCommand):
+        r = requests.get("https://store.steampowered.com/api/featuredcategories")
+        if not r.ok:
+            await ctx.respond("Sorry, an error was occured!")
+        
+        r = r.json()
+        data = r["specials"]
+        
+        embed = Embed(title=data["name"])
+        description = ""
+        
+        for i in data["items"]:
+            currency = i['currency']
+            description += f"**[{i['name']}](https://store.steampowered.com/app/{i['id']}) (-{i['discount_percent']}%):**\n \t ~~{i['original_price']/100}~~ {i['final_price']/100}{currency}\n"
+            
+        embed.description = description
+        
+        await ctx.respond(embed=embed)
