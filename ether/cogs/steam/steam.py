@@ -97,10 +97,53 @@ class Steam(commands.Cog):
         embed = Embed(title=data["name"])
         description = ""
         
-        for i in data["items"]:
-            currency = i['currency']
-            description += f"**[{i['name']}](https://store.steampowered.com/app/{i['id']}) (-{i['discount_percent']}%):**\n \t ~~{i['original_price']/100}~~ {i['final_price']/100}{currency}\n"
+        for i in data["items"][:10]:
+            description += f"**[{i['name']}](https://store.steampowered.com/app/{i['id']}) (-{i['discount_percent']}%):**\n ~~{i['original_price']/100}~~ {i['final_price']/100}{i['currency']}\n"
             
+        embed.description = description
+        
+        await ctx.respond(embed=embed)
+    
+    @steam.command(name="top")
+    async def top(self, ctx: ApplicationCommand):
+        r = requests.get("https://store.steampowered.com/api/featuredcategories")
+        if not r.ok:
+            await ctx.respond("Sorry, an error was occured!")
+        
+        r = r.json()
+        data = r["top_sellers"]
+        
+        embed = Embed(title=data["name"][:10])
+        description = ""
+        
+        for i in data["items"]:
+            if i['discounted']:
+                description += f"**[{i['name']}](https://store.steampowered.com/app/{i['id']}) (-{i['discount_percent']}%):**\n ~~{i['original_price']/100}~~ {i['final_price']/100}{i['currency']}\n"
+            else:
+                description += f"**[{i['name']}](https://store.steampowered.com/app/{i['id']}):**\n {i['final_price']/100}{i['currency']}\n"
+        
+        embed.description = description
+        
+        await ctx.respond(embed=embed)
+    
+    @steam.command(name="new")
+    async def new(self, ctx: ApplicationCommand):
+        r = requests.get("https://store.steampowered.com/api/featuredcategories")
+        if not r.ok:
+            await ctx.respond("Sorry, an error was occured!")
+        
+        r = r.json()
+        data = r["new_releases"]
+        
+        embed = Embed(title=data["name"])
+        description = ""
+        
+        for i in data["items"][:10]:
+            if i['discounted']:
+                description += f"**[{i['name']}](https://store.steampowered.com/app/{i['id']}) (-{i['discount_percent']}%):**\n ~~{i['original_price']/100}~~ {i['final_price']/100}{i['currency']}\n"
+            else:
+                description += f"**[{i['name']}](https://store.steampowered.com/app/{i['id']}):**\n {i['final_price']/100}{i['currency']}\n"
+        
         embed.description = description
         
         await ctx.respond(embed=embed)
