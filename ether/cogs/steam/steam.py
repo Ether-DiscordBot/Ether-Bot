@@ -1,5 +1,5 @@
 from discord import ApplicationCommand, Embed, SlashCommandGroup
-from discord.ext import commands
+from discord.ext import tasks, commands
 import requests
 
 from ether.core.logging import log
@@ -28,7 +28,16 @@ class Steam(commands.Cog):
             if filter(g, game):
                 return g
         return False
-            
+    
+    @tasks.loop(hours=24)
+    async def fetch_app_list(self):
+        log.info("Fetching the steam app list...")
+        r = requests.get("https://api.steampowered.com/ISteamApps/GetAppList/v2/")
+        if not r.ok:
+            log.error("Failed to fetch steam app list")
+        r = r.json()
+        
+        self.steam_app_list = r["applist"]["apps"]
     
     @steam.command(name="game")
     async def get_game(self, ctx: ApplicationCommand, query: str):
