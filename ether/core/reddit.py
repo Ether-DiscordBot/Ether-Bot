@@ -25,10 +25,7 @@ class RedditPostCacher:
             user_agent="Ether Bot",
         )
 
-        self.run()
-
-    def run(self):
-        asyncio.run(self.cache_posts())
+        self.cache_posts.start()
 
     async def cache_subreddit(self, subreddit: Subreddit) -> Tuple[str, List[str]]:
         """Caches top posts from a subreddit
@@ -83,7 +80,7 @@ class RedditPostCacher:
             The subreddit was not in the internal cache
         """
         if not os.path.exists(self.file_path):
-            print("path doesn't exist")
+            log.error("path doesn't exist")
             await self.cache_posts()
 
         async with aiofiles.open(self.file_path, mode="rb") as f:
