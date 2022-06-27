@@ -79,6 +79,9 @@ class Music(commands.Cog, name="music"):
             else:
                 vc: Player = payload.member.guild.voice_client
             
+            if len(vc.queue) > 0:
+                return
+            
             tracks = await vc.node.get_playlist(
                 cls=wavelink.YouTubePlaylist, identifier=playlist.playlist_link
             )
@@ -92,6 +95,12 @@ class Music(commands.Cog, name="music"):
                 track = vc.queue.get()
                 await vc.play(track)
         return
+
+    @commands.Cog.listener()
+    async def on_raw_message_delete(self, payload):
+        r_message = await Playlist.from_id(payload.message_id)
+        if r_message:
+            await r_message.delete()
 
     async def connect_nodes(self):
         await self.client.wait_until_ready()
@@ -421,7 +430,7 @@ class Music(commands.Cog, name="music"):
         data = r["items"][0]["snippet"]
         embed = Embed(title=f"[Playlist] {data['title']}", url=playlist_link)
         embed.set_thumbnail(url=data['thumbnails']['default']['url'])
-        embed.description = f"{data['description']}"
+        embed.description = f"*(The queue must be empty to be played)*\n\n{data['description']}"
         embed.add_field(name="Tracks", value=f"{r['items'][0]['contentDetails']['itemCount']} tracks")
         embed.set_footer(text=f"Created by {data['channelTitle']}")
         
