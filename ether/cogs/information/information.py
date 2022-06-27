@@ -5,22 +5,27 @@ from humanize import naturaldate, naturalsize
 
 
 class InformationHandler:
-    def get_user_infos(member: Member) -> Embed:
-        avatar = member.display_avatar
+    def get_user_infos(self) -> Embed:
+        avatar = self.display_avatar
 
-        embed = Embed(description=f"**ID:** {member.id}")
+        embed = Embed(description=f"**ID:** {self.id}")
         embed.set_author(
-            name=f"{member.name}#{member.discriminator}", icon_url=avatar, url=avatar
+            name=f"{self.name}#{self.discriminator}", icon_url=avatar, url=avatar
         )
+
         embed.set_thumbnail(url=avatar)
         embed.add_field(
             name="Account creation date",
-            value=naturaldate(member.created_at),
+            value=naturaldate(self.created_at),
             inline=False,
         )
+
         embed.add_field(
-            name="Server join date", value=naturaldate(member.joined_at), inline=False
+            name="Server join date",
+            value=naturaldate(self.joined_at),
+            inline=False,
         )
+
 
         return embed
 
@@ -39,7 +44,7 @@ class Information(commands.Cog, name="information"):
 
     @infos.command(name="user")
     async def user(self, ctx, *, member: Member = None):
-        member = member if member else ctx.author
+        member = member or ctx.author
         await ctx.respond(embed=InformationHandler.get_user_infos(member))
 
     @user_command(name="User infos")
@@ -75,7 +80,7 @@ class Information(commands.Cog, name="information"):
 
     @infos.command(name="avatar")
     async def avatar(self, ctx, member: Optional[Member] = None):
-        user = member if member else ctx.author
+        user = member or ctx.author
         return await ctx.respond(embed=InformationHandler.get_user_avatar(user))
 
     @user_command(name="User avatar")

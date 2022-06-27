@@ -35,7 +35,7 @@ class CogManager:
             and d not in banned_dir
         ]
 
-    async def load_cogs(client):
+    async def load_cogs(self):
         """Load cogs
 
         This function goes to all folders in the ether/cogs/ folder and loads all cogs.
@@ -55,7 +55,7 @@ class CogManager:
                     package = "ether.cogs"
                     mod = importlib.import_module(name, package=package)
                     try:
-                        mod.setup(client)
+                        mod.setup(self)
                         log.info(
                             f"[{paths.index(path) + 1}/{len(paths)}] Commands loaded in {mod.__name__}"
                         )

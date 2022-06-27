@@ -15,10 +15,10 @@ class Reactions(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         if payload.member.bot: return
-        
+
         message_id = payload.message_id
         emoji = payload.emoji.name
-        
+
         reaction = await ReactionRole.from_id(message_id)
         if reaction:
             matchs_emojis = [e for e in reaction.options if e.reaction == emoji]
@@ -37,7 +37,7 @@ class Reactions(commands.Cog):
             if matchs_emojis[0]:
                 guild = self.client.get_guild(payload.guild_id)
                 role = guild.get_role(matchs_emojis[0].role_id)
-                
+
                 member = guild.get_member(payload.user_id)
                 await member.remove_roles(role)
     

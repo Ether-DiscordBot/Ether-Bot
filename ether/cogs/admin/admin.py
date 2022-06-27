@@ -32,15 +32,19 @@ class Admin(commands.Cog, name="admin"):
 
         try:
             await ctx.guild.ban(member)
-            if guild.logs and guild.logs.moderation:
-                if guild.logs.moderation.enabled:
-                    channel = ctx.guild.get_channel(guild.logs.moderation.channel_id)
-                    if channel:
-                        await channel.send(
-                            embed=EtherLogs.ban(
-                                member, ctx.author.id, ctx.channel.id, reason
-                            )
+            if (
+                guild.logs
+                and guild.logs.moderation
+                and guild.logs.moderation.enabled
+            ):
+                if channel := ctx.guild.get_channel(
+                    guild.logs.moderation.channel_id
+                ):
+                    await channel.send(
+                        embed=EtherLogs.ban(
+                            member, ctx.author.id, ctx.channel.id, reason
                         )
+                    )
 
             return await ctx.respond("✅ Done")
         except discord.errors.Forbidden:
@@ -65,15 +69,19 @@ class Admin(commands.Cog, name="admin"):
 
         try:
             await ctx.guild.kick(member)
-            if guild.logs and guild.logs.moderation:
-                if guild.logs.moderation.enabled:
-                    channel = ctx.guild.get_channel(guild.logs.moderation.channel_id)
-                    if channel:
-                        await channel.send(
-                            embed=EtherLogs.kick(
-                                member, ctx.author.id, ctx.channel.id, reason
-                            )
+            if (
+                guild.logs
+                and guild.logs.moderation
+                and guild.logs.moderation.enabled
+            ):
+                if channel := ctx.guild.get_channel(
+                    guild.logs.moderation.channel_id
+                ):
+                    await channel.send(
+                        embed=EtherLogs.kick(
+                            member, ctx.author.id, ctx.channel.id, reason
                         )
+                    )
 
             return await ctx.respond("✅ Done")
         except discord.errors.Forbidden:
@@ -96,7 +104,7 @@ class Admin(commands.Cog, name="admin"):
     async def slowmode(self, ctx, cooldown: int):
         await ctx.channel.edit(slowmode_delay=cooldown)
         if cooldown == 0:
-            await ctx.respond(f"✅ Slowmode disabled!")
+            await ctx.respond("✅ Slowmode disabled!")
             return
         await ctx.respond(f"✅ Slowmode set to `{precisedelta(cooldown)}`!")
 
@@ -120,6 +128,6 @@ class Admin(commands.Cog, name="admin"):
             )
 
         if active:
-            return await ctx.respond(f"✅ Logs set enabled!")
+            return await ctx.respond("✅ Logs set enabled!")
 
-        return await ctx.respond(f"✅ Logs set disabled!")
+        return await ctx.respond("✅ Logs set disabled!")
