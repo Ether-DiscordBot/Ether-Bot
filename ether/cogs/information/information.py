@@ -21,7 +21,7 @@ class InformationHandler:
         embed.add_field(
             name="Server join date", value=naturaldate(member.joined_at), inline=False
         )
-        
+
         return embed
 
     def get_user_avatar(self, user) -> Embed:
@@ -29,18 +29,19 @@ class InformationHandler:
             description="**{0.display_name}'s** [avatar]({0.avatar_url}):".format(user)
         ).set_image(url=user.display_avatar)
 
+
 class Information(commands.Cog, name="information"):
     def __init__(self, client):
-        self.fancy_name = "Information"
+        self.fancy_name = "ℹ️ Information"
         self.client = client
-    
+
     infos = SlashCommandGroup("infos", "Infos commands!")
 
     @infos.command(name="user")
     async def user(self, ctx, *, member: Member = None):
         member = member if member else ctx.author
         await ctx.respond(embed=InformationHandler.get_user_infos(member))
-    
+
     @user_command(name="User infos")
     async def user_infos(self, ctx, *, member: Member):
         await ctx.respond(embed=InformationHandler.get_user_infos(member))
@@ -76,8 +77,7 @@ class Information(commands.Cog, name="information"):
     async def avatar(self, ctx, member: Optional[Member] = None):
         user = member if member else ctx.author
         return await ctx.respond(embed=InformationHandler.get_user_avatar(user))
-    
+
     @user_command(name="User avatar")
     async def user_avatar(self, ctx, member: Member):
         return await ctx.respond(embed=InformationHandler.get_user_avatar(member))
-

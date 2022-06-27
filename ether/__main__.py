@@ -7,6 +7,7 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 import nest_asyncio
+
 nest_asyncio.apply()
 
 from ether.core.cog_manager import CogManager
@@ -30,7 +31,7 @@ class Client(commands.Bot):
         guilds = json.loads(os.environ.get("SLASH_COMMANDS_GUILD_ID", default=[]))
         self.debug_guilds: list[int] = [g for g in guilds]
         self.global_slash_commands = bool(os.environ["GLOBAL_SLASH_COMMANDS"])
-        
+
         if self.global_slash_commands == True:
             self.debug_guilds = None
 
@@ -50,7 +51,7 @@ class Client(commands.Bot):
         log.info(f"Client Disc:\t{self.user.discriminator}")
 
         log.info(f"Is in container: {self.in_container}")
-        
+
         gsc = os.environ["GLOBAL_SLASH_COMMANDS"]
         log.info(f"Global slash commands: {gsc}")
 
@@ -68,7 +69,7 @@ class Client(commands.Bot):
 
     async def on_member_remove(self, member):
         guild = await Database.Guild.get_or_create(member.guild.id)
-        
+
         if guild.logs and guild.logs.leave:
             if guild.logs.leave.enabled:
                 channel = member.guild.get_channel(guild.logs.leave.channel_id)
@@ -79,12 +80,14 @@ class Client(commands.Bot):
     async def on_message(self, ctx):
         if ctx.author.bot:
             return
-    
+
         if Database.client != None:
             await Guild.from_guild_object(ctx.guild)
             await GuildUser.from_member_object(ctx.author)
             if random.randint(1, 100) <= 33:
-                new_level = await Database.GuildUser.add_exp(ctx.author.id, ctx.guild.id, 4)
+                new_level = await Database.GuildUser.add_exp(
+                    ctx.author.id, ctx.guild.id, 4
+                )
                 if new_level:
                     await ctx.channel.send(
                         f"Congratulation <@{ctx.author.id}>, you just pass to level {new_level}!"
@@ -113,7 +116,7 @@ def main():
     load_dotenv()
 
     bot = Client()
-    
+
     asyncio.run(bot.load_extensions())
     bot.run(os.getenv("BOT_TOKEN"))
 

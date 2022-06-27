@@ -31,7 +31,8 @@ class CogManager:
         return [
             os.path.join(CogManager.COGS_PATH, d)
             for d in os.listdir(CogManager.COGS_PATH)
-            if os.path.isdir(os.path.join(CogManager.COGS_PATH, d)) and d not in banned_dir
+            if os.path.isdir(os.path.join(CogManager.COGS_PATH, d))
+            and d not in banned_dir
         ]
 
     async def load_cogs(client):
