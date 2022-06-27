@@ -128,7 +128,7 @@ class DnD(commands.Cog, name="dnd"):
             url=f"https://dndbeyond.com/spells/class/{_class}",
         )
         embed.description = f"List of all {_class}'s spells: \n\n {', '.join(spells_list[:50])}{'...' if len(spells_list) > 50 else '.'}"
-        if len(spells_list) < 1:
+        if not spells_list:
             embed.description = "Not smart enough to use spells :/"
 
         embed.set_footer(
@@ -162,11 +162,12 @@ class DnD(commands.Cog, name="dnd"):
         embed.description = f"{spell_data['desc'][0]}\n**Level:** {spell_data['level']}\n**Duration:** {spell_data['duration']}\n **Range/Area:** {spell_data['range']}\n **Casting Time:** {spell_data['casting_time']}"
 
         classes = [c["name"] for c in spell_data["classes"]]
-        embed.add_field(name=f"🎓 Classes", value=f"{', '.join(classes)}", inline=False)
+        embed.add_field(name="🎓 Classes", value=f"{', '.join(classes)}", inline=False)
         sub_classes = [sub["name"] for sub in spell_data["subclasses"]]
         embed.add_field(
-            name=f"🗂️ Sub classes", value=f"{', '.join(sub_classes)}", inline=False
+            name="🗂️ Sub classes", value=f"{', '.join(sub_classes)}", inline=False
         )
+
 
         embed.set_footer(
             text="Powered by D&D",

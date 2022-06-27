@@ -6,22 +6,22 @@ from ether.core.constants import Colors
 
 
 class LevelsHandler:
-    def get_level(level: int, exp):
-        return int(math.sqrt(max(LevelsHandler.level_to_exp(level) + exp, 1)) * 0.2)
+    def get_level(self, exp):
+        return int(math.sqrt(max(LevelsHandler.level_to_exp(self) + exp, 1)) * 0.2)
 
-    def get_next_level(level: int):
-        return 50 * pow(level, 2)
+    def get_next_level(self):
+        return 50 * pow(self, 2)
 
 
 class Utils(object):
-    def get_avatar_url(user, format="png", size="64"):
-        if user:
-            return f"https://cdn.discordapp.com/avatars/{user.id}/{user.avatar}.{format}?size={size}"
+    def get_avatar_url(self, format="png", size="64"):
+        if self:
+            return f"https://cdn.discordapp.com/avatars/{self.id}/{self.avatar}.{format}?size={size}"
 
 
 class EtherEmbeds:
-    def error(message):
-        return Embed(description=message, colour=Colors.ERROR)
+    def error(self):
+        return Embed(description=self, colour=Colors.ERROR)
 
 
 class NerglishTranslator:
@@ -82,20 +82,19 @@ class NerglishTranslator:
         "z": "lr"
     }
     
-    def translate(string: str) -> str:
+    def translate(self) -> str:
         result = ""
-        
-        for word in string.split(" "):
+
+        for word in self.split(" "):
             if word.startswith(("<", ":")) and word.endswith((">", ":")):
                 continue
-            
-            t_word = NerglishTranslator.DICTIONARY.get(word.lower())
-            if t_word:
-                result += t_word + " "
+
+            if t_word := NerglishTranslator.DICTIONARY.get(word.lower()):
+                result += f"{t_word} "
             else:
                 for c in word:
                     t_c = NerglishTranslator.CHAR_MAP.get(c.lower()) or c
                     result += (t_c.upper() if c == c.upper() else t_c)
-        
+
             result += " "
         return result

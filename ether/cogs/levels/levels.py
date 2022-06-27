@@ -50,10 +50,10 @@ class CardHandler:
     MASK = Image.open("ether/assets/mask.png", "r").convert("L")
     MAX_SIZE_BAR = 634
 
-    def create_card(user, db_user):
+    def create_card(self, db_user):
         img = Image.open("ether/assets/background.png").convert("RGBA")
         # Profile Picture
-        r = requests.get(user.display_avatar)
+        r = requests.get(self.display_avatar)
         pp = Image.open(io.BytesIO(r.content))
         pp = pp.resize(CardHandler.MASK.size)
 
@@ -114,21 +114,23 @@ class CardHandler:
         # Name
         draw.text(
             xy=(228, 89),
-            text=f"{user.name[:13]}",
+            text=f"{self.name[:13]}",
             fill=(255, 255, 255),
             font=CardHandler.BASE_FONT,
         )
 
+
         # Discriminator
         draw.text(
             xy=(
-                228 + CardHandler.BASE_FONT.getsize(f"{user.name[:13]}")[0] + 5,
+                228 + CardHandler.BASE_FONT.getsize(f"{self.name[:13]}")[0] + 5,
                 101,
             ),
-            text=f"#{user.discriminator}",
+            text=f"#{self.discriminator}",
             fill=(175, 175, 175),
             font=CardHandler.DISC_FONT,
         )
+
 
         # Experience
         exp_size = draw.textsize(str(db_user.exp), CardHandler.EXP_FONT)
