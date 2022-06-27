@@ -403,6 +403,7 @@ class Music(commands.Cog, name="music"):
     
     @music.command(name="playlist")
     @commands.guild_only()
+    @commands.has_permissions(administrator=True)
     async def playlist(self, ctx: ApplicationContext, playlist_link):
         if not re.match(PLAYLIST_REG, playlist_link):
             ctx.respond(embed=EtherEmbeds.error("The url is incorrect!"), delete_after=5)
