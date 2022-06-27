@@ -2,10 +2,10 @@ from random import choice
 from requests import get, request
 import os
 
-from discord import Embed, Interaction, Option, OptionChoice, SlashCommandGroup
+from discord import ApplicationCommand, Embed, Interaction, Option, OptionChoice, SlashCommandGroup
 from discord.ext import commands
 
-from ether.core.utils import EtherEmbeds
+from ether.core.utils import EtherEmbeds, NerglishTranslator
 
 
 class Fun(commands.Cog):
@@ -40,11 +40,11 @@ class Fun(commands.Cog):
     ]
 
     def __init__(self, client):
-        self.fancy_name = "Fun"
+        self.fancy_name = "🎡 Fun"
         self.client = client
 
         self.giphy_api_key = os.getenv("GIPHY_API_KEY")
-        
+
     fun = SlashCommandGroup("fun", "Fun commands!")
 
     @fun.command()
@@ -55,9 +55,11 @@ class Fun(commands.Cog):
 
         r = r.json()
         if not r["data"]:
-            await interaction.response.send_message(embed=EtherEmbeds.error(
-                "Sorry, I could not find any gifs with this query.", delete_after=5
-            ))
+            await interaction.response.send_message(
+                embed=EtherEmbeds.error(
+                    "Sorry, I could not find any gifs with this query.", delete_after=5
+                )
+            )
             return
         gif_url = r["data"]["url"]
 
@@ -71,9 +73,11 @@ class Fun(commands.Cog):
 
         r = r.json()
         if not r["data"]:
-            await interaction.response.send_message(embed=EtherEmbeds.error(
-                "Sorry, I could not find any gifs with this query.", delete_after=5
-            ))
+            await interaction.response.send_message(
+                embed=EtherEmbeds.error(
+                    "Sorry, I could not find any gifs with this query.", delete_after=5
+                )
+            )
             return
         sticker_url = r["data"]["images"]["original"]["url"]
 
@@ -85,36 +89,56 @@ class Fun(commands.Cog):
         Based on the standard Magic 8 Ball.
         """
 
-        await interaction.response.send_message(f"🎱 {choice(choice(self.HEIGHT_BALL_ANSWERS))}")
+        await interaction.response.send_message(
+            f"🎱 {choice(choice(self.HEIGHT_BALL_ANSWERS))}"
+        )
 
     @fun.command(name="say")
-    async def say(self, interaction: Interaction, message: str, hide: Option(bool, "Hide ?", default=False)):
+    async def say(
+        self,
+        interaction: Interaction,
+        message: str,
+        hide: Option(bool, "Hide ?", default=False),
+    ):
         """
         Say what something the user want to.
         """
 
         if hide:
-            await interaction.response.send_message("👌 Done! (only you can see this message)", ephemeral=True, delete_after=5)
+            await interaction.response.send_message(
+                "👌 Done! (only you can see this message)",
+                ephemeral=True,
+                delete_after=5,
+            )
             await interaction.channel.send(message)
             return
-        
+
         await interaction.response.send_message(message)
-    
+
     @fun.command(name="horoscope")
-    async def horoscope(self, interaction: Interaction, sign: Option(str, "choose an astrological sign", required=True, choices=[
-            OptionChoice("♈ Aries", value="aries"),
-            OptionChoice("♉ Taurus", value="taurus"),
-            OptionChoice("♊ Gemini", value="gemini"),
-            OptionChoice("♋ Cancer", value="cancer"),
-            OptionChoice("♌ Leo", value="leo"),
-            OptionChoice("♍ Virgo", value="virgo"),
-            OptionChoice("♎ Libra", value="libra"),
-            OptionChoice("♏ Scorpius", value="scorpio"),
-            OptionChoice("♐ Sagittarius", value="sagittarius"),
-            OptionChoice("♑ Capricorn", value="capricorn"),
-            OptionChoice("♒ Aquarius", value="aquarius"),
-            OptionChoice("♓ Pisces", value="pisces"),
-        ])):
+    async def horoscope(
+        self,
+        interaction: Interaction,
+        sign: Option(
+            str,
+            "choose an astrological sign",
+            required=True,
+            choices=[
+                OptionChoice("♈ Aries", value="aries"),
+                OptionChoice("♉ Taurus", value="taurus"),
+                OptionChoice("♊ Gemini", value="gemini"),
+                OptionChoice("♋ Cancer", value="cancer"),
+                OptionChoice("♌ Leo", value="leo"),
+                OptionChoice("♍ Virgo", value="virgo"),
+                OptionChoice("♎ Libra", value="libra"),
+                OptionChoice("♏ Scorpius", value="scorpio"),
+                OptionChoice("♐ Sagittarius", value="sagittarius"),
+                OptionChoice("♑ Capricorn", value="capricorn"),
+                OptionChoice("♒ Aquarius", value="aquarius"),
+                OptionChoice("♓ Pisces", value="pisces"),
+            ],
+        ),
+    ):
 
         url = "https://sameer-kumar-aztro-v1.p.rapidapi.com/"
 
@@ -138,3 +162,8 @@ class Fun(commands.Cog):
         )
 
         await interaction.response.send_message(embed=embed)
+
+    @fun.command(name="nerglish")
+    async def nerglish(self, ctx: ApplicationCommand, text: str):
+        translated = NerglishTranslator.translate(text)
+        await ctx.respond(translated)
