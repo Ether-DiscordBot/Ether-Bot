@@ -61,7 +61,8 @@ class Music(commands.Cog, name="music"):
         await reaction.remove(payload.member)
         
         emoji = payload.emoji
-        if emoji.id == 990260523692064798: # Play
+        shuffle = True if emoji.id == 990260524686139432 else False
+        if emoji.id in (990260523692064798, 990260524686139432) : # Play
             if not payload.member.voice:
                 return
             if not payload.member.guild.voice_client:
@@ -82,6 +83,8 @@ class Music(commands.Cog, name="music"):
                 cls=wavelink.YouTubePlaylist, identifier=playlist.playlist_link
             )
             if tracks:
+                if shuffle:
+                    random.shuffle(tracks.tracks)
                 for t in tracks.tracks:
                     vc.queue.put(t)
                 
