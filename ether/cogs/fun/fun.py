@@ -2,10 +2,10 @@ from random import choice
 from requests import get, request
 import os
 
-from discord import Embed, Interaction, Option, OptionChoice, SlashCommandGroup
+from discord import ApplicationCommand, Embed, Interaction, Option, OptionChoice, SlashCommandGroup
 from discord.ext import commands
 
-from ether.core.utils import EtherEmbeds
+from ether.core.utils import EtherEmbeds, NerglishTranslator
 
 
 class Fun(commands.Cog):
@@ -162,3 +162,8 @@ class Fun(commands.Cog):
         )
 
         await interaction.response.send_message(embed=embed)
+
+    @fun.command(name="nerglish")
+    async def nerglish(self, ctx: ApplicationCommand, text: str):
+        translated = NerglishTranslator.translate(text)
+        await ctx.respond(translated)
