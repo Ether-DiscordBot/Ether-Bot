@@ -128,9 +128,9 @@ class Music(commands.Cog, name="music"):
         """When a track starts, the bot sends a message in the channel where the command was sent.
         The channel is taken on the object of the track and the message are saved in the player.
         """
-        channel = player.text_channel
-        if channel:
-            message: discord.Message = await channel.send(
+        
+        if player.text_channel:
+            message: discord.Message = await player.text_channel.send(
                 embed=Embed(
                     description=f"Now Playing **[{track.title}]({track.uri})**!",
                     color=Colors.DEFAULT,
@@ -147,9 +147,12 @@ class Music(commands.Cog, name="music"):
         """
 
         if reason not in ("FINISHED", "STOPPED", "REPLACED"):
-            return await player.text_channel.send(
-                embed=EtherEmbeds.error(f"Track finished for reason `{reason}`")
-            )
+            if player.text_channel:
+                return await player.text_channel.send(
+                    embed=EtherEmbeds.error(f"Track finished for reason `{reason}`")
+                )
+            
+            log.warn(f"Track finished for reason `{reason}`")
 
         if not player.queue.is_empty:
             await player.play(player.queue.get())
