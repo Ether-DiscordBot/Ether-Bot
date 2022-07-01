@@ -18,3 +18,4 @@ motor[srv]==2.5.1
 beanie==1.11.1
 pydantic==1.9.0
 nest_asyncio==1.5.5
+howlongtobeatpy==0.1.22
