@@ -33,7 +33,7 @@ class Client(commands.Bot):
             guilds = json.loads(guilds)
 
         self.debug_guilds: list[int] = list(guilds)
-        self.global_slash_commands = bool(os.environ["GLOBAL_SLASH_COMMANDS"])
+        self.global_slash_commands = bool(os.environ.get("GLOBAL_SLASH_COMMANDS", default=False))
 
         if self.global_slash_commands:
             self.debug_guilds = None
