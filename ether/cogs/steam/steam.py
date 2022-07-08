@@ -38,31 +38,33 @@ class Steam(commands.Cog):
         app = self.search(query)
         if not app:
             await ctx.respond("Could not find any game with that query, please provide the exact game name.")
-        
+
         appid = app["appid"]
-        
+
         r = requests.get(f"https://store.steampowered.com/api/appdetails?appids={appid}")
         data = r.json()
         if not r.ok or not data[str(appid)]["success"]:
             await ctx.respond("Sorry, we could not find any data with this game.")
         data = data[str(appid)]["data"]
-        
+
         embed = Embed(title=data['name'])
         embed.set_image(url=f"https://cdn.cloudflare.steamstatic.com/steam/apps/{appid}/capsule_616x353.jpg")
-        
+
         if data.get("website"):
             embed.url = data["website"]
         else:
             embed.url = f"https://store.steampowered.com/app/{appid}"
-        
+
         description = f"{data['short_description']}\n\n**App ID:** [{appid}](https://store.steampowered.com/app/{appid})\n**App Type:** {data['type'].capitalize()}\n"
-        
-        supported_platforms = []
-        for p in data['platforms'].keys():
-            if data['platforms'][p]:
-                supported_platforms.append(p.capitalize())
+
+        supported_platforms = [
+            p.capitalize()
+            for p in data['platforms'].keys()
+            if data['platforms'][p]
+        ]
+
         description += f"**Platforms:** {', '.join(supported_platforms)}\n\n"        
-        
+
         if data.get('price_overview'):
             price_data = data['price_overview']
             if price_data['discount_percent'] > 0:
@@ -71,21 +73,21 @@ class Steam(commands.Cog):
                 description += f"**Price:** {price_data['initial_formatted']}\n"
         elif data.get('release_date') and data['release_date']['coming_soon']:
             description += f"**Release Date:** {data['release_date']['date']}\n"
-        
+
         categories = [g['description'] for g in data['categories']]
         description += f"**Categories:** {', '.join(categories)}\n"
-        
+
         genres = [g['description'] for g in data['genres']]
         description += f"**Genres:** {', '.join(genres)}\n\n"
-        
+
         description += f"**Developers:** {', '.join(data['developers'])}\n"
         description += f"**Publishers:** {', '.join(data['publishers'])}\n\n"
-        
+
         if data.get('metacritic'):
             description += f"**Metacritic Score:** [{data['metacritic']['score']}]({data['metacritic']['url']})"
-        
+
         embed.description = description
-        
+
         await ctx.respond(embed=embed)
     
     @steam.command(name="specials")
@@ -93,18 +95,19 @@ class Steam(commands.Cog):
         r = requests.get("https://store.steampowered.com/api/featuredcategories")
         if not r.ok:
             await ctx.respond("Sorry, an error was occured!")
-        
+
         r = r.json()
         data = r["specials"]
-        
+
         embed = Embed(title=data["name"])
-        description = ""
-        
-        for i in data["items"][:10]:
-            description += f"**[{i['name']}](https://store.steampowered.com/app/{i['id']}) (-{i['discount_percent']}%):**\n ~~{i['original_price']/100}~~ {i['final_price']/100}{i['currency']}\n"
-            
+        description = "".join(
+            f"**[{i['name']}](https://store.steampowered.com/app/{i['id']}) (-{i['discount_percent']}%):**\n ~~{i['original_price']/100}~~ {i['final_price']/100}{i['currency']}\n"
+            for i in data["items"][:10]
+        )
+
+
         embed.description = description
-        
+
         await ctx.respond(embed=embed)
     
     @steam.command(name="top")
@@ -112,21 +115,21 @@ class Steam(commands.Cog):
         r = requests.get("https://store.steampowered.com/api/featuredcategories")
         if not r.ok:
             await ctx.respond("Sorry, an error was occured!")
-        
+
         r = r.json()
         data = r["top_sellers"]
-        
+
         embed = Embed(title=data["name"][:10])
-        description = ""
-        
-        for i in data["items"]:
-            if i['discounted']:
-                description += f"**[{i['name']}](https://store.steampowered.com/app/{i['id']}) (-{i['discount_percent']}%):**\n ~~{i['original_price']/100}~~ {i['final_price']/100}{i['currency']}\n"
-            else:
-                description += f"**[{i['name']}](https://store.steampowered.com/app/{i['id']}):**\n {i['final_price']/100}{i['currency']}\n"
-        
+        description = "".join(
+            f"**[{i['name']}](https://store.steampowered.com/app/{i['id']}) (-{i['discount_percent']}%):**\n ~~{i['original_price']/100}~~ {i['final_price']/100}{i['currency']}\n"
+            if i['discounted']
+            else f"**[{i['name']}](https://store.steampowered.com/app/{i['id']}):**\n {i['final_price']/100}{i['currency']}\n"
+            for i in data["items"]
+        )
+
+
         embed.description = description
-        
+
         await ctx.respond(embed=embed)
     
     @steam.command(name="new")
@@ -134,19 +137,19 @@ class Steam(commands.Cog):
         r = requests.get("https://store.steampowered.com/api/featuredcategories")
         if not r.ok:
             await ctx.respond("Sorry, an error was occured!")
-        
+
         r = r.json()
         data = r["new_releases"]
-        
+
         embed = Embed(title=data["name"])
-        description = ""
-        
-        for i in data["items"][:10]:
-            if i['discounted']:
-                description += f"**[{i['name']}](https://store.steampowered.com/app/{i['id']}) (-{i['discount_percent']}%):**\n ~~{i['original_price']/100}~~ {i['final_price']/100}{i['currency']}\n"
-            else:
-                description += f"**[{i['name']}](https://store.steampowered.com/app/{i['id']}):**\n {i['final_price']/100}{i['currency']}\n"
-        
+        description = "".join(
+            f"**[{i['name']}](https://store.steampowered.com/app/{i['id']}) (-{i['discount_percent']}%):**\n ~~{i['original_price']/100}~~ {i['final_price']/100}{i['currency']}\n"
+            if i['discounted']
+            else f"**[{i['name']}](https://store.steampowered.com/app/{i['id']}):**\n {i['final_price']/100}{i['currency']}\n"
+            for i in data["items"][:10]
+        )
+
+
         embed.description = description
-        
+
         await ctx.respond(embed=embed)

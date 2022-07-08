@@ -37,7 +37,7 @@ class Reddit(commands.Cog):
         embed = Embed(title=post.title)
         if hasattr(post, "text"):
             embed.description = post.text
-        embed.url = "https://reddit.com" + post.permalink
+        embed.url = f"https://reddit.com{post.permalink}"
         embed.colour = Colors.DEFAULT
         embed.set_image(url=post.url)
         embed.set_footer(text=f"⬆️ {post.score} │ 💬 {post.num_comments}")

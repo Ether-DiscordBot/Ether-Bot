@@ -22,7 +22,7 @@ class Image(commands.Cog, name="image"):
         image = ImageModifier("hold-up.png")
         image.write(text, (10, 10), 30, 4)
 
-        await ctx.respond(file=File(fp=image.bytes, filename=f"hold-up.png"))
+        await ctx.respond(file=File(fp=image.bytes, filename="hold-up.png"))
 
     @image.command(name="vault-boy")
     async def vault_boy(self, ctx, up: str, bottom: str):
@@ -30,7 +30,7 @@ class Image(commands.Cog, name="image"):
         image.write(up, (200, 33), 25, 2, "mm")
         image.write(bottom, (200, 333), 25, 2, "mm")
 
-        await ctx.respond(file=File(fp=image.bytes, filename=f"vault_boy.jpg"))
+        await ctx.respond(file=File(fp=image.bytes, filename="vault_boy.jpg"))
 
     @image.command(name="mr_incredible")
     async def mr_incredible(self, ctx, left: str, right: str):
@@ -38,7 +38,7 @@ class Image(commands.Cog, name="image"):
         image.write(left, (178, 365), 20, 1, "mm", fill=(255, 255, 255))
         image.write(right, (533, 365), 20, 1, "mm", fill=(255, 255, 255))
 
-        await ctx.respond(file=File(fp=image.bytes, filename=f"mr_incredible.png"))
+        await ctx.respond(file=File(fp=image.bytes, filename="mr_incredible.png"))
 
 
 class ImageModifier:
