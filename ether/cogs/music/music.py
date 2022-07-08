@@ -34,7 +34,6 @@ class Player(wavelink.Player):
         self.text_channel = text_channel
         self.queue: wavelink.Queue = wavelink.Queue(max_size=100)
 
-
 class Music(commands.Cog, name="music"):
     def __init__(self, client):
         self.client = client
@@ -94,7 +93,18 @@ class Music(commands.Cog, name="music"):
             if not vc.is_playing():
                 track = vc.queue.get()
                 await vc.play(track)
-        return
+        elif emoji.id == 990260521355862036: # back
+            pass
+        elif emoji.id == 990260522521858078: #skip
+            vc: Player = await self.connect_with_payload(payload)
+
+            if not vc:
+                return
+
+            if vc.queue.is_empty:
+                return
+
+            await vc.play(vc.queue.get(), replace=True)
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
@@ -146,15 +156,37 @@ class Music(commands.Cog, name="music"):
         """
 
         if reason not in ("FINISHED", "STOPPED", "REPLACED"):
-            return await player.text_channel.send(
-                embed=EtherEmbeds.error(f"Track finished for reason `{reason}`")
-            )
+            if player.text_channel:
+                return await player.text_channel.send(
+                    embed=EtherEmbeds.error(f"Track finished for reason `{reason}`")
+                )
 
-        if not player.queue.is_empty:
+            log.warn(f"Track finished for reason `{reason}`")
+
+        if not player.queue.is_empty and reason != "REPLACED":
             await player.play(player.queue.get())
-        
+
         if player.message:
             await player.message.delete()
+            
+    async def connect_with_payload(self, payload) -> Optional[Player]:
+        if not payload.member.voice:
+                return None
+        if not payload.member.guild.voice_client:
+            db_guild = await Guild.from_id(payload.member.guild.id)
+
+            text_channel = payload.member.guild.get_channel(db_guild.music_channel_id) or None
+            player = Player(text_channel=text_channel)
+            vc: Player = await payload.member.voice.channel.connect(cls=player)
+            vc.queue = wavelink.Queue(max_size=100)
+            vc.text_channel = text_channel
+            await payload.member.guild.change_voice_state(
+                channel=payload.member.voice.channel, self_mute=False, self_deaf=True
+            )
+        else:
+            vc: Player = payload.member.guild.voice_client
+
+        return vc
 
     @music.command(name="join")
     @commands.guild_only()
@@ -379,9 +411,12 @@ class Music(commands.Cog, name="music"):
         if not vc:
             return
 
+        if not vc.source:
+            return await ctx.respond(embed=EtherEmbeds.error("Sorry, an error has occurred!"), ephemeral=True)
+
         queue = vc.queue.copy()
 
-        first_track = vc.track
+        first_track = vc.source
         embed = Embed(title=":notes: Queue:")
         embed.add_field(
             name="Now Playing:",
