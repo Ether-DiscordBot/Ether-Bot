@@ -48,7 +48,7 @@ class Nasa(commands.Cog, name="nasa"):
     @nasa.command(name="epic")
     async def epic(self, ctx, faces: int = 1):
         if faces > 20:
-            return ctx.respond(
+            return await ctx.respond(
                 embed=EtherEmbeds.error("Faces must be between 1 and 20."),
                 delete_after=5,
             )
@@ -58,7 +58,7 @@ class Nasa(commands.Cog, name="nasa"):
         )
 
         if not r.ok:
-            return ctx.respond(
+            return await ctx.respond(
                 embed=EtherEmbeds.error("Sorry, an error has occurred."), delete_after=5
             )
 
