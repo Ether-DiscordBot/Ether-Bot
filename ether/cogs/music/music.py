@@ -38,7 +38,7 @@ class Music(commands.Cog, name="music"):
     def __init__(self, client):
         self.client = client
         self.fancy_name = "🎶 Music"
-        
+
         self.youtube_api_key = os.environ["YOUTUBE_API_KEY"]
 
         client.loop.create_task(self.connect_nodes())
@@ -46,39 +46,39 @@ class Music(commands.Cog, name="music"):
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         if payload.member.bot: return
-        
+
         message_id = payload.message_id
-        
+
         playlist = await Playlist.from_id(message_id)
         if not playlist:
             return
-    
+
         channel = payload.member.guild.get_channel(payload.channel_id)
         message = await channel.fetch_message(message_id)
         reaction = [r for r in message.reactions if r.emoji.name == payload.emoji.name][0]
-        
+
         await reaction.remove(payload.member)
-        
+
         emoji = payload.emoji
-        shuffle = True if emoji.id == 990260524686139432 else False
-        if emoji.id in (990260523692064798, 990260524686139432) : # Play
+        if emoji.id in (990260523692064798, 990260524686139432): # Play
             vc: Player = await self.connect_with_payload(payload)
-            
+
             if not vc:
                 return
-            
+
             if len(vc.queue) > 0:
                 return
-            
+
             tracks = await vc.node.get_playlist(
                 cls=wavelink.YouTubePlaylist, identifier=playlist.playlist_link
             )
             if tracks:
+                shuffle = emoji.id == 990260524686139432
                 if shuffle:
                     random.shuffle(tracks.tracks)
                 for t in tracks.tracks:
                     vc.queue.put(t)
-                
+
             if not vc.is_playing():
                 track = vc.queue.get()
                 await vc.play(track)
@@ -150,12 +150,12 @@ class Music(commands.Cog, name="music"):
                 return await player.text_channel.send(
                     embed=EtherEmbeds.error(f"Track finished for reason `{reason}`")
                 )
-            
+
             log.warn(f"Track finished for reason `{reason}`")
 
         if not player.queue.is_empty and reason != "REPLACED":
             await player.play(player.queue.get())
-        
+
         if player.message:
             await player.message.delete()
             
@@ -164,7 +164,7 @@ class Music(commands.Cog, name="music"):
                 return None
         if not payload.member.guild.voice_client:
             db_guild = await Guild.from_id(payload.member.guild.id)
-            
+
             text_channel = payload.member.guild.get_channel(db_guild.music_channel_id) or None
             player = Player(text_channel=text_channel)
             vc: Player = await payload.member.voice.channel.connect(cls=player)
@@ -175,7 +175,7 @@ class Music(commands.Cog, name="music"):
             )
         else:
             vc: Player = payload.member.guild.voice_client
-        
+
         return vc
 
     @music.command(name="join")
@@ -400,7 +400,7 @@ class Music(commands.Cog, name="music"):
 
         if not vc:
             return
-        
+
         if not vc.source:
             return await ctx.respond(embed=EtherEmbeds.error("Sorry, an error has occurred!"), ephemeral=True)
 
@@ -410,10 +410,10 @@ class Music(commands.Cog, name="music"):
         embed = Embed(title=":notes: Queue:")
         embed.add_field(
             name="Now Playing:",
-            value=f"`1.` [{first_track.title}]({first_track.uri[:30]}) | "
-            f'`{datetime.timedelta(seconds=first_track.length) if not first_track.is_stream() else "🔴 Stream"}`',
+            value=f'`1.` [{first_track.title}]({first_track.uri[:30]}) | `{"🔴 Stream" if first_track.is_stream() else datetime.timedelta(seconds=first_track.length)}`',
             inline=False,
         )
+
 
         next_track_label = []
         for _ in range(10):
