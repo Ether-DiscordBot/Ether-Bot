@@ -31,15 +31,15 @@ class Client(commands.Bot):
         guilds = os.environ.get("SLASH_COMMANDS_GUILD_ID", default=[])
         if isinstance(guilds, str):
             guilds = json.loads(guilds)
-            
-        self.debug_guilds: list[int] = [g for g in guilds]
+
+        self.debug_guilds: list[int] = list(guilds)
         self.global_slash_commands = bool(os.environ["GLOBAL_SLASH_COMMANDS"])
 
-        if self.global_slash_commands == True:
+        if self.global_slash_commands:
             self.debug_guilds = None
 
         super().__init__(
-            activity=discord.Game(name=f"/help"),
+            activity=discord.Game(name="/help"),
             help_command=None,
             debug_guilds=self.debug_guilds,
             intents=intents,
@@ -63,22 +63,20 @@ class Client(commands.Bot):
     async def on_member_join(self, member):
         guild = await Database.Guild.get_or_create(member.guild.id)
 
-        if guild.logs and guild.logs.join:
-            if guild.logs.join.enabled:
-                channel = member.guild.get_channel(guild.logs.join.channel_id)
-                await channel.send(
-                    guild.logs.join.message.format(user=member, guild=member.guild)
-                )
+        if guild.logs and guild.logs.join and guild.logs.join.enabled:
+            channel = member.guild.get_channel(guild.logs.join.channel_id)
+            await channel.send(
+                guild.logs.join.message.format(user=member, guild=member.guild)
+            )
 
     async def on_member_remove(self, member):
         guild = await Database.Guild.get_or_create(member.guild.id)
 
-        if guild.logs and guild.logs.leave:
-            if guild.logs.leave.enabled:
-                channel = member.guild.get_channel(guild.logs.leave.channel_id)
-                await channel.send(
-                    guild.logs.leave.message.format(user=member, guild=member.guild)
-                )
+        if guild.logs and guild.logs.leave and guild.logs.leave.enabled:
+            channel = member.guild.get_channel(guild.logs.leave.channel_id)
+            await channel.send(
+                guild.logs.leave.message.format(user=member, guild=member.guild)
+            )
 
     async def on_message(self, ctx):
         if ctx.author.bot:

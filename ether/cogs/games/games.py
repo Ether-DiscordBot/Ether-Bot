@@ -65,33 +65,30 @@ class Games(commands.Cog, name="games"):
         
         async def callback(button, interaction):
             global turn
-            if players[turn].id != self.client.user.id:
-                if interaction.user.id != players[turn].id or \
-                (button.label == 'X' or button.label == 'O'):
-                    await interaction.response.defer()
-                    return
-            
+            if players[turn].id != self.client.user.id and (
+                interaction.user.id != players[turn].id or button.label in ['X', 'O']
+            ):
+                await interaction.response.defer()
+                return
+
             board[button.index] = turn
-            
+
             button.label = turn
             button.style = discord.ButtonStyle.green if turn == 'X' else discord.ButtonStyle.red
-            
-            win = check_win(board, turn)
-            
-            if win:
+
+            if win := check_win(board, turn):
                 content = f"<@{players[turn].id}> won!"
                 button.view.disable_all_items()
                 button.view.stop()
             elif not empty_indexies(board):
                 print(board)
-                content = f"Tie!"
+                content = "Tie!"
                 button.view.disable_all_items()
                 button.view.stop()
-            else:   
-                if turn == 'X': turn = 'O'
-                else: turn = 'X'
+            else:
+                turn = 'O' if turn == 'X' else 'X'
                 content = f"<@{ctx.author.id}> VS <@{self.client.user.id if vs_ai else opponent.id}>\nIt's the turn of {players[turn]}! *(you have 30 sec)*"
-            
+
             if interaction.response.is_done():
                 await interaction.edit_original_message(content=content, view=button.view)
             else:
@@ -115,26 +112,23 @@ class Games(commands.Cog, name="games"):
         
         def check_win(board, player: str) -> bool:
             b = board
-            
+
             # Check rows
             rows = [[b[i], b[i+1], b[i+2]] for i in range(0, 8, 3)]
             for row in rows:
                 if all(i==player for i in row): return True
-            
+
             # Check columns
             cols = [[b[i], b[i+3], b[i+6]] for i in range(3)]
             for col in cols:
                 if all(i==player for i in col): return True
-            
+
             # Check diagonals
             diags = [
                 [b[0], b[4], b[8]],
                 [b[2], b[4], b[6]],
             ]
-            for diag in diags:
-                if all(i==player for i in diag): return True
-            
-            return False
+            return any(all(i==player for i in diag) for diag in diags)
         
         def empty_indexies(board) -> list:
             return [i for i, x in enumerate(board) if x == " "]
@@ -149,29 +143,28 @@ class Games(commands.Cog, name="games"):
         
         async def ai_play(interaction):
             possibilities = empty_indexies(board)            
-            
+
             if len(possibilities) <= 1:
                 button = view.children[possibilities[0]]
                 return await callback(button, interaction)
-                
+
             good_pos = []
-            neutral_pos = []
             for p in possibilities:                
                 new_board = board.copy()
                 new_board[p] = players[turn]
-                
+
                 proba = minimax(new_board, players[turn], players[author_sign])["score"]
-                
+
                 if proba == 10:
                     good_pos.append(p)
-            
+
             if good_pos:
                 button = view.children[possibilities[random.choice(good_pos)]]
-            if neutral_pos:
+            if neutral_pos := []:
                 button = view.children[possibilities[random.choice(neutral_pos)]]
             else:
                 button = view.children[random.choice(possibilities)]
-            
+
             await callback(button, interaction)
                 
         await ctx.respond(f"<@{ctx.author.id}> VS <@{self.client.user.id if vs_ai else opponent.id}>\nIt's the turn of {players[turn]}! *(you have 30 sec)*", view=view)
