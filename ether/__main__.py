@@ -28,7 +28,10 @@ class Client(commands.Bot):
         self.lavalink_host = "lavalink" if self.in_container else "localhost"
 
         intents = discord.Intents().all()
-        guilds = json.loads(os.environ.get("SLASH_COMMANDS_GUILD_ID", default=[]))
+        guilds = os.environ.get("SLASH_COMMANDS_GUILD_ID", default=[])
+        if isinstance(guilds, str):
+            guilds = json.loads(guilds)
+            
         self.debug_guilds: list[int] = [g for g in guilds]
         self.global_slash_commands = bool(os.environ["GLOBAL_SLASH_COMMANDS"])
 
