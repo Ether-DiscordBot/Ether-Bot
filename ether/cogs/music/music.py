@@ -160,12 +160,12 @@ class Music(commands.Cog, name="music"):
                 return await player.text_channel.send(
                     embed=EtherEmbeds.error(f"Track finished for reason `{reason}`")
                 )
-            
+
             log.warn(f"Track finished for reason `{reason}`")
 
         if not player.queue.is_empty and reason != "REPLACED":
             await player.play(player.queue.get())
-        
+
         if player.message:
             await player.message.delete()
             
@@ -174,7 +174,7 @@ class Music(commands.Cog, name="music"):
                 return None
         if not payload.member.guild.voice_client:
             db_guild = await Guild.from_id(payload.member.guild.id)
-            
+
             text_channel = payload.member.guild.get_channel(db_guild.music_channel_id) or None
             player = Player(text_channel=text_channel)
             vc: Player = await payload.member.voice.channel.connect(cls=player)
@@ -185,7 +185,7 @@ class Music(commands.Cog, name="music"):
             )
         else:
             vc: Player = payload.member.guild.voice_client
-        
+
         return vc
 
     @music.command(name="join")
@@ -410,7 +410,7 @@ class Music(commands.Cog, name="music"):
 
         if not vc:
             return
-        
+
         if not vc.source:
             return await ctx.respond(embed=EtherEmbeds.error("Sorry, an error has occurred!"), ephemeral=True)
 
