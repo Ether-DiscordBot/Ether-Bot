@@ -34,7 +34,6 @@ class Player(wavelink.Player):
         self.text_channel = text_channel
         self.queue: wavelink.Queue = wavelink.Queue(max_size=100)
 
-
 class Music(commands.Cog, name="music"):
     def __init__(self, client):
         self.client = client
@@ -401,10 +400,13 @@ class Music(commands.Cog, name="music"):
 
         if not vc:
             return
+        
+        if not vc.source:
+            return await ctx.respond(embed=EtherEmbeds.error("Sorry, an error has occurred!"), ephemeral=True)
 
         queue = vc.queue.copy()
 
-        first_track = vc.track
+        first_track = vc.source
         embed = Embed(title=":notes: Queue:")
         embed.add_field(
             name="Now Playing:",
