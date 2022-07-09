@@ -13,6 +13,7 @@ nest_asyncio.apply()
 from ether.core.cog_manager import CogManager
 from ether.core.db import Database, Guild, GuildUser
 from ether.core.logging import log
+from ether.core.lavalink_status import request
 
 
 #
@@ -57,6 +58,11 @@ class Client(commands.Bot):
 
         gsc = os.environ["GLOBAL_SLASH_COMMANDS"]
         log.info(f"Global slash commands: {gsc}")
+        
+        opt = (self.lavalink_host, os.environ["LAVALINK_PORT"])
+        r = request(opt)
+        if r != 0:
+            await self.remove_cog(f'cogs.music')
 
         self.musicCmd = self.get_cog("music")
 
@@ -95,6 +101,10 @@ class Client(commands.Bot):
                     )
 
         await self.process_commands(ctx)
+    
+    
+    async def remove_cog(ctx, extension):
+        log.info(f"Removed cog: {extension}")
 
     async def on_command_error(self, ctx, error):
         ignored = (
@@ -104,6 +114,7 @@ class Client(commands.Bot):
             commands.CommandNotFound,
             commands.UserInputError,
             discord.HTTPException,
+            discord.errors.NotFound,
         )
         error = getattr(error, "original", error)
 

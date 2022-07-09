@@ -14,7 +14,6 @@ import humanize
 
 from ether.core.constants import Colors
 from ether.core.db.client import Database, Guild, Playlist
-from ether.core.lavalink_status import request
 from ether.core.logging import log
 from ether.core.utils import EtherEmbeds
 
@@ -114,10 +113,6 @@ class Music(commands.Cog, name="music"):
 
     async def connect_nodes(self):
         await self.client.wait_until_ready()
-
-        r = request()
-        if r != 0:
-            return
 
         await wavelink.NodePool.create_node(
             bot=self.client,
