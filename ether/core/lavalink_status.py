@@ -1,10 +1,11 @@
+import os
 import time
 
 import socket
 
 from ether.core.logging import log
 
-opt = ("lavalink", 2333)
+opt = ("lavalink", os.environ["LAVALINK_PORT"])
 
 
 def request(timeout=10.0):
