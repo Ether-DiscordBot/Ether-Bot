@@ -1,3 +1,7 @@
+name: Python Versions
+
+on: [push, pull_request]
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}

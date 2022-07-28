@@ -1,4 +1,8 @@
- steps:
+name: Python Linter
+
+on: [push, pull_request]
+
+steps:
  - uses: actions/checkout@v2  
  - name: Python Linter
    uses: sunnysid3up/python-linter@master

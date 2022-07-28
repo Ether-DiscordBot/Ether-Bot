@@ -1,3 +1,7 @@
+name: Checkout submodules
+
+on: [push, pull_request]
+
 steps:
 - name: Checkout repository
   uses: actions/checkout@v2
