@@ -1,15 +1,14 @@
 import datetime
 import os
 import re
-from typing import Optional
+from typing import Optionald
 import random
 
 import discord
 from discord.ext import commands
-from discord import ApplicationContext, Embed, Interaction, Reaction, SlashCommandGroup
+from discord import ApplicationContext, Embed, SlashCommandGroup
 import requests
 import wavelink
-from wavelink.tracks import YouTubeTrack, YouTubePlaylist
 import humanize
 
 from ether.core.constants import Colors
