@@ -5,7 +5,7 @@ from ether.core.db import Database
 from ether.core.db.client import ReactionRole
 
 
-class Reactions(commands.Cog):
+class Reactions(commands.Cog, name="reaction"):
     def __init__(self, client) -> None:
         self.fancy_name = "Reactions"
         self.client = client

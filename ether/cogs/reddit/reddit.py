@@ -10,7 +10,7 @@ from ether.core.logging import logging
 from ether.config import config
 
 
-class Reddit(commands.Cog):
+class Reddit(commands.Cog, name="reddit"):
     def __init__(self, client) -> None:
         self.fancy_name = "🤖 Reddit"
         self.client = client

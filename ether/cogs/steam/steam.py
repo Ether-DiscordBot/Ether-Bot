@@ -5,7 +5,7 @@ import requests
 from ether.core.logging import log
 
 
-class Steam(commands.Cog):
+class Steam(commands.Cog, name="steam"):
     def __init__(self, client) -> None:
         self.fancy_name = "🕹️ Steam"
         self.client = client
