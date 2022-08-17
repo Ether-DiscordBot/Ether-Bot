@@ -6,7 +6,7 @@ from discord import Embed, Option, OptionChoice, SlashCommandGroup
 from discord.ext import commands
 
 from ether.core.utils import EtherEmbeds
-from ether.config import config
+from ether.core.config import config
 
 
 class Nasa(commands.Cog, name="nasa"):

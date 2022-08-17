@@ -12,7 +12,7 @@ from ether.core.cog_manager import CogManager
 from ether.core.db import Database, Guild, GuildUser, init_database
 from ether.core.logging import log
 from ether.core.lavalink_status import request
-from ether.config import config
+from ether.core.config import config
 
 init_database(config.database.mongodb.get("uri"))
 

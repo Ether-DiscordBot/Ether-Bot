@@ -15,7 +15,7 @@ from ether.core.constants import Colors
 from ether.core.db.client import Database, Guild, Playlist
 from ether.core.logging import log
 from ether.core.utils import EtherEmbeds
-from ether.config import config
+from ether.core.config import config
 
 PLAYLIST_REG = re.compile(
     r"^(?:http:\/\/|https:\/\/)?(?:www\.)?youtube\.com\/playlist\?list(?:\S+)?$"

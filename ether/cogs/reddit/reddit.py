@@ -7,7 +7,7 @@ from ether.core.constants import Colors
 from ether.core.utils import EtherEmbeds
 from ether.core.reddit import RedditPostCacher
 from ether.core.logging import logging
-from ether.config import config
+from ether.core.config import config
 
 
 class Reddit(commands.Cog, name="reddit"):
