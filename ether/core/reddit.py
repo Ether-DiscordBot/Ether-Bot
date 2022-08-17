@@ -14,14 +14,14 @@ from ether.core.logging import log
 
 
 class RedditPostCacher:
-    def __init__(self, subreddit_names: List[str], cache_location) -> None:
+    def __init__(self, config, subreddit_names: List[str], cache_location) -> None:
         self.subreddit_names = subreddit_names
 
         self.file_path = cache_location
 
         self.reddit = Reddit(
-            client_id=os.getenv("REDDIT_CLIENT_ID"),
-            client_secret=os.getenv("REDDIT_CLIENT_SECRET"),
+            client_id=config.reddit.client.get("id"),
+            client_secret=config.reddit.client.get("secret"),
             user_agent="Ether Bot",
             timeout=30,
         )

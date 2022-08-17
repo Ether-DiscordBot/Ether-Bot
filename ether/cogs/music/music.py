@@ -1,7 +1,7 @@
 import datetime
 import os
 import re
-from typing import Optionald
+from typing import Optional
 import random
 
 import discord
@@ -15,6 +15,7 @@ from ether.core.constants import Colors
 from ether.core.db.client import Database, Guild, Playlist
 from ether.core.logging import log
 from ether.core.utils import EtherEmbeds
+from ether.config import config
 
 PLAYLIST_REG = re.compile(
     r"^(?:http:\/\/|https:\/\/)?(?:www\.)?youtube\.com\/playlist\?list(?:\S+)?$"
@@ -37,7 +38,7 @@ class Music(commands.Cog, name="music"):
         self.client = client
         self.fancy_name = "🎶 Music"
 
-        self.youtube_api_key = os.environ["YOUTUBE_API_KEY"]
+        self.youtube_api_key = config.api.youtube.get("key")
 
         client.loop.create_task(self.connect_nodes())
     

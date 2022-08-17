@@ -7,6 +7,7 @@ from ether.core.constants import Colors
 from ether.core.utils import EtherEmbeds
 from ether.core.reddit import RedditPostCacher
 from ether.core.logging import logging
+from ether.config import config
 
 
 class Reddit(commands.Cog):
@@ -15,7 +16,7 @@ class Reddit(commands.Cog):
         self.client = client
         self.subreddits = ("memes", "aww", "sadcats")
         cog_path = os.path.abspath("ether/cogs/reddit")
-        self.cache = RedditPostCacher(self.subreddits, f"{cog_path}/cache.pickle")
+        self.cache = RedditPostCacher(config, self.subreddits, f"{cog_path}/cache.pickle")
 
     reddit = SlashCommandGroup("reddit", "Reddit commands!")
 

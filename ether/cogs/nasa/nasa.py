@@ -6,13 +6,14 @@ from discord import Embed, Option, OptionChoice, SlashCommandGroup
 from discord.ext import commands
 
 from ether.core.utils import EtherEmbeds
+from ether.config import config
 
 
 class Nasa(commands.Cog, name="nasa"):
     def __init__(self, client) -> None:
         self.fancy_name = "🛰️ Nasa"
         self.client = client
-        self.api_key = os.environ["NASA_API_KEY"]
+        self.api_key = config.api.nasa.get("key")
 
     nasa = SlashCommandGroup("nasa", "Nasa commands!")
 

@@ -18,7 +18,7 @@ You have 3 ways to host Ether:
 
  2. Update/install submodule with this command
     ```shell
-    > git submodule update --remote
+    > git submodule update
     ```
 
 **Skip next steps if you are using docker.**
