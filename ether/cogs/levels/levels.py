@@ -18,20 +18,33 @@ class Levels(commands.Cog, name="levels"):
         self.fancy_name = "📈 Levels"
 
     levels = SlashCommandGroup("levels", "levels commands!")
+    
+    @levels.command(name="boosters")
+    async def boosters(self, ctx):
+        # TODO View all xp roles booster in the server
+        pass
+    
+    @levels.command(name="xp")
+    @commands.has_permissions(moderate_members=True)
+    async def xp(self, level: int = -1, xp: int = -1):
+        # TODO Set a user to a specific level or xp value
+        pass
+
+    
 
     @levels.command(name="profile")
-    async def profile(self, interaction: Interaction, user: discord.Member = None):
-        user = user if user else interaction.user
+    async def profile(self, ctx, user: discord.Member = None):
+        user = user if user else ctx.user
         dbuser = await Database.GuildUser.get_or_create( # FIXME Always return the same user
-            user.id, interaction.guild_id
+            user.id, ctx.guild_id
         )
         if not dbuser:
-            return await interaction.response.send_message(
+            return await ctx.respond(
                 embed=EtherEmbeds.error("Error when trying to get your profile!")
             )
         card = CardHandler.create_card(user, dbuser)
         image = io.BytesIO(base64.b64decode(card))
-        return await interaction.response.send_message(
+        return await ctx.respond(
             file=File(fp=image, filename=f"{user.name}_card.png")
         )
 

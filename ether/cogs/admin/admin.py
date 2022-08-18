@@ -1,5 +1,6 @@
+from email.policy import default
 from typing import Optional
-from discord import Embed, Member, SlashCommandGroup, User, slash_command
+from discord import Embed, Member, Option, Role, SlashCommandGroup, TextChannel, User, slash_command
 import discord
 from discord.ext import commands
 from humanize import precisedelta
@@ -17,9 +18,33 @@ class Admin(commands.Cog, name="admin"):
 
     admin = SlashCommandGroup("admin", "Admin commands!")
 
+    @admin.command(name="warn")
+    @commands.has_permissions(ban_members=True)
+    async def warn(self, ctx, member: User, reason: str = None):
+        # TODO Warn a member of the server
+        pass
+
+    @admin.command(name="mute")
+    @commands.has_permissions(moderate_members=True)
+    async def mute(self, ctx, member: User, time: Option(int, "Time in sec", min_value=1, default=-1), reason: str = None):
+        # TODO Mute a member
+        pass
+    
+    @admin.command(name="unmute")
+    @commands.has_permissions(moderate_members=True)
+    async def mute(self, ctx, member: User):
+        # TODO Unmute a member
+        pass
+    
+    @admin.command(name="captcha")
+    @commands.has_permissions(administrator=True)
+    async def captcha(self, ctx, role: Role, channel: TextChannel = None):
+        # TODO Captcha verification
+        pass
+
     @admin.command(name="ban")
     @commands.has_permissions(ban_members=True)
-    async def ban(self, ctx, member: User, *, reason: str = None):
+    async def ban(self, ctx, member: User, reason: str = None):
         guild = await Database.Guild.get_or_none(ctx.guild_id)
 
         if not guild:
@@ -56,7 +81,7 @@ class Admin(commands.Cog, name="admin"):
 
     @admin.command(name="kick")
     @commands.has_permissions(kick_members=True)
-    async def kick(self, ctx, member: Member, *, reason=None):
+    async def kick(self, ctx, member: Member, reason=None):
         guild = await Database.Guild.get_or_none(ctx.guild_id)
 
         if not guild:

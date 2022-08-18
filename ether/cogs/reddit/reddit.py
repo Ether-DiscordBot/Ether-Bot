@@ -1,6 +1,6 @@
 import os
 
-from discord import Embed, Interaction, SlashCommandGroup
+from discord import Embed, Interaction, Option, OptionChoice, SlashCommandGroup, TextChannel
 from discord.ext import commands
 
 from ether.core.constants import Colors
@@ -56,3 +56,17 @@ class Reddit(commands.Cog, name="reddit"):
     @reddit.command()
     async def sadcat(self, interaction: Interaction):
         await self._reddit(interaction, subrd="sadcats")
+
+    @reddit.command(name="follow")
+    @commands.has_permissions(manage_channel=True)
+    async def follow(self, ctx, subreddit: str, channel: TextChannel,  nsfw: bool = False, rate: Option(list, "", required=False, choices=[OptionChoice(name="Slow", value=1),
+                                                                                                                                           OptionChoice(name="Medium", value=2),
+                                                                                                                                           OptionChoice(name="Fast", value=3)]) = None):
+        # TODO Follow a subreddit in a channel
+        pass
+    
+    @reddit.command(name="list")
+    @commands.has_permissions(manage_channel=True)
+    async def list():
+        # TODO List all followed subereddits
+        pass
