@@ -8,6 +8,7 @@ from discord.commands import SlashCommandGroup, slash_command
 from discord.ext import commands
 
 from ether.core.utils import EtherEmbeds
+from ether.core.i18n import locale_doc, _
 
 URBAN_PATTERN = r"\[(.*?)]"
 
@@ -15,44 +16,15 @@ URBAN_PATTERN = r"\[(.*?)]"
 class Utils(commands.Cog, name="utils"):
     def __init__(self, client):
         self.client = client
-        self.fancy_name = "🔧 Utility"
-
-        help_embed = Embed(
-            description="Get more information about these [commands](https://www.youtube.com/watch?v=dQw4w9WgXcQ)."
-        )
-        cogs = []
-        for _name, cog in self.client.cogs.items():
-           cogs.append(f"`{cog.fancy_name}`")
-        
-        help_embed.add_field(name="List of all cogs", value=f"{', '.join(cogs)}")
-        
-        self.help_embed = help_embed
 
     utils = SlashCommandGroup("utils", "Utils commands!")
 
-    @slash_command(name="help")
-    async def help(self, ctx: ApplicationContext, category: Option(str, "Pick a category", required=False, choices=[OptionChoice(name="Admin", value="admin"), # TODO Make that more properly
-                                                                                                     OptionChoice(name="DnD", value="dnd"),
-                                                                                                     OptionChoice(name="Fun", value="fun"),
-                                                                                                     OptionChoice(name="Games", value="games"),
-                                                                                                     OptionChoice(name="Image", value="image"),
-                                                                                                     OptionChoice(name="Information", value="information"),
-                                                                                                     OptionChoice(name="Leveling", value="levels"),
-                                                                                                     OptionChoice(name="Music", value="music"),
-                                                                                                     OptionChoice(name="Nasa", value="nasa"),
-                                                                                                     OptionChoice(name="Reddit", value="reddit"),
-                                                                                                     OptionChoice(name="Steam", value="steam")])=None) -> None:
-        if not category:
-            return await ctx.respond(embed=self.help_embed, ephemeral=True)
-
-        embed = Embed(description="Check the list of all [commands](https://www.youtube.com/watch?v=dQw4w9WgXcQ).\n\n", title=category)
-        for cmd in self.client.get_cog(category).walk_commands():
-            embed.description += f"`\{cmd}`\n"
-        
-        return await ctx.respond(embed=embed, ephemeral=True)
-
     @slash_command()
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @locale_doc
     async def ping(self, ctx: ApplicationContext) -> None:
+        _("""Pong!""")
+        
         embed = Embed(
             title=":ping_pong: Pong !",
             description=f"Bot latency: `{round(self.client.latency * 1000)}ms`",
