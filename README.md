@@ -1,4 +1,12 @@
-# Ether Bot
+<div align="center">
+   <br>
+      <a href="">
+         <img src="https://i.imgur.com/EAoUInS.png" alt="Ether - Bot">
+      </a>
+      <br>
+      <h1>Ether Bot</h1>
+      <br>
+</div>
 
 ![made with python](https://forthebadge.com/images/badges/made-with-python.svg) ![build with love](https://forthebadge.com/images/badges/built-with-love.svg)
 
