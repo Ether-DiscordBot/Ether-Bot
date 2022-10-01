@@ -9,7 +9,7 @@ from howlongtobeatpy import HowLongToBeat
 from ether.core.utils import EtherEmbeds, NerglishTranslator
 
 
-class Fun(commands.Cog):
+class Fun(commands.Cog, name="fun"):
     SUPPORTED_EMBED_FORMAT = ("jpg", "jpeg", "JPG", "JPEG", "png", "PNG", "gif", "gifv")
     HEIGHT_BALL_ANSWERS = [
         [

@@ -1,18 +1,20 @@
 import random
 import os
-import json
 import asyncio
 
 import discord
 from discord.ext import commands
-from dotenv import load_dotenv
 import nest_asyncio
 
 nest_asyncio.apply()
 
 from ether.core.cog_manager import CogManager
-from ether.core.db import Database, Guild, GuildUser
+from ether.core.db import Database, Guild, GuildUser, init_database
 from ether.core.logging import log
+from ether.core.lavalink_status import request
+from ether.core.config import config
+
+init_database(config.database.mongodb.get("uri"))
 
 
 #
@@ -28,15 +30,10 @@ class Client(commands.Bot):
         self.lavalink_host = "lavalink" if self.in_container else "localhost"
 
         intents = discord.Intents().all()
-        guilds = os.environ.get("SLASH_COMMANDS_GUILD_ID", default=[])
-        if isinstance(guilds, str):
-            guilds = json.loads(guilds)
-
-        self.debug_guilds: list[int] = list(guilds)
-        self.global_slash_commands = bool(os.environ.get("GLOBAL_SLASH_COMMANDS", default=False))
-
-        if self.global_slash_commands:
-            self.debug_guilds = None
+        
+        self.debug_guilds: list[int] = list(config.bot.get("debugGuilds"))
+        if config.bot.get("global"):
+            self.debug_guilds = None          
 
         super().__init__(
             activity=discord.Game(name="/help"),
@@ -55,8 +52,13 @@ class Client(commands.Bot):
 
         log.info(f"Is in container: {self.in_container}")
 
-        gsc = os.environ["GLOBAL_SLASH_COMMANDS"]
+        gsc = config.bot.get("global")
         log.info(f"Global slash commands: {gsc}")
+        
+        opt = (self.lavalink_host, config.lavalink.get("port"))
+        r = request(opt)
+        if r != 0:
+            await self.remove_cog(f'cogs.music')
 
         self.musicCmd = self.get_cog("music")
 
@@ -95,6 +97,10 @@ class Client(commands.Bot):
                     )
 
         await self.process_commands(ctx)
+    
+    
+    async def remove_cog(ctx, extension):
+        log.info(f"Removed cog: {extension}")
 
     async def on_command_error(self, ctx, error):
         ignored = (
@@ -104,6 +110,7 @@ class Client(commands.Bot):
             commands.CommandNotFound,
             commands.UserInputError,
             discord.HTTPException,
+            discord.errors.NotFound,
         )
         error = getattr(error, "original", error)
 
@@ -114,12 +121,10 @@ class Client(commands.Bot):
 
 
 def main():
-    load_dotenv()
-
     bot = Client()
 
     asyncio.run(bot.load_extensions())
-    bot.run(os.getenv("BOT_TOKEN"))
+    bot.run(config.bot.get("token"))
 
 
 if __name__ == "__main__":

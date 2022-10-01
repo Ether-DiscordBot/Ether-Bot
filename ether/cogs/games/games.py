@@ -171,3 +171,8 @@ class Games(commands.Cog, name="games"):
 
         if players[turn].id == self.client.user.id:
             await ai_play(ctx.interaction)
+    
+    @games.command(name="rps")
+    async def rps(self, ctx, opponent: Member):
+        # TODO Rock/Paper/Scissors
+        pass

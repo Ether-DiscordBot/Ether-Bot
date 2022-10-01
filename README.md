@@ -35,7 +35,7 @@ You have 3 ways to host Ether:
 
  2. Update/install submodule with this command
     ```shell
-    > git submodule update --remote
+    > git submodule update
     ```
 
 **Skip next steps if you are using docker.**
@@ -111,3 +111,8 @@ on Linux add `sudo` before the command.
 Released under [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html) license.
 
 Artwork by [Midjourney](https://www.midjourney.com/home/).
+
+<div style="display:flex; gap:10px;">
+Time spent on Ether (it's a lot more): <img src="https://wakatime.com/badge/user/f4edea00-8a0b-4565-ac0c-18240ac5aa36/project/f950bbed-dfa6-438e-a7c0-87d645b7718e.svg?style=for-the-badge">
+</div>
+

@@ -1,10 +1,11 @@
 import base64
 import io
 import os
+import discord
 
 import requests
 from PIL import Image, ImageDraw, ImageFont
-from discord import File, Interaction, SlashCommandGroup, slash_command
+from discord import File, Interaction, SlashCommandGroup
 from discord.ext import commands
 
 from ether.core.utils import LevelsHandler, EtherEmbeds
@@ -17,20 +18,34 @@ class Levels(commands.Cog, name="levels"):
         self.fancy_name = "📈 Levels"
 
     levels = SlashCommandGroup("levels", "levels commands!")
+    
+    @levels.command(name="boosters")
+    async def boosters(self, ctx):
+        # TODO View all xp roles booster in the server
+        pass
+    
+    @levels.command(name="xp")
+    @commands.has_permissions(moderate_members=True)
+    async def xp(self, level: int = -1, xp: int = -1):
+        # TODO Set a user to a specific level or xp value
+        pass
+
+    
 
     @levels.command(name="profile")
-    async def profile(self, interaction: Interaction):
-        user = await Database.GuildUser.get_or_create(
-            interaction.user.id, interaction.guild_id
+    async def profile(self, ctx, user: discord.Member = None):
+        user = user if user else ctx.user
+        dbuser = await Database.GuildUser.get_or_create( # FIXME Always return the same user
+            user.id, ctx.guild_id
         )
-        if not user:
-            return await interaction.response.send_message(
+        if not dbuser:
+            return await ctx.respond(
                 embed=EtherEmbeds.error("Error when trying to get your profile!")
             )
-        card = CardHandler.create_card(interaction.user, user)
+        card = CardHandler.create_card(user, dbuser)
         image = io.BytesIO(base64.b64decode(card))
-        return await interaction.response.send_message(
-            file=File(fp=image, filename=f"{interaction.user.name}_card.png")
+        return await ctx.respond(
+            file=File(fp=image, filename=f"{user.name}_card.png")
         )
 
 

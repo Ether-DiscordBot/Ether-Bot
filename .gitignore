@@ -144,3 +144,7 @@ ENV/
 # Pre-commit hooks
 /.pre-commit-config.yaml
 *.pickle
+
+# Project config file
+config.toml
+.secrets.toml

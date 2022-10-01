@@ -6,17 +6,16 @@ import random
 
 import discord
 from discord.ext import commands
-from discord import ApplicationContext, Embed, Interaction, Reaction, SlashCommandGroup
+from discord import ApplicationContext, Embed, SlashCommandGroup
 import requests
 import wavelink
-from wavelink.tracks import YouTubeTrack, YouTubePlaylist
 import humanize
 
 from ether.core.constants import Colors
 from ether.core.db.client import Database, Guild, Playlist
-from ether.core.lavalink_status import request
 from ether.core.logging import log
 from ether.core.utils import EtherEmbeds
+from ether.core.config import config
 
 PLAYLIST_REG = re.compile(
     r"^(?:http:\/\/|https:\/\/)?(?:www\.)?youtube\.com\/playlist\?list(?:\S+)?$"
@@ -39,7 +38,7 @@ class Music(commands.Cog, name="music"):
         self.client = client
         self.fancy_name = "🎶 Music"
 
-        self.youtube_api_key = os.environ["YOUTUBE_API_KEY"]
+        self.youtube_api_key = config.api.youtube.get("key")
 
         client.loop.create_task(self.connect_nodes())
     
@@ -114,10 +113,6 @@ class Music(commands.Cog, name="music"):
 
     async def connect_nodes(self):
         await self.client.wait_until_ready()
-
-        r = request()
-        if r != 0:
-            return
 
         await wavelink.NodePool.create_node(
             bot=self.client,
