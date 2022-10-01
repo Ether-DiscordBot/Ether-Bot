@@ -8,7 +8,16 @@
       <br>
 </div>
 
-![made with python](https://forthebadge.com/images/badges/made-with-python.svg) ![build with love](https://forthebadge.com/images/badges/built-with-love.svg)
+<div align="center">
+   <a href="https://python.org">
+      <img src="https://forthebadge.com/images/badges/made-with-python.svg" alt="made with python">
+   </a>
+   <a href="https://www.youtube.com/watch?v=nCqucxRNSNI&">
+      <img src="https://forthebadge.com/images/badges/built-with-love.svg" alt="build with love">
+   </a>
+</div>
+
+# Overview
 
 Ether is a powerful and easy to use Discord bot written in python. Ether include features like: **Moderation, Fun, Leveling, Music, Reddit** and more!
 
@@ -100,3 +109,5 @@ on Linux add `sudo` before the command.
 # License
 
 Released under [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html) license.
+
+Artwork by [Midjourney](https://www.midjourney.com/home/).
