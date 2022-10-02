@@ -35,12 +35,7 @@ You have 3 ways to host Ether:
 
 ## Installing Ether
 
- 1. Rename `.env.example` by `.env` and set a value to all variables.
-
- 2. Update/install submodule with this command
-    ```shell
-    > git submodule update
-    ```
+ 1. Rename `.secrets.toml.example` to `.secrets.toml` and `config.toml.example` to `config.toml` and set a value to all variables.
 
 **Skip next steps if you are using docker.**
 
