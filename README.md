@@ -19,7 +19,8 @@
 
 # Overview
 
-Ether is a powerful and easy to use Discord bot written in python. Ether include features like: **Moderation, Fun, Leveling, Music, Reddit** and more!
+Ether is a powerful and easy to use Discord bot written in python.
+The bot include features like **Moderation, Fun, Leveling, Music, Reddit, Reactions, Image, DnD, Steam** and more!
 
 # Hosting
 
