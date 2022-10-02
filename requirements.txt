@@ -1,4 +1,4 @@
-py-cord[voice]==2.1.3
+py-cord[voice]==2.2.0
 # wavelink==1.3.2
 git+https://github.com/Ether-DiscordBot/Ether-Wavelink.git
 humanize==4.2.3
