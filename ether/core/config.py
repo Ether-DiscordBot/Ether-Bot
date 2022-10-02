@@ -1,10 +1,12 @@
+import os
 from dynaconf import Dynaconf, Validator
 
 
 config = Dynaconf(
     settings_files=["./config.toml", "./.secrets.toml"],
-    # environments=True,
     load_dotenv=True,
+    dotenv_override=True,
+    envvar_prefix="ETHER",
 )
 
 config.validators.register(
