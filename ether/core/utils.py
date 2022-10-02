@@ -14,20 +14,21 @@ class LevelsHandler:
 
 
 class Utils(object):
-    def get_avatar_url(self, format="png", size="64"):
-        if self:
-            return f"https://cdn.discordapp.com/avatars/{self.id}/{self.avatar}.{format}?size={size}"
+    def get_avatar_url(user, format="png", size="64"):
+        if user:
+            return f"https://cdn.discordapp.com/avatars/{user.id}/{user.avatar}.{format}?size={size}"
 
 
 class EtherEmbeds:
-    def error(self):
-        return Embed(description=self, colour=Colors.ERROR)
+    def error(description: str):
+        return Embed(description=description, colour=Colors.ERROR)
 
 
 class NerglishTranslator:
     """
-        Translated in Python from https://github.com/salindersidhu/Mgrler
+    Translated in Python from https://github.com/salindersidhu/Mgrler
     """
+
     DICTIONARY = {
         "aunt": "mmmrrggllm",
         "uncle": "mmmrrgglm",
@@ -50,9 +51,9 @@ class NerglishTranslator:
         "sorry": "mrrrgll",
         "yes": "mrgle",
         "spring": "srng",
-        "clan": "klun"
+        "clan": "klun",
     }
-    
+
     CHAR_MAP = {
         "a": "mr",
         "b": "gl",
@@ -79,9 +80,9 @@ class NerglishTranslator:
         "w": "mm",
         "x": "mr",
         "y": "rl",
-        "z": "lr"
+        "z": "lr",
     }
-    
+
     def translate(self) -> str:
         result = ""
 
@@ -94,7 +95,7 @@ class NerglishTranslator:
             else:
                 for c in word:
                     t_c = NerglishTranslator.CHAR_MAP.get(c.lower()) or c
-                    result += (t_c.upper() if c == c.upper() else t_c)
+                    result += t_c.upper() if c == c.upper() else t_c
 
             result += " "
         return result
