@@ -168,7 +168,6 @@ class DnD(commands.Cog, name="dnd"):
             name="🗂️ Sub classes", value=f"{', '.join(sub_classes)}", inline=False
         )
 
-
         embed.set_footer(
             text="Powered by D&D",
             icon_url="https://img.icons8.com/color/452/dungeons-and-dragons.png",

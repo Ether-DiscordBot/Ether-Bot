@@ -25,7 +25,7 @@ class Utils(commands.Cog, name="utils"):
     @locale_doc
     async def ping(self, ctx: ApplicationContext) -> None:
         """Pong!"""
-        
+
         embed = Embed(
             title=":ping_pong: Pong !",
             description=f"Bot latency: `{round(self.client.latency * 1000)}ms`",

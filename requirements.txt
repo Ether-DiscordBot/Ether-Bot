@@ -1,5 +1,6 @@
 py-cord[voice]==2.1.3
-wavelink==1.3.2
+# wavelink==1.3.2
+git+https://github.com/Ether-DiscordBot/Ether-Wavelink.git
 humanize==4.2.3
 asyncpraw==7.5.0
 pymongo==4.2.0

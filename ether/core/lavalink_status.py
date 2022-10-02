@@ -19,6 +19,5 @@ def request(opt, timeout=10.0):
                 log.warning("Lavalink socket is not open")
                 return None
 
-
     log.info("Lavalink socket is open")
     return 0

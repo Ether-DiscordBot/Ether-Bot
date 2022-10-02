@@ -26,7 +26,6 @@ class InformationHandler:
             inline=False,
         )
 
-
         return embed
 
     def get_user_avatar(self, user) -> Embed:

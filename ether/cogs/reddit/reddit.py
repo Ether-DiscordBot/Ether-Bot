@@ -1,6 +1,13 @@
 import os
 
-from discord import Embed, Interaction, Option, OptionChoice, SlashCommandGroup, TextChannel
+from discord import (
+    Embed,
+    Interaction,
+    Option,
+    OptionChoice,
+    SlashCommandGroup,
+    TextChannel,
+)
 from discord.ext import commands
 
 from ether.core.constants import Colors
@@ -17,7 +24,9 @@ class Reddit(commands.Cog, name="reddit"):
         self.client = client
         self.subreddits = ("memes", "aww", "sadcats")
         cog_path = os.path.abspath("ether/cogs/reddit")
-        self.cache = RedditPostCacher(config, self.subreddits, f"{cog_path}/cache.pickle")
+        self.cache = RedditPostCacher(
+            config, self.subreddits, f"{cog_path}/cache.pickle"
+        )
 
     reddit = SlashCommandGroup("reddit", "Reddit commands!")
 
@@ -60,12 +69,26 @@ class Reddit(commands.Cog, name="reddit"):
 
     @reddit.command(name="follow")
     @commands.has_permissions(manage_guild=True)
-    async def follow(self, ctx, subreddit: str, channel: TextChannel,  nsfw: bool = False, rate: Option(int, "Choose how many posts will be posted", required=False, choices=[OptionChoice(name="Slow", value=1),
-                                                                                                                                           OptionChoice(name="Medium", value=2),
-                                                                                                                                           OptionChoice(name="Fast", value=3)]) = None):
+    async def follow(
+        self,
+        ctx,
+        subreddit: str,
+        channel: TextChannel,
+        nsfw: bool = False,
+        rate: Option(
+            int,
+            "Choose how many posts will be posted",
+            required=False,
+            choices=[
+                OptionChoice(name="Slow", value=1),
+                OptionChoice(name="Medium", value=2),
+                OptionChoice(name="Fast", value=3),
+            ],
+        ) = None,
+    ):
         # TODO Follow a subreddit in a channel
         pass
-    
+
     @reddit.command(name="list")
     @commands.has_permissions(manage_guild=True)
     async def _list(self, ctx):

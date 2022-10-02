@@ -33,6 +33,7 @@ class Player(wavelink.Player):
         self.text_channel = text_channel
         self.queue: wavelink.Queue = wavelink.Queue(max_size=100)
 
+
 class Music(commands.Cog, name="music"):
     def __init__(self, client):
         self.client = client
@@ -42,10 +43,11 @@ class Music(commands.Cog, name="music"):
         self.youtube_api_key = config.api.youtube.get("key")
 
         client.loop.create_task(self.connect_nodes())
-    
+
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        if payload.member.bot: return
+        if payload.member.bot:
+            return
 
         message_id = payload.message_id
 
@@ -55,24 +57,30 @@ class Music(commands.Cog, name="music"):
 
         channel = payload.member.guild.get_channel(payload.channel_id)
         message = await channel.fetch_message(message_id)
-        reaction = [r for r in message.reactions if r.emoji.name == payload.emoji.name][0]
+        reaction = [r for r in message.reactions if r.emoji.name == payload.emoji.name][
+            0
+        ]
 
         await reaction.remove(payload.member)
 
         emoji = payload.emoji
-        if emoji.id in (990260523692064798, 990260524686139432): # Play
+        if emoji.id in (990260523692064798, 990260524686139432):  # Play
             if not payload.member.voice:
                 return
             if not payload.member.guild.voice_client:
                 db_guild = await Guild.from_id(payload.member.guild.id)
 
-                text_channel = payload.member.guild.get_channel(db_guild.music_channel_id) or None
+                text_channel = (
+                    payload.member.guild.get_channel(db_guild.music_channel_id) or None
+                )
                 player = Player(text_channel=text_channel)
                 vc: Player = await payload.member.voice.channel.connect(cls=player)
                 vc.queue = wavelink.Queue(max_size=100)
                 vc.text_channel = text_channel
                 await payload.member.guild.change_voice_state(
-                    channel=payload.member.voice.channel, self_mute=False, self_deaf=True
+                    channel=payload.member.voice.channel,
+                    self_mute=False,
+                    self_deaf=True,
                 )
             else:
                 vc: Player = payload.member.guild.voice_client
@@ -93,9 +101,9 @@ class Music(commands.Cog, name="music"):
             if not vc.is_playing():
                 track = vc.queue.get()
                 await vc.play(track)
-        elif emoji.id == 990260521355862036: # back
+        elif emoji.id == 990260521355862036:  # back
             pass
-        elif emoji.id == 990260522521858078: #skip
+        elif emoji.id == 990260522521858078:  # skip
             vc: Player = await self.connect_with_payload(payload)
 
             if not vc:
@@ -164,14 +172,16 @@ class Music(commands.Cog, name="music"):
 
         if player.message:
             await player.message.delete()
-            
+
     async def connect_with_payload(self, payload) -> Optional[Player]:
         if not payload.member.voice:
-                return None
+            return None
         if not payload.member.guild.voice_client:
             db_guild = await Guild.from_id(payload.member.guild.id)
 
-            text_channel = payload.member.guild.get_channel(db_guild.music_channel_id) or None
+            text_channel = (
+                payload.member.guild.get_channel(db_guild.music_channel_id) or None
+            )
             player = Player(text_channel=text_channel)
             vc: Player = await payload.member.voice.channel.connect(cls=player)
             vc.queue = wavelink.Queue(max_size=100)
@@ -408,7 +418,9 @@ class Music(commands.Cog, name="music"):
             return
 
         if not vc.source:
-            return await ctx.respond(embed=EtherEmbeds.error("Sorry, an error has occurred!"), ephemeral=True)
+            return await ctx.respond(
+                embed=EtherEmbeds.error("Sorry, an error has occurred!"), ephemeral=True
+            )
 
         queue = vc.queue.copy()
 
@@ -419,7 +431,6 @@ class Music(commands.Cog, name="music"):
             value=f'`1.` [{first_track.title}]({first_track.uri[:30]}) | `{"🔴 Stream" if first_track.is_stream() else datetime.timedelta(seconds=first_track.length)}`',
             inline=False,
         )
-
 
         next_track_label = []
         for _ in range(10):
@@ -442,38 +453,50 @@ class Music(commands.Cog, name="music"):
         await ctx.respond(embed=embed)
 
         return
-    
+
     @music.command(name="playlist")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def playlist(self, ctx: ApplicationContext, playlist_link):
         if not re.match(PLAYLIST_REG, playlist_link):
-            ctx.respond(embed=EtherEmbeds.error("The url is incorrect!"), delete_after=5)
-        
+            ctx.respond(
+                embed=EtherEmbeds.error("The url is incorrect!"), delete_after=5
+            )
+
         id = re.search(PLAYLIST_ID, playlist_link).groups()[0]
 
-        r = requests.get(f"https://www.googleapis.com/youtube/v3/playlists?part=snippet&part=contentDetails&id={id}&key={self.youtube_api_key}")
+        r = requests.get(
+            f"https://www.googleapis.com/youtube/v3/playlists?part=snippet&part=contentDetails&id={id}&key={self.youtube_api_key}"
+        )
         if not r.ok:
-            ctx.respond(embed=EtherEmbeds.error("Could not find the playlist!"), delete_after=5)
+            ctx.respond(
+                embed=EtherEmbeds.error("Could not find the playlist!"), delete_after=5
+            )
 
         r = r.json()
         data = r["items"][0]["snippet"]
         embed = Embed(title=f"[Playlist] {data['title']}", url=playlist_link)
-        embed.set_thumbnail(url=data['thumbnails']['default']['url'])
-        embed.description = f"*(The queue must be empty to be played)*\n\n{data['description']}"
-        embed.add_field(name="Tracks", value=f"{r['items'][0]['contentDetails']['itemCount']} tracks")
+        embed.set_thumbnail(url=data["thumbnails"]["default"]["url"])
+        embed.description = (
+            f"*(The queue must be empty to be played)*\n\n{data['description']}"
+        )
+        embed.add_field(
+            name="Tracks",
+            value=f"{r['items'][0]['contentDetails']['itemCount']} tracks",
+        )
         embed.set_footer(text=f"Created by {data['channelTitle']}")
-        
-        
+
         message = await ctx.send(embed=embed)
         await Database.Playlist.create(message.id, playlist_link)
-        
+
         await message.add_reaction("<:back:990260521355862036>")
         await message.add_reaction("<:play:990260523692064798>")
         await message.add_reaction("<:next:990260522521858078>")
         await message.add_reaction("<:shuffle:990260524686139432>")
-        
-        await ctx.respond("Playlist successfuly created!", ephemeral=True, delete_after=5)
+
+        await ctx.respond(
+            "Playlist successfuly created!", ephemeral=True, delete_after=5
+        )
 
     @music.command(name="lavalinkinfo")
     @commands.guild_only()

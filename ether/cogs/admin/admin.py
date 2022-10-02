@@ -1,6 +1,15 @@
 from email.policy import default
 from typing import Optional
-from discord import Embed, Member, Option, Role, SlashCommandGroup, TextChannel, User, slash_command
+from discord import (
+    Embed,
+    Member,
+    Option,
+    Role,
+    SlashCommandGroup,
+    TextChannel,
+    User,
+    slash_command,
+)
 import discord
 from discord.ext import commands
 from humanize import precisedelta
@@ -26,16 +35,22 @@ class Admin(commands.Cog, name="admin"):
 
     @admin.command(name="mute")
     @commands.has_permissions(moderate_members=True)
-    async def mute(self, ctx, member: User, time: Option(int, "Time in sec", min_value=1, default=-1), reason: str = None):
+    async def mute(
+        self,
+        ctx,
+        member: User,
+        time: Option(int, "Time in sec", min_value=1, default=-1),
+        reason: str = None,
+    ):
         # TODO Mute a member
         pass
-    
+
     @admin.command(name="unmute")
     @commands.has_permissions(moderate_members=True)
     async def mute(self, ctx, member: User):
         # TODO Unmute a member
         pass
-    
+
     @admin.command(name="captcha")
     @commands.has_permissions(administrator=True)
     async def captcha(self, ctx, role: Role, channel: TextChannel = None):
@@ -57,14 +72,8 @@ class Admin(commands.Cog, name="admin"):
 
         try:
             await ctx.guild.ban(member)
-            if (
-                guild.logs
-                and guild.logs.moderation
-                and guild.logs.moderation.enabled
-            ):
-                if channel := ctx.guild.get_channel(
-                    guild.logs.moderation.channel_id
-                ):
+            if guild.logs and guild.logs.moderation and guild.logs.moderation.enabled:
+                if channel := ctx.guild.get_channel(guild.logs.moderation.channel_id):
                     await channel.send(
                         embed=EtherLogs.ban(
                             member, ctx.author.id, ctx.channel.id, reason
@@ -94,14 +103,8 @@ class Admin(commands.Cog, name="admin"):
 
         try:
             await ctx.guild.kick(member)
-            if (
-                guild.logs
-                and guild.logs.moderation
-                and guild.logs.moderation.enabled
-            ):
-                if channel := ctx.guild.get_channel(
-                    guild.logs.moderation.channel_id
-                ):
+            if guild.logs and guild.logs.moderation and guild.logs.moderation.enabled:
+                if channel := ctx.guild.get_channel(guild.logs.moderation.channel_id):
                     await channel.send(
                         embed=EtherLogs.kick(
                             member, ctx.author.id, ctx.channel.id, reason
