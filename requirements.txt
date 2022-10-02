@@ -19,3 +19,4 @@ pydantic==1.9.0
 nest_asyncio==1.5.5
 howlongtobeatpy==1.0.1
 dynaconf==3.1.9
+pycord18n==1.0.3

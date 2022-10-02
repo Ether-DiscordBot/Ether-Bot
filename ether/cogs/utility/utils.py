@@ -1,5 +1,6 @@
 from random import random, choice
 import re
+from threading import local
 import requests
 from typing import List, Optional
 
@@ -23,7 +24,7 @@ class Utils(commands.Cog, name="utils"):
     @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def ping(self, ctx: ApplicationContext) -> None:
-        _("""Pong!""")
+        """Pong!"""
         
         embed = Embed(
             title=":ping_pong: Pong !",
