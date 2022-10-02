@@ -19,9 +19,7 @@ config.validators.register(
     Validator(
         "api.aztro.key",
         "api.giphy.key",
-        "api.nasa.key",
         "api.youtube.key",
-        "api.statcord.key",
         must_exist=None,
     ),
 )
