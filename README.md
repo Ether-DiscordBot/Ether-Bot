@@ -12,6 +12,9 @@
    <a href="https://python.org">
       <img src="https://forthebadge.com/images/badges/made-with-python.svg" alt="made with python">
    </a>
+   <a href="https://github.com/psf/black">
+      <img src="https://forthebadge.com/generator/?plabel=Code+style&slabel=black&sbg=%23000000&pbg=%23565656" alt="code style black">
+   </a>
    <a href="https://www.youtube.com/watch?v=nCqucxRNSNI&">
       <img src="https://forthebadge.com/images/badges/built-with-love.svg" alt="build with love">
    </a>
