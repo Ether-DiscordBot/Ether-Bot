@@ -22,7 +22,7 @@
 Ether is a powerful and easy to use Discord bot written in python.
 The bot include features like **Moderation, Fun, Leveling, Music, Reddit, Reactions, Image, DnD, Steam** and more!
 
-The Bot is in developpement but you can already [invite it](https://discord.com/api/oauth2/authorize?client_id=985100792270819389&permissions=1514461785206&scope=bot%20applications.commands)!
+The Bot is in developpement but you can already [invite it](https://discord.com/api/oauth2/authorize?client_id=985100792270819389&permissions=1514461785206&scope=bot%20applications.commands)!<br>
 Note: *The Music part is not currently working...*
 
 # Hosting
@@ -111,7 +111,7 @@ Released under [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html) licens
 
 Artwork by [Midjourney](https://www.midjourney.com/home/).
 
-<div style="display:flex; gap:10px;">
+<div style="display:flex; gap:10px; align-items: center;">
 Time spent on Ether (it's a lot more): <img src="https://wakatime.com/badge/user/f4edea00-8a0b-4565-ac0c-18240ac5aa36/project/f950bbed-dfa6-438e-a7c0-87d645b7718e.svg?style=for-the-badge">
 </div>
 
