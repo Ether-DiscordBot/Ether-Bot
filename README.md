@@ -1,6 +1,6 @@
 <div align="center">
    <br>
-      <a href="">
+      <a href="https://github.com/Ether-DiscordBot/">
          <img src="https://i.imgur.com/EAoUInS.png" alt="Ether - Bot">
       </a>
       <br>
