@@ -13,6 +13,7 @@ from ether.core.config import config
 class Reddit(commands.Cog, name="reddit"):
     def __init__(self, client) -> None:
         self.fancy_name = "🤖 Reddit"
+        self.help_icon = "🤖"
         self.client = client
         self.subreddits = ("memes", "aww", "sadcats")
         cog_path = os.path.abspath("ether/cogs/reddit")

@@ -37,6 +37,7 @@ class Music(commands.Cog, name="music"):
     def __init__(self, client):
         self.client = client
         self.fancy_name = "🎶 Music"
+        self.help_icon = "🎶"
 
         self.youtube_api_key = config.api.youtube.get("key")
 

@@ -8,6 +8,7 @@ from ether.core.db.client import ReactionRole
 class Reactions(commands.Cog, name="reaction"):
     def __init__(self, client) -> None:
         self.fancy_name = "Reactions"
+        self.help_icon = "🎭"
         self.client = client
     
     reactions = SlashCommandGroup("reactions", "Reactions roles commands!")

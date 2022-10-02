@@ -8,6 +8,7 @@ from ether.core.logging import log
 class Steam(commands.Cog, name="steam"):
     def __init__(self, client) -> None:
         self.fancy_name = "🕹️ Steam"
+        self.help_icon = "🕹️"
         self.client = client
         self.fetch_app_list.start()
         

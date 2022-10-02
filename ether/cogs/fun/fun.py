@@ -41,7 +41,7 @@ class Fun(commands.Cog, name="fun"):
     ]
 
     def __init__(self, client):
-        self.fancy_name = "🎡 Fun"
+        self.help_icon = "🎡"
         self.client = client
 
         self.giphy_api_key = os.getenv("GIPHY_API_KEY")

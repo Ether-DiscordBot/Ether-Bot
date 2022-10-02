@@ -13,6 +13,7 @@ ASSETS_FOLDER_PATH = "ether/cogs/image/assets/"
 class Image(commands.Cog, name="image"):
     def __init__(self, client) -> None:
         self.fancy_name = "📸 Image"
+        self.help_icon = "📸"
         self.client = client
 
     image = SlashCommandGroup("image", "Image commands!")

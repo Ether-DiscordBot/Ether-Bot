@@ -38,6 +38,7 @@ class InformationHandler:
 class Information(commands.Cog, name="information"):
     def __init__(self, client):
         self.fancy_name = "ℹ️ Information"
+        self.help_icon = "ℹ️"
         self.client = client
 
     infos = SlashCommandGroup("infos", "Infos commands!")

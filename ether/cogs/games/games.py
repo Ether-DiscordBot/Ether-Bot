@@ -28,7 +28,7 @@ class TicTacToeButton(discord.ui.Button):
 
 class Games(commands.Cog, name="games"):
     def __init__(self, client,) -> None:
-        self.fancy_name="Games"
+        self.help_icon = "👾"
         self.client=client
         
     games = SlashCommandGroup("games", "Games commands!")

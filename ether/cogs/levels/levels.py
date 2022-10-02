@@ -16,6 +16,7 @@ class Levels(commands.Cog, name="levels"):
     def __init__(self, client):
         self.client = client
         self.fancy_name = "📈 Levels"
+        self.help_icon = "📈"
 
     levels = SlashCommandGroup("levels", "levels commands!")
     
