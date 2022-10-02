@@ -12,9 +12,6 @@
    <a href="https://python.org">
       <img src="https://forthebadge.com/images/badges/made-with-python.svg" alt="made with python">
    </a>
-   <a href="https://github.com/psf/black">
-      <img src="https://forthebadge.com/generator/?plabel=Code+style&slabel=black&sbg=%23000000&pbg=%23565656" alt="code style black">
-   </a>
    <a href="https://www.youtube.com/watch?v=nCqucxRNSNI&">
       <img src="https://forthebadge.com/images/badges/built-with-love.svg" alt="build with love">
    </a>
@@ -24,6 +21,9 @@
 
 Ether is a powerful and easy to use Discord bot written in python.
 The bot include features like **Moderation, Fun, Leveling, Music, Reddit, Reactions, Image, DnD, Steam** and more!
+
+The Bot is in developpement but you can already [invite it](https://discord.com/api/oauth2/authorize?client_id=985100792270819389&permissions=1514461785206&scope=bot%20applications.commands)!
+Note: *The Music part is not currently working...*
 
 # Hosting
 
