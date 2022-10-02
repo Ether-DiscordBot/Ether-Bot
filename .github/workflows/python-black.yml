@@ -1,0 +1,21 @@
+name: Python-black
+
+on:
+  push:
+  pull_request:
+    types: [opened, edited]
+
+jobs:
+  steps:
+    - name: Install Deps
+      run: |
+        python -m ensurepip
+        pip install black
+        pip install -r requirements.txt
+        npm install -g pyright
+
+    - name: Run Black
+      run: black ether/ --verbose --check
+
+    - name: Run Pyright
+      run: pyright || echo ""
