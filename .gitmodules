@@ -1,3 +1,0 @@
-[submodule "ether/core/db"]
-	path = ether/core/db
-	url = https://github.com/Ether-DiscordBot/Ether-Database.git
