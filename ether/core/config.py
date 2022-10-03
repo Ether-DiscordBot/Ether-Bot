@@ -17,7 +17,6 @@ config.validators.register(
     Validator("lavalink.host", "lavalink.port", "lavalink.pass", must_exist=None),
     Validator("reddit.client.id", "reddit.client.secret", must_exist=None),
     Validator(
-        "api.aztro.key",
         "api.giphy.key",
         "api.youtube.key",
         must_exist=None,

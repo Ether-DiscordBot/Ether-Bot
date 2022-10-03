@@ -148,25 +148,13 @@ class Fun(commands.Cog, name="fun"):
         ),
     ):
 
-        url = "https://sameer-kumar-aztro-v1.p.rapidapi.com/"
+        url = f"https://ohmanda.com/api/horoscope/{sign}"
 
-        querystring = {"sign": sign, "day": "today"}
-
-        headers = {
-            "X-RapidAPI-Host": "sameer-kumar-aztro-v1.p.rapidapi.com",
-            "X-RapidAPI-Key": os.getenv("AZTRO_API_KEY"),
-        }
-
-        response = request("POST", url, headers=headers, params=querystring)
+        response = request("POST", url)
         r = response.json()
 
         embed = Embed(
-            title=f":{sign.lower()}: Horoscope",
-            description=f"{r['description']}\n\n"
-            f"**Compatibility:** {r['compatibility']}\n"
-            f"**Mood:** {r['mood']}\n"
-            f"**Luck:** Lucky number: {r['lucky_number']} | Lucky time: {r['lucky_time']}\n"
-            f"**Color:** {r['color']}",
+            title=f":{sign.lower()}: Horoscope", description=f"{r['horoscope']}\n\n"
         )
 
         await interaction.response.send_message(embed=embed)
