@@ -17,6 +17,7 @@ URBAN_PATTERN = r"\[(.*?)]"
 class Utils(commands.Cog, name="utils"):
     def __init__(self, client):
         self.client = client
+        self.help_icon = "🔧"
 
     utils = SlashCommandGroup("utils", "Utils commands!")
 
