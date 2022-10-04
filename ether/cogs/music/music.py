@@ -127,6 +127,7 @@ class Music(commands.Cog, name="music"):
             host=config.lavalink.get("host"),
             port=config.lavalink.get("port"),
             password=config.lavalink.get("pass"),
+            https=config.lavalink.get("https"),
         )
 
     music = SlashCommandGroup("music", "Music commands!")
