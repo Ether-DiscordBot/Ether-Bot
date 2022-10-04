@@ -37,7 +37,6 @@ class Player(wavelink.Player):
 class Music(commands.Cog, name="music"):
     def __init__(self, client):
         self.client = client
-        self.fancy_name = "🎶 Music"
         self.help_icon = "🎶"
 
         self.youtube_api_key = config.api.youtube.get("key")
@@ -125,9 +124,9 @@ class Music(commands.Cog, name="music"):
 
         await wavelink.NodePool.create_node(
             bot=self.client,
-            host=f"{self.client.lavalink_host}",
-            port=2333,
-            password="pxV58RF6f292N9NK",
+            host=config.lavalink.get("host"),
+            port=config.lavalink.get("port"),
+            password=config.lavalink.get("pass"),
         )
 
     music = SlashCommandGroup("music", "Music commands!")
