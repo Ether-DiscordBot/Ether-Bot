@@ -11,7 +11,7 @@ nest_asyncio.apply()
 from ether.core.cog_manager import CogManager
 from ether.core.db import Database, Guild, GuildUser, init_database
 from ether.core.logging import log
-from ether.core.lavalink_status import request
+from ether.core.lavalink_status import lavalink_request
 from ether.core.config import config
 
 init_database(config.database.mongodb.get("uri"))
@@ -56,7 +56,7 @@ class Client(commands.Bot):
         log.info(f"Global slash commands: {gsc}")
 
         opt = (self.lavalink_host, config.lavalink.get("port"))
-        r = request(opt)
+        r = lavalink_request(timeout=20.0)
         if r != 0:
             await self.remove_cog(f"cogs.music")
 
