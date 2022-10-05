@@ -28,7 +28,6 @@ init_database(config.database.mongodb.get("uri"))
 class Client(commands.Bot):
     def __init__(self):
         self.in_container: bool = os.environ.get("IN_DOCKER", False)
-        self.lavalink_host = "lavalink" if self.in_container else "localhost"
 
         intents = discord.Intents().all()
 
@@ -47,23 +46,21 @@ class Client(commands.Bot):
         await CogManager.load_cogs(self)
 
     async def on_ready(self):
-        log.info(f"Client Name:\t{self.user.name}")
-        log.info(f"Client ID:\t{self.user.id}")
-        log.info(f"Client Disc:\t{self.user.discriminator}")
+        in_container = os.environ.get("IN_DOCKER", False)
 
-        log.info(f"Is in container: {self.in_container}")
+        log.info(f"Client Name: \t{self.user.name}")
+        log.info(f"Client ID: \t{self.user.id}")
+        log.info(f"Client Disc: \t{self.user.discriminator}")
 
-        gsc = config.bot.get("global")
-        log.info(f"Global slash commands: {gsc}")
+        log.info(f"Is in container: \t{in_container}")
 
-        opt = (self.lavalink_host, config.lavalink.get("port"))
-        r = lavalink_request(timeout=20.0)
+        log.info("Global slash commands: {0}".format(config.bot.get("global")))
+
+        r = lavalink_request(timeout=20.0, in_container=in_container)
         if r != 0:
-            await self.remove_cog(f"cogs.music")
+            await self.remove_cog("cogs.music")
 
         init_i18n(self)
-
-        self.musicCmd = self.get_cog("music")
 
     async def on_member_join(self, member):
         guild = await Database.Guild.get_or_create(member.guild.id)

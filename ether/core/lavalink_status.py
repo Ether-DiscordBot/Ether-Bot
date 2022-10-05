@@ -1,11 +1,12 @@
 import socket
 import time
+import os
 
 from ether.core.config import config
 from ether.core.logging import log
 
 
-def lavalink_request(timeout=10.0):
+def lavalink_request(timeout=10.0, in_container: bool = False):
     log.info("Checking lavalink socket status...")
     start_time = time.perf_counter()
     while True:
@@ -13,7 +14,11 @@ def lavalink_request(timeout=10.0):
             break
         try:
             with socket.create_connection(
-                (config.lavalink.get("host", config.lavalink.get("port"))),
+                # If is in docker: host = lavalink
+                (
+                    "lavalink" if in_container else config.lavalink.get("host"),
+                    config.lavalink.get("port"),
+                ),
                 timeout=timeout,
             ):
                 break

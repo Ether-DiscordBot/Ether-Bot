@@ -73,31 +73,43 @@ class Help(discord.Cog):
         commands = []
         cog = self.client.get_cog(cog)
 
+        if not cog:
+            return
+
         for cmd in cog.get_commands():
-            brief = "No information." if cmd.short_doc is None else cmd.short_doc
-            commands.append(f"{cmd.qualified_name} - {brief}\n")
+            if isinstance(cmd, discord.commands.core.SlashCommandGroup):
+                for sub_cmd in cmd.walk_commands():
+                    brief = (
+                        "No information."
+                        if not sub_cmd.description
+                        else sub_cmd.description
+                    )
+                    commands.append(f"`/{sub_cmd.qualified_name}` - {brief}\n")
 
         embeds = []
 
         for i in range(0, len(commands), 25):
             embeds.append(
                 Embed(
-                    title=f"{cog.help_icon} {cog.qualified_name} Commands",
+                    title=f"{cog.help_icon} {cog.qualified_name} commands",
                     description="".join(commands[i : i + 25]),
                 )
             )
 
-        group = pages.PageGroup(
-            pages=embeds,
-            label="Page Group Test",
-            description="page group test",
-            timeout=180.0,
-            disable_on_timeout=True,
-        )
-        return pages.Paginator(group=group, show_menu=True)
+        if len(embeds) > 1:
+            return pages.Paginator(
+                pages=embeds, show_disabled=False, show_indicator=True
+            )
 
-    async def callback(self, interaction):
+        return embeds[0]
+
+    async def callback(self, interaction: discord.Interaction):
         category = interaction.data["values"][0]
         paginator = self.build_cog_response(category)
 
-        await paginator.respond(interaction, ephemeral=False)
+        if paginator:
+            return await interaction.response.edit_message(embed=paginator)
+            # await paginator.edit(interaction.message)
+        return await interaction.response.edit_message(
+            embed=Embed(description="Interaction closed."), delete_after=5
+        )
