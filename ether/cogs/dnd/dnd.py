@@ -1,10 +1,10 @@
-from dataclasses import dataclass
-from random import choices
-from discord import ApplicationCommand, Embed, Option, OptionChoice, SlashCommandGroup
-from discord.ext import commands
 import requests
 
+from discord import ApplicationCommand, Embed, Option, OptionChoice, SlashCommandGroup
+from discord.ext import commands
+
 from ether.core.utils import EtherEmbeds
+from ether.core.i18n import locale_doc
 
 
 class DnD(commands.Cog, name="dnd"):
@@ -19,6 +19,7 @@ class DnD(commands.Cog, name="dnd"):
     _class = dnd.create_subgroup("class", "Class commands!")
 
     @_class.command(name="infos")
+    @locale_doc
     async def infos(
         self,
         ctx: ApplicationCommand,
@@ -42,6 +43,7 @@ class DnD(commands.Cog, name="dnd"):
             ],
         ),
     ):
+        """Get information about a class"""
         r = requests.get(f"{DnD.DND_API_URL}classes/{_class}")
         if not r.ok:
             return await ctx.respond(
@@ -88,6 +90,7 @@ class DnD(commands.Cog, name="dnd"):
         await ctx.respond(embed=embed)
 
     @_class.command(name="spells")
+    @locale_doc
     async def spells(
         self,
         ctx: ApplicationCommand,
@@ -111,6 +114,7 @@ class DnD(commands.Cog, name="dnd"):
             ],
         ),
     ):
+        """Get information about spell from a class"""
         r = requests.get(f"{DnD.DND_API_URL}classes/{_class}/spells")
         if not r.ok:
             return await ctx.respond(
@@ -139,7 +143,9 @@ class DnD(commands.Cog, name="dnd"):
         await ctx.respond(embed=embed)
 
     @dnd.command(name="spell")
+    @locale_doc
     async def spell(self, ctx: ApplicationCommand, spell: str):
+        """Get informations about a spell"""
         spell = spell.lower().replace(" ", "-")
 
         r = requests.get(f"{DnD.DND_API_URL}spells/{spell}")

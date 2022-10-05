@@ -1,23 +1,15 @@
-from email.policy import default
 from typing import Optional
-from discord import (
-    Embed,
-    Member,
-    Option,
-    Role,
-    SlashCommandGroup,
-    TextChannel,
-    User,
-    slash_command,
-)
+
 import discord
-from discord.ext import commands
+from discord import Embed, Member, Option, Role, SlashCommandGroup, TextChannel, User
 from humanize import precisedelta
 
+from discord.ext import commands
 from ether.core.constants import Colors
 from ether.core.db.client import Database
-from ether.core.utils import EtherEmbeds
 from ether.core.logs import EtherLogs
+from ether.core.utils import EtherEmbeds
+from pycord18n.extension import _
 
 
 class Admin(commands.Cog, name="admin"):
@@ -30,6 +22,7 @@ class Admin(commands.Cog, name="admin"):
     @admin.command(name="warn")
     @commands.has_permissions(ban_members=True)
     async def warn(self, ctx, member: User, reason: str = None):
+        """Warn a member"""
         # TODO Warn a member of the server
         pass
 
@@ -42,24 +35,28 @@ class Admin(commands.Cog, name="admin"):
         time: Option(int, "Time in sec", min_value=1, default=-1),
         reason: str = None,
     ):
+        """Mute a member for a specific time"""
         # TODO Mute a member
         pass
 
     @admin.command(name="unmute")
     @commands.has_permissions(moderate_members=True)
     async def unmute(self, ctx, member: User):
+        """Unmute a member"""
         # TODO Unmute a member
         pass
 
     @admin.command(name="captcha")
     @commands.has_permissions(administrator=True)
     async def captcha(self, ctx, role: Role, channel: TextChannel = None):
+        """Set the captcha role and channel"""
         # TODO Captcha verification
         pass
 
     @admin.command(name="ban")
     @commands.has_permissions(ban_members=True)
     async def ban(self, ctx, member: User, reason: str = None):
+        """Ban a member"""
         guild = await Database.Guild.get_or_none(ctx.guild_id)
 
         if not guild:
@@ -91,6 +88,7 @@ class Admin(commands.Cog, name="admin"):
     @admin.command(name="kick")
     @commands.has_permissions(kick_members=True)
     async def kick(self, ctx, member: Member, reason=None):
+        """Kick a member"""
         guild = await Database.Guild.get_or_none(ctx.guild_id)
 
         if not guild:
@@ -122,6 +120,7 @@ class Admin(commands.Cog, name="admin"):
     @admin.command(name="clear")
     @commands.has_permissions(manage_messages=True)
     async def clear(self, ctx, amount: int):
+        """Clear a specific amount of messages"""
         deleted = await ctx.channel.purge(limit=amount + 1)
         embed = Embed(description=f"Deleted {len(deleted) - 1} message(s).")
         embed.colour = Colors.SUCCESS
@@ -130,6 +129,7 @@ class Admin(commands.Cog, name="admin"):
     @admin.command(name="slowmode")
     @commands.has_permissions(manage_channels=True)
     async def slowmode(self, ctx, cooldown: int):
+        """Set the slowmode of the channel"""
         await ctx.channel.edit(slowmode_delay=cooldown)
         if cooldown == 0:
             await ctx.respond("✅ Slowmode disabled!")
@@ -141,7 +141,7 @@ class Admin(commands.Cog, name="admin"):
     async def logs(
         self, ctx, active: bool, channel: Optional[discord.TextChannel] = None
     ):
-
+        """Set the logs channel"""
         if channel:
             res = await Database.Guild.Logs.Moderation.set(
                 ctx.guild.id, active, channel.id

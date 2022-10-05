@@ -1,8 +1,9 @@
-from discord import ApplicationCommand, Embed, Message, SlashCommandGroup
+from discord import SlashCommandGroup
 from discord.ext import commands
 
-from ether.core.db import Database
+# from ether.core.db import Database
 from ether.core.db.client import ReactionRole
+from pycord18n.extension import _
 
 
 class Reactions(commands.Cog, name="reaction"):

@@ -1,6 +1,4 @@
-import os
 from dynaconf import Dynaconf, Validator
-
 
 config = Dynaconf(
     settings_files=["./config.toml", "./.secrets.toml"],

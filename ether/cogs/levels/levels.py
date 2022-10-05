@@ -5,11 +5,13 @@ import discord
 
 import requests
 from PIL import Image, ImageDraw, ImageFont
-from discord import File, Interaction, SlashCommandGroup
+from discord import File, SlashCommandGroup
 from discord.ext import commands
+from pycord18n.extension import _
 
 from ether.core.utils import LevelsHandler, EtherEmbeds
 from ether.core.db import Database
+from ether.core.i18n import locale_doc
 
 
 class Levels(commands.Cog, name="levels"):
@@ -21,18 +23,24 @@ class Levels(commands.Cog, name="levels"):
     levels = SlashCommandGroup("levels", "levels commands!")
 
     @levels.command(name="boosters")
+    @locale_doc
     async def boosters(self, ctx):
+        """Get the boosters of the server"""
         # TODO View all xp roles booster in the server
         pass
 
     @levels.command(name="xp")
     @commands.has_permissions(moderate_members=True)
+    @locale_doc
     async def xp(self, level: int = -1, xp: int = -1):
+        """Set the xp or the level"""
         # TODO Set a user to a specific level or xp value
         pass
 
     @levels.command(name="profile")
+    @locale_doc
     async def profile(self, ctx, user: discord.Member = None):
+        """Get the profile of a user"""
         user = user if user else ctx.user
         dbuser = (
             await Database.GuildUser.get_or_create(  # FIXME Always return the same user

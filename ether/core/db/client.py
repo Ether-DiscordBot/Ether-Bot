@@ -1,17 +1,14 @@
 import asyncio
-import os
 from typing import List, Optional
 
-from beanie import init_beanie, Document
+from beanie import Document, init_beanie
+from discord import Guild as GuildModel
+from discord import Member as MemberModel
+from discord import Message as MessageModel
+from discord import User as UserModel
 from discord.ext.commands import Context
-from pydantic import BaseModel
-from discord import (
-    Guild as GuildModel,
-    User as UserModel,
-    Member as MemberModel,
-    Message as MessageModel,
-)
 from motor.motor_asyncio import AsyncIOMotorClient
+from pydantic import BaseModel
 
 try:
     from ether.core.utils import LevelsHandler

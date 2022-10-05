@@ -1,9 +1,8 @@
+import socket
 import time
 
-import socket
-
-from ether.core.logging import log
 from ether.core.config import config
+from ether.core.logging import log
 
 
 def lavalink_request(timeout=10.0):
@@ -18,7 +17,7 @@ def lavalink_request(timeout=10.0):
                 timeout=timeout,
             ):
                 break
-        except OSError as _ex:
+        except OSError as _e:
             time.sleep(0.01)
             if time.perf_counter() - start_time >= timeout:
                 log.warning("Lavalink socket is not open")

@@ -1,11 +1,14 @@
 import io
 import os
 import re
-from typing import Union
 
 from discord import File, SlashCommandGroup
 from discord.ext import commands
 from PIL import Image as Img, ImageDraw, ImageFont
+from pycord18n.extension import _
+
+from ether.core.i18n import locale_doc
+
 
 ASSETS_FOLDER_PATH = "ether/cogs/image/assets/"
 
@@ -19,14 +22,18 @@ class Image(commands.Cog, name="image"):
     image = SlashCommandGroup("image", "Image commands!")
 
     @image.command(name="hold_up")
+    @locale_doc
     async def hold_up(self, ctx, text: str):
+        """Hold up!"""
         image = ImageModifier("hold-up.png")
         image.write(text, (10, 10), 30, 4)
 
         await ctx.respond(file=File(fp=image.bytes, filename="hold-up.png"))
 
     @image.command(name="vault-boy")
+    @locale_doc
     async def vault_boy(self, ctx, up: str, bottom: str):
+        """Vault boy meme"""
         image = ImageModifier("vault-boy.jpg")
         image.write(up, (200, 33), 25, 2, "mm")
         image.write(bottom, (200, 333), 25, 2, "mm")
@@ -34,7 +41,9 @@ class Image(commands.Cog, name="image"):
         await ctx.respond(file=File(fp=image.bytes, filename="vault_boy.jpg"))
 
     @image.command(name="mr_incredible")
+    @locale_doc
     async def mr_incredible(self, ctx, left: str, right: str):
+        """Mr Incredible meme"""
         image = ImageModifier("mr-incredible.png")
         image.write(left, (178, 365), 20, 1, "mm", fill=(255, 255, 255))
         image.write(right, (533, 365), 20, 1, "mm", fill=(255, 255, 255))

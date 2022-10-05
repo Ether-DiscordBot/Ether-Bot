@@ -14,6 +14,8 @@ from discord.ext import commands
 from howlongtobeatpy import HowLongToBeat
 
 from ether.core.utils import EtherEmbeds, NerglishTranslator
+from ether.core.i18n import locale_doc
+from pycord18n.extension import _
 
 
 class Fun(commands.Cog, name="fun"):
@@ -56,7 +58,9 @@ class Fun(commands.Cog, name="fun"):
     fun = SlashCommandGroup("fun", "Fun commands!")
 
     @fun.command()
+    @locale_doc
     async def gif(self, interaction: Interaction, *, query):
+        """Search a gif on giphy"""
         r = get(
             f"https://api.giphy.com/v1/gifs/random?tag={query}&api_key={self.giphy_api_key}"
         )
@@ -75,6 +79,7 @@ class Fun(commands.Cog, name="fun"):
 
     @fun.command()
     async def sticker(self, interaction: Interaction, *, query):
+        """Search a sticker on giphy"""
         r = get(
             f"https://api.giphy.com/v1/stickers/random?tag={query}&api_key={self.giphy_api_key}"
         )
@@ -93,9 +98,7 @@ class Fun(commands.Cog, name="fun"):
 
     @fun.command(name="8-ball")
     async def height_ball(self, interaction: Interaction, question: str):
-        """
-        Based on the standard Magic 8 Ball.
-        """
+        """Ask the magic 8-ball a question!"""
 
         await interaction.response.send_message(
             f"🎱 {choice(choice(self.HEIGHT_BALL_ANSWERS))}"
@@ -108,9 +111,7 @@ class Fun(commands.Cog, name="fun"):
         message: str,
         hide: Option(bool, "Hide ?", default=False),
     ):
-        """
-        Say what something the user want to.
-        """
+        """Make the bot say something"""
 
         if hide:
             await interaction.response.send_message(
@@ -147,7 +148,7 @@ class Fun(commands.Cog, name="fun"):
             ],
         ),
     ):
-
+        """Get your daily horoscope"""
         url = f"https://ohmanda.com/api/horoscope/{sign}"
 
         response = request("POST", url)
@@ -161,11 +162,13 @@ class Fun(commands.Cog, name="fun"):
 
     @fun.command(name="nerglish")
     async def nerglish(self, ctx: ApplicationCommand, text: str):
+        """Translate text to nerglish"""
         translated = NerglishTranslator.translate(text)
         await ctx.respond(translated)
 
     @fun.command(name="howlongtobeat")
     async def howlongtobeat(self, ctx: ApplicationCommand, game: str):
+        """Get the time to beat a game"""
         results_list = await HowLongToBeat().async_search(game_name=game)
         if results_list is not None and len(results_list) > 0:
             data = max(results_list, key=lambda element: element.similarity)

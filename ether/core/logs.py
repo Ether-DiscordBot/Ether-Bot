@@ -1,6 +1,6 @@
 from typing import Optional
-from discord import Embed, Member
 
+from discord import Embed, Member
 from ether.core.constants import Colors
 from ether.core.utils import Utils
 

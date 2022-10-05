@@ -1,8 +1,11 @@
-from discord import ApplicationCommand, Embed, SlashCommandGroup
-from discord.ext import tasks, commands
 import requests
 
+from discord import ApplicationCommand, Embed, SlashCommandGroup
+from discord.ext import commands, tasks
+from pycord18n.extension import _
+
 from ether.core.logging import log
+from ether.core.i18n import locale_doc
 
 
 class Steam(commands.Cog, name="steam"):
@@ -15,6 +18,8 @@ class Steam(commands.Cog, name="steam"):
     steam = SlashCommandGroup("steam", "Steam commands!")
 
     def search(self, game: str):
+        """Search a game in the steam store"""
+
         def filter(g, prompt):
             if g["name"].lower() == prompt.lower():
                 return True
@@ -35,7 +40,9 @@ class Steam(commands.Cog, name="steam"):
         self.steam_app_list = r["applist"]["apps"]
 
     @steam.command(name="game")
+    @locale_doc
     async def get_game(self, ctx: ApplicationCommand, query: str):
+        """Get infos about a game"""
         app = self.search(query)
         if not app:
             await ctx.respond(
@@ -45,7 +52,8 @@ class Steam(commands.Cog, name="steam"):
         appid = app["appid"]
 
         r = requests.get(
-            f"https://store.steampowered.com/api/appdetails?appids={appid}"
+            f"https://store.steampowered.com/api/appdetails?appids={appid}",
+            timeout=30.0,
         )
         data = r.json()
         if not r.ok or not data[str(appid)]["success"]:
@@ -96,7 +104,9 @@ class Steam(commands.Cog, name="steam"):
         await ctx.respond(embed=embed)
 
     @steam.command(name="specials")
+    @locale_doc
     async def specials(self, ctx: ApplicationCommand):
+        """Get the current steam specials"""
         r = requests.get("https://store.steampowered.com/api/featuredcategories")
         if not r.ok:
             await ctx.respond("Sorry, an error was occured!")
@@ -115,7 +125,9 @@ class Steam(commands.Cog, name="steam"):
         await ctx.respond(embed=embed)
 
     @steam.command(name="top")
+    @locale_doc
     async def top(self, ctx: ApplicationCommand):
+        """Get the current steam top sellers"""
         r = requests.get("https://store.steampowered.com/api/featuredcategories")
         if not r.ok:
             await ctx.respond("Sorry, an error was occured!")
@@ -136,7 +148,9 @@ class Steam(commands.Cog, name="steam"):
         await ctx.respond(embed=embed)
 
     @steam.command(name="new")
+    @locale_doc
     async def new(self, ctx: ApplicationCommand):
+        """Get the current steam new releases"""
         r = requests.get("https://store.steampowered.com/api/featuredcategories")
         if not r.ok:
             await ctx.respond("Sorry, an error was occured!")

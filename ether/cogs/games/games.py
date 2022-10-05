@@ -1,10 +1,13 @@
 import random
 from typing import Optional
-from discord import ApplicationContext, Member, Option, SlashCommandGroup
+
 import discord
+from discord import ApplicationContext, Member, Option, SlashCommandGroup
 from discord.ext import commands
+from pycord18n.extension import _
 
 from ether.core.utils import EtherEmbeds
+from ether.core.i18n import locale_doc
 
 
 class TicTacToeButton(discord.ui.Button):
@@ -37,6 +40,7 @@ class Games(commands.Cog, name="games"):
     games = SlashCommandGroup("games", "Games commands!")
 
     @games.command(name="tic-tac-toe")
+    @locale_doc
     async def tictactoe(
         self,
         ctx: ApplicationContext,
@@ -45,6 +49,7 @@ class Games(commands.Cog, name="games"):
             int, "Difficulty level", min_value=1, max_value=3, default=1
         ) = 1,
     ):
+        """Play a game of Tic-Tac-Toe with a friend or the bot!"""
         vs_ai = (
             True
             if (opponent and opponent.id == self.client.user.id) or not opponent
@@ -198,6 +203,8 @@ class Games(commands.Cog, name="games"):
             await ai_play(ctx.interaction)
 
     @games.command(name="rps")
+    @locale_doc
     async def rps(self, ctx, opponent: Member):
+        """Play a game of Rock-Paper-Scissors with a friend!"""
         # TODO Rock/Paper/Scissors
         pass

@@ -2,8 +2,9 @@ import json
 from os import path
 
 from typing import Any, Callable
-from pycord18n import I18n, Language
 from pycord18n.i18n import InvalidTranslationKeyError
+from pycord18n.extension import I18nExtension, _
+from pycord18n.language import Language
 from discord.ext.commands import Context
 
 from ether.core.logging import log
@@ -11,7 +12,7 @@ from ether.core.logging import log
 default_locale = "en_US"
 locale_dir = path.join(path.dirname(path.realpath(__file__)), "locales")
 
-i18n: I18n = I18n(
+i18n: I18nExtension = I18nExtension(
     [
         Language(
             "French",
@@ -82,9 +83,14 @@ def i18n_docstring(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
     This decorator is used to translate docstrings of functions and classes.
     """
 
-    func.__doc__ = translate(func.__doc__, "en")
+    # func.__doc__ = translate(func.__doc__, "en")
+    func.__doc__ = func.__doc__
+
     return func
 
 
+def init_i18n(client):
+    i18n.init_bot(client, get_locale)
+
+
 locale_doc = i18n_docstring
-_ = translate

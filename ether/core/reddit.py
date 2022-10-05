@@ -1,15 +1,13 @@
 import asyncio
 import os
-import random
-import aiofiles
 import pickle
-
-from discord.ext import tasks
+import random
 from typing import List, Tuple
 
+import aiofiles
 from asyncpraw import Reddit
 from asyncpraw.models import Submission, Subreddit
-
+from discord.ext import tasks
 from ether.core.logging import log
 
 

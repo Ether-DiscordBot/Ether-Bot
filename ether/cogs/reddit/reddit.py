@@ -9,12 +9,14 @@ from discord import (
     TextChannel,
 )
 from discord.ext import commands
+from pycord18n.extension import _
 
 from ether.core.constants import Colors
 from ether.core.utils import EtherEmbeds
 from ether.core.reddit import RedditPostCacher
 from ether.core.logging import logging
 from ether.core.config import config
+from ether.core.i18n import locale_doc
 
 
 class Reddit(commands.Cog, name="reddit"):
@@ -56,19 +58,26 @@ class Reddit(commands.Cog, name="reddit"):
         await interaction.response.send_message(embed=embed)
 
     @reddit.command()
+    @locale_doc
     async def meme(self, interaction: Interaction):
+        """Get a random meme from r/memes"""
         await self._reddit(interaction, subrd="memes")
 
     @reddit.command()
+    @locale_doc
     async def aww(self, interaction: Interaction):
+        """Get a random cute animal from r/aww"""
         await self._reddit(interaction, subrd="aww")
 
     @reddit.command()
+    @locale_doc
     async def sadcat(self, interaction: Interaction):
+        """Get a random sad cat from r/sadcats"""
         await self._reddit(interaction, subrd="sadcats")
 
     @reddit.command(name="follow")
     @commands.has_permissions(manage_guild=True)
+    @locale_doc
     async def follow(
         self,
         ctx,
@@ -86,11 +95,14 @@ class Reddit(commands.Cog, name="reddit"):
             ],
         ) = None,
     ):
+        """Follow a subreddit and get posts in a channel"""
         # TODO Follow a subreddit in a channel
         pass
 
     @reddit.command(name="list")
     @commands.has_permissions(manage_guild=True)
+    @locale_doc
     async def _list(self, ctx):
+        """List all followed subreddits"""
         # TODO List all followed subereddits
         pass

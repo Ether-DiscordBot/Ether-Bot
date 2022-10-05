@@ -1,9 +1,9 @@
-from time import time
-from unicodedata import category
-from urllib import response
 import discord
 from discord import Embed
 from discord.ext import commands, pages
+from pycord18n.extension import _
+
+from ether.core.i18n import locale_doc
 
 
 class Help(discord.Cog):
@@ -25,7 +25,9 @@ class Help(discord.Cog):
         self.ignore_cogs = ["Help", "Reactions"]
 
     @commands.slash_command(name="help")
+    @locale_doc
     async def help(self, ctx):
+        """Help command"""
         extensions, desc_array, options = [], [], []
 
         for ext in set(self.client.cogs.values()):

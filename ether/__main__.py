@@ -1,18 +1,19 @@
-import random
-import os
 import asyncio
+import os
+import random
 
 import discord
-from discord.ext import commands
 import nest_asyncio
+from discord.ext import commands
 
 nest_asyncio.apply()
 
 from ether.core.cog_manager import CogManager
-from ether.core.db import Database, Guild, GuildUser, init_database
-from ether.core.logging import log
-from ether.core.lavalink_status import lavalink_request
 from ether.core.config import config
+from ether.core.db import Database, Guild, GuildUser, init_database
+from ether.core.lavalink_status import lavalink_request
+from ether.core.logging import log
+from ether.core.i18n import init_i18n
 
 init_database(config.database.mongodb.get("uri"))
 
@@ -59,6 +60,8 @@ class Client(commands.Bot):
         r = lavalink_request(timeout=20.0)
         if r != 0:
             await self.remove_cog(f"cogs.music")
+
+        init_i18n(self)
 
         self.musicCmd = self.get_cog("music")
 

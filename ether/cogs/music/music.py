@@ -5,17 +5,19 @@ from typing import Optional
 import random
 
 import discord
-from discord.ext import commands
-from discord import ApplicationContext, Embed, SlashCommandGroup
 import requests
 import wavelink
 import humanize
+from discord.ext import commands
+from discord import ApplicationContext, Embed, SlashCommandGroup
+from pycord18n.extension import _
 
 from ether.core.constants import Colors
 from ether.core.db.client import Database, Guild, Playlist
 from ether.core.logging import log
 from ether.core.utils import EtherEmbeds
 from ether.core.config import config
+from ether.core.i18n import locale_doc
 
 PLAYLIST_REG = re.compile(
     r"^(?:http:\/\/|https:\/\/)?(?:www\.)?youtube\.com\/playlist\?list(?:\S+)?$"
@@ -196,13 +198,9 @@ class Music(commands.Cog, name="music"):
 
     @music.command(name="join")
     @commands.guild_only()
+    @locale_doc
     async def _connect(self, ctx: ApplicationContext) -> Optional[Player]:
-        """
-        This function can return None.
-
-        The function/command to connect the bot to a voice channel.
-        This function also create a wavelink queue for the tracks store in the voice client.
-        """
+        """Connect the bot to your voice channel"""
 
         if not ctx.author.voice:
             await ctx.respond(embed=EtherEmbeds.error("Please join a channel."))
@@ -229,8 +227,9 @@ class Music(commands.Cog, name="music"):
 
     @music.command(name="leave")
     @commands.guild_only()
+    @locale_doc
     async def _disconnect(self, ctx: ApplicationContext):
-        """The function/command to leave a voice channel."""
+        """Disconnect the bot from your voice channel"""
 
         vc: Player = await self._connect(ctx)
 
@@ -245,12 +244,16 @@ class Music(commands.Cog, name="music"):
 
     @music.command(name="search")
     @commands.guild_only()
+    @locale_doc
     async def search(self, ctx: ApplicationContext, *, search: wavelink.YouTubeTrack):
+        """Search a song on YouTube"""
         print(search)
 
     @music.command(name="play")
     @commands.guild_only()
+    @locale_doc
     async def _play(self, ctx: ApplicationContext, *, query: str):
+        """Play a song from YouTube"""
         vc: Player = await self._connect(ctx)
 
         if not vc:
@@ -324,7 +327,9 @@ class Music(commands.Cog, name="music"):
 
     @music.command(name="stop")
     @commands.guild_only()
+    @locale_doc
     async def _stop(self, ctx: ApplicationContext):
+        """Stop the current song"""
         vc: Player = await self._connect(ctx)
 
         if not vc:
@@ -337,7 +342,9 @@ class Music(commands.Cog, name="music"):
 
     @music.command(name="pause")
     @commands.guild_only()
+    @locale_doc
     async def pause(self, ctx: ApplicationContext):
+        """Pause the current song"""
         vc: Player = await self._connect(ctx)
 
         if not vc:
@@ -356,7 +363,9 @@ class Music(commands.Cog, name="music"):
 
     @music.command(name="resume")
     @commands.guild_only()
+    @locale_doc
     async def resume(self, ctx: ApplicationContext):
+        """Resume the current song"""
         vc: Player = await self._connect(ctx)
 
         if not vc:
@@ -373,7 +382,9 @@ class Music(commands.Cog, name="music"):
 
     @music.command(name="skip")
     @commands.guild_only()
+    @locale_doc
     async def _skip(self, ctx: ApplicationContext):
+        """Skip the current song"""
         vc: Player = await self._connect(ctx)
 
         if not vc:
@@ -387,7 +398,9 @@ class Music(commands.Cog, name="music"):
 
     @music.command(name="shuffle")
     @commands.guild_only()
+    @locale_doc
     async def _shuffle(self, ctx: ApplicationContext):
+        """Shuffle the queue"""
         vc: Player = await self._connect(ctx)
 
         if not vc:
@@ -411,7 +424,9 @@ class Music(commands.Cog, name="music"):
 
     @music.command(name="queue")
     @commands.guild_only()
+    @locale_doc
     async def queue(self, ctx: ApplicationContext):
+        """Show the current queue"""
         vc: Player = await self._connect(ctx)
 
         if not vc:
@@ -457,7 +472,9 @@ class Music(commands.Cog, name="music"):
     @music.command(name="playlist")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
+    @locale_doc
     async def playlist(self, ctx: ApplicationContext, playlist_link):
+        """Play a playlist from youtube"""
         if not re.match(PLAYLIST_REG, playlist_link):
             ctx.respond(
                 embed=EtherEmbeds.error("The url is incorrect!"), delete_after=5
@@ -501,7 +518,9 @@ class Music(commands.Cog, name="music"):
     @music.command(name="lavalinkinfo")
     @commands.guild_only()
     @commands.is_owner()
+    @locale_doc
     async def lavalink_info(self, ctx: ApplicationContext):
+        """Show lavalink info"""
         player = ctx.guild.voice_client
         if not player:
             return

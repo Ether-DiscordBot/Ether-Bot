@@ -1,25 +1,25 @@
-from random import random, choice
 import re
-from threading import local
-import requests
-from typing import List, Optional
+from random import choice, random
+from typing import Optional
 
-from discord import ApplicationContext, Embed, Option, OptionChoice
+import requests
+from discord import ApplicationContext, Embed
 from discord.commands import SlashCommandGroup, slash_command
 from discord.ext import commands
+from pycord18n.extension import _
 
 from ether.core.utils import EtherEmbeds
-from ether.core.i18n import locale_doc, _
+from ether.core.i18n import locale_doc
 
 URBAN_PATTERN = r"\[(.*?)]"
 
 
-class Utils(commands.Cog, name="utils"):
+class Utils(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.help_icon = "🔧"
 
-    utils = SlashCommandGroup("utils", "Utils commands!")
+    utils = SlashCommandGroup("utils", "Utility commands!")
 
     @slash_command()
     @commands.cooldown(1, 5, commands.BucketType.user)
@@ -35,11 +35,14 @@ class Utils(commands.Cog, name="utils"):
         await ctx.respond(embed=embed)
 
     @utils.command(name="flipcoin")
+    @locale_doc
     async def flip_coin(self, ctx: ApplicationContext) -> None:
-        result = "Heads" if round(random()) else "Tails"
+        """Flip a coin"""
+        result = _("Heads") if round(random()) else _("Tails")
         await ctx.respond(result)
 
     @utils.command(name="choose")
+    @locale_doc
     async def choose(
         self,
         ctx: ApplicationContext,
@@ -54,6 +57,7 @@ class Utils(commands.Cog, name="utils"):
         ninth: Optional[str] = None,
         tenth: Optional[str] = None,
     ):
+        """Choose between multiple options"""
         items = [
             first,
             second,
@@ -70,7 +74,9 @@ class Utils(commands.Cog, name="utils"):
         return await ctx.respond(choice(list))
 
     @utils.command(name="urban")
+    @locale_doc
     async def urban(self, ctx: ApplicationContext, term: str):
+        """Search for a term on Urban Dictionary"""
         r = requests.get(f"https://api.urbandictionary.com/v0/define?term={term}")
         res = r.json()
 
