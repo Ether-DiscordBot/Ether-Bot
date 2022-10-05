@@ -8,9 +8,7 @@ from ether.core.logging import log
 def lavalink_request(timeout=10.0):
     log.info("Checking lavalink socket status...")
     start_time = time.perf_counter()
-    while True:
-        if config.lavalink.get("https"):
-            break
+    while not config.lavalink.get("https"):
         try:
             with socket.create_connection(
                 (config.lavalink.get("host", config.lavalink.get("port"))),

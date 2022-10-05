@@ -14,14 +14,14 @@ class LevelsHandler:
 
 
 class Utils(object):
-    def get_avatar_url(user, format="png", size="64"):
-        if user:
-            return f"https://cdn.discordapp.com/avatars/{user.id}/{user.avatar}.{format}?size={size}"
+    def get_avatar_url(self, format="png", size="64"):
+        if self:
+            return f"https://cdn.discordapp.com/avatars/{self.id}/{self.avatar}.{format}?size={size}"
 
 
 class EtherEmbeds:
-    def error(description: str):
-        return Embed(description=description, colour=Colors.ERROR)
+    def error(self):
+        return Embed(self=self, colour=Colors.ERROR)
 
 
 class NerglishTranslator:

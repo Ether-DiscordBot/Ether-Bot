@@ -59,7 +59,7 @@ class Client(commands.Bot):
         opt = (self.lavalink_host, config.lavalink.get("port"))
         r = lavalink_request(timeout=20.0)
         if r != 0:
-            await self.remove_cog(f"cogs.music")
+            await self.remove_cog("cogs.music")
 
         init_i18n(self)
 
@@ -101,7 +101,7 @@ class Client(commands.Bot):
 
         await self.process_commands(ctx)
 
-    async def remove_cog(ctx, extension):
+    async def remove_cog(self, extension):
         log.info(f"Removed cog: {extension}")
 
     async def on_command_error(self, ctx, error):

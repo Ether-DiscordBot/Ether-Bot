@@ -77,15 +77,14 @@ class Help(discord.Cog):
             brief = "No information." if cmd.short_doc is None else cmd.short_doc
             commands.append(f"{cmd.qualified_name} - {brief}\n")
 
-        embeds = []
-
-        for i in range(0, len(commands), 25):
-            embeds.append(
-                Embed(
-                    title=f"{cog.help_icon} {cog.qualified_name} Commands",
-                    description="".join(commands[i : i + 25]),
-                )
+        embeds = [
+            Embed(
+                title=f"{cog.help_icon} {cog.qualified_name} Commands",
+                description="".join(commands[i : i + 25]),
             )
+            for i in range(0, len(commands), 25)
+        ]
+
 
         group = pages.PageGroup(
             pages=embeds,

@@ -72,9 +72,7 @@ def translate(string: str, locale: str) -> str:
 
 
 def get_locale(ctx: Context) -> str:
-    preferences = "en"  # Get Guild locale preferences
-
-    return preferences
+    return "en"
 
 
 def i18n_docstring(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
