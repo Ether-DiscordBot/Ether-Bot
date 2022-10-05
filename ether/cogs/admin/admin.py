@@ -47,7 +47,7 @@ class Admin(commands.Cog, name="admin"):
 
     @admin.command(name="unmute")
     @commands.has_permissions(moderate_members=True)
-    async def mute(self, ctx, member: User):
+    async def unmute(self, ctx, member: User):
         # TODO Unmute a member
         pass
 
