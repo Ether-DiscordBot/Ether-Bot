@@ -1,5 +1,6 @@
 import asyncio
 from typing import List, Optional
+from uuid import UUID, uuid4
 
 from beanie import Document, init_beanie
 from discord import Guild as GuildModel
@@ -74,7 +75,7 @@ class Database:
 
     class GuildUser:
         async def create(user_id: int, guild_id: int):
-            user = GuildUser(id=user_id, guild_id=guild_id)
+            user = GuildUser(user_id=user_id, guild_id=guild_id)
 
             await user.insert()
 
@@ -89,7 +90,7 @@ class Database:
 
         async def get_or_none(user_id: int, guild_id: int):
             user = await GuildUser.find_one(
-                GuildUser.id == user_id and GuildUser.guild_id == guild_id
+                GuildUser.user_id == user_id and GuildUser.guild_id == guild_id
             )
             if user:
                 return user
@@ -233,7 +234,7 @@ class GuildUser(Document):
     class Settings:
         name = "guild_users"
 
-    id: int
+    user_id: int
     guild_id: int
     description: str = ""
     exp: int = 0
