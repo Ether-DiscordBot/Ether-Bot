@@ -5,13 +5,14 @@ from discord.ext import commands
 
 from ether.core.utils import EtherEmbeds
 from ether.core.i18n import locale_doc
+from ether.core.constants import Emoji
 
 
 class DnD(commands.Cog, name="dnd"):
     DND_API_URL = "https://www.dnd5eapi.co/api/"
 
     def __init__(self, client) -> None:
-        self.help_icon = "🎲"
+        self.help_icon = Emoji.DND
         self.client = client
 
     dnd = SlashCommandGroup("dnd", "Dungeon & Dragons commands!")

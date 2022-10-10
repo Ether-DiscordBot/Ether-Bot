@@ -12,10 +12,11 @@ from discord import (
 )
 from discord.ext import commands
 from howlongtobeatpy import HowLongToBeat
+from pycord18n.extension import _
 
 from ether.core.utils import EtherEmbeds, NerglishTranslator
 from ether.core.i18n import locale_doc
-from pycord18n.extension import _
+from ether.core.constants import Emoji
 
 
 class Fun(commands.Cog, name="fun"):
@@ -50,7 +51,7 @@ class Fun(commands.Cog, name="fun"):
     ]
 
     def __init__(self, client):
-        self.help_icon = "🎡"
+        self.help_icon = Emoji.FUN
         self.client = client
 
         self.giphy_api_key = os.getenv("GIPHY_API_KEY")

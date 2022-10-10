@@ -10,14 +10,15 @@ from pycord18n.extension import _
 
 from ether.core.utils import EtherEmbeds
 from ether.core.i18n import locale_doc
+from ether.core.constants import Emoji
 
 URBAN_PATTERN = r"\[(.*?)]"
 
 
-class Utils(commands.Cog):
+class Utils(commands.Cog, name="utils"):
     def __init__(self, client):
         self.client = client
-        self.help_icon = "🔧"
+        self.help_icon = Emoji.UTILITY
 
     utils = SlashCommandGroup("utils", "Utility commands!")
 

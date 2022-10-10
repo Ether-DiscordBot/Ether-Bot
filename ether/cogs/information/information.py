@@ -6,6 +6,7 @@ from humanize import naturaldate, naturalsize
 from pycord18n.extension import _
 
 from ether.core.i18n import locale_doc
+from ether.core.constants import Emoji
 
 
 class InformationHandler:
@@ -40,8 +41,7 @@ class InformationHandler:
 
 class Information(commands.Cog, name="information"):
     def __init__(self, client):
-        self.fancy_name = "ℹ️ Information"
-        self.help_icon = "ℹ️"
+        self.help_icon = Emoji.INFORMATION
         self.client = client
 
     infos = SlashCommandGroup("infos", "Infos commands!")

@@ -12,13 +12,13 @@ from pycord18n.extension import _
 from ether.core.utils import LevelsHandler, EtherEmbeds
 from ether.core.db import Database
 from ether.core.i18n import locale_doc
+from ether.core.constants import Emoji
 
 
 class Levels(commands.Cog, name="levels"):
     def __init__(self, client):
         self.client = client
-        self.fancy_name = "📈 Levels"
-        self.help_icon = "📈"
+        self.help_icon = Emoji.LEVELS
 
     levels = SlashCommandGroup("levels", "levels commands!")
 

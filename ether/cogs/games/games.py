@@ -8,6 +8,7 @@ from pycord18n.extension import _
 
 from ether.core.utils import EtherEmbeds
 from ether.core.i18n import locale_doc
+from ether.core.constants import Emoji
 
 
 class TicTacToeButton(discord.ui.Button):
@@ -34,7 +35,7 @@ class Games(commands.Cog, name="games"):
         self,
         client,
     ) -> None:
-        self.help_icon = "👾"
+        self.help_icon = Emoji.GAMES
         self.client = client
 
     games = SlashCommandGroup("games", "Games commands!")

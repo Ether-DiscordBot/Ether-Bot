@@ -18,6 +18,7 @@ from ether.core.logging import log
 from ether.core.utils import EtherEmbeds
 from ether.core.config import config
 from ether.core.i18n import locale_doc
+from ether.core.constants import Emoji
 
 PLAYLIST_REG = re.compile(
     r"^(?:http:\/\/|https:\/\/)?(?:www\.)?youtube\.com\/playlist\?list(?:\S+)?$"
@@ -39,7 +40,7 @@ class Player(wavelink.Player):
 class Music(commands.Cog, name="music"):
     def __init__(self, client):
         self.client = client
-        self.help_icon = "🎶"
+        self.help_icon = Emoji.MUSIC
 
         self.youtube_api_key = config.api.youtube.get("key")
 

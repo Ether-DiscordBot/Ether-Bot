@@ -1,15 +1,15 @@
 from discord import SlashCommandGroup
 from discord.ext import commands
+from pycord18n.extension import _
 
 # from ether.core.db import Database
 from ether.core.db.client import ReactionRole
-from pycord18n.extension import _
+from ether.core.constants import Emoji
 
 
 class Reactions(commands.Cog, name="reaction"):
     def __init__(self, client) -> None:
-        self.fancy_name = "Reactions"
-        self.help_icon = "🎭"
+        self.help_icon = Emoji.REACTIONS
         self.client = client
 
     reactions = SlashCommandGroup("reactions", "Reactions roles commands!")

@@ -4,6 +4,7 @@ from discord.ext import commands, pages
 from pycord18n.extension import _
 
 from ether.core.i18n import locale_doc
+from ether.core.constants import Emoji, Links, Other
 
 
 class Help(discord.Cog):
@@ -50,7 +51,18 @@ class Help(discord.Cog):
                 discord.SelectOption(label=cog.qualified_name, emoji=cog.help_icon)
             )
 
-        embed = Embed()
+        embed = Embed(
+            description=f"{Emoji.DISCORD} [Support]({Links.SUPPORT_SERVER_URL}) | \
+                      {Emoji.ETHER_ROUND} [Bot Invite]({Links.BOT_INVITE_URL}) | \
+                      {Emoji.GITHUB} [Source code]({Links.BOT_SOURCE_CODE_URL})"
+        )
+
+        author = await self.client.fetch_user(Other.AUTHOR_ID)
+        if author:
+            embed.description += (
+                f"\n\n**Made by:** [{author}](https://discord.com/users/{author.id})"
+            )
+
         embed.set_author(
             icon_url=self.client.user.avatar.url, name=f"{self.client.user.name} Help"
         )

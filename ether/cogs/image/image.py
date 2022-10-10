@@ -8,6 +8,7 @@ from PIL import Image as Img, ImageDraw, ImageFont
 from pycord18n.extension import _
 
 from ether.core.i18n import locale_doc
+from ether.core.constants import Emoji
 
 
 ASSETS_FOLDER_PATH = "ether/cogs/image/assets/"
@@ -15,8 +16,7 @@ ASSETS_FOLDER_PATH = "ether/cogs/image/assets/"
 
 class Image(commands.Cog, name="image"):
     def __init__(self, client) -> None:
-        self.fancy_name = "📸 Image"
-        self.help_icon = "📸"
+        self.help_icon = Emoji.IMAGE
         self.client = client
 
     image = SlashCommandGroup("image", "Image commands!")

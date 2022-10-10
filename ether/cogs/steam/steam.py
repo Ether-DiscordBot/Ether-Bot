@@ -6,12 +6,12 @@ from pycord18n.extension import _
 
 from ether.core.logging import log
 from ether.core.i18n import locale_doc
+from ether.core.constants import Emoji
 
 
 class Steam(commands.Cog, name="steam"):
     def __init__(self, client) -> None:
-        self.fancy_name = "🕹️ Steam"
-        self.help_icon = "🕹️"
+        self.help_icon = Emoji.STEAM
         self.client = client
         self.fetch_app_list.start()
 

@@ -9,12 +9,13 @@ from ether.core.constants import Colors
 from ether.core.db.client import Database
 from ether.core.logs import EtherLogs
 from ether.core.utils import EtherEmbeds
+from ether.core.constants import Emoji
 from pycord18n.extension import _
 
 
 class Admin(commands.Cog, name="admin"):
     def __init__(self, client):
-        self.help_icon = "🛡️"
+        self.help_icon = Emoji.ADMIN
         self.client = client
 
     admin = SlashCommandGroup("admin", "Admin commands!")

@@ -17,12 +17,12 @@ from ether.core.reddit import RedditPostCacher
 from ether.core.logging import logging
 from ether.core.config import config
 from ether.core.i18n import locale_doc
+from ether.core.constants import Emoji
 
 
 class Reddit(commands.Cog, name="reddit"):
     def __init__(self, client) -> None:
-        self.fancy_name = "🤖 Reddit"
-        self.help_icon = "🤖"
+        self.help_icon = Emoji.REDDIT
         self.client = client
         self.subreddits = ("memes", "aww", "sadcats")
         cog_path = os.path.abspath("ether/cogs/reddit")
