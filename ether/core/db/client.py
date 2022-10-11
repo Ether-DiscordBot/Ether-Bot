@@ -160,7 +160,7 @@ def init_database(db_uri):
 
 class JoinLog(BaseModel):
     channel_id: int
-    message: str = "Welcome to {user.name}!"
+    message: str = "Welcome to <@{user.id}>!"
     enabled: bool = False
     private: bool = False
     image: bool = False
@@ -168,7 +168,7 @@ class JoinLog(BaseModel):
 
 class LeaveLog(BaseModel):
     channel_id: int
-    message: str = "{user.name} is gone!"
+    message: str = "<@{user.id}> is gone!"
     enabled: bool = False
 
 
