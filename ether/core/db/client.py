@@ -45,34 +45,6 @@ class Database:
 
             return None
 
-        class Logs:
-            class Moderation:
-                async def set(
-                    guild_id: int, enabled: bool, channel_id: Optional[int] = None
-                ):
-                    guild = await Database.Guild.get_or_none(guild_id)
-
-                    if not guild:
-                        return None
-
-                    if channel_id:
-                        moderation_logs = ModerationLog(
-                            channel_id=channel_id, enabled=enabled
-                        )
-                    else:
-                        if not (guild.logs and guild.logs.moderation):
-                            return None
-                        moderation_logs = ModerationLog(
-                            channel_id=guild.logs.moderation.channel_id, enabled=enabled
-                        )
-
-                    if guild.logs:
-                        await guild.set({Guild.logs.moderation: moderation_logs})
-                    else:
-                        await guild.set({Guild.logs: Logs(moderation=moderation_logs)})
-
-                    return True
-
     class GuildUser:
         async def create(user_id: int, guild_id: int):
             user = GuildUser(user_id=user_id, guild_id=guild_id)
@@ -216,7 +188,7 @@ class Guild(Document):
         name = "guilds"
 
     id: int
-    logs: Logs = None
+    logs: Optional[Logs] = None
     auto_role: Optional[int] = None
     music_channel_id: Optional[int] = None
 
