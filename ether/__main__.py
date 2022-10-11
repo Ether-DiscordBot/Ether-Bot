@@ -36,21 +36,27 @@ class Client(commands.Bot):
             self.debug_guilds = None
 
         super().__init__(
-            activity=discord.Game(name="/help"),
             help_command=None,
             debug_guilds=self.debug_guilds,
             intents=intents,
+        )
+
+    async def set_activity(self):
+        await self.change_presence(
+            activity=discord.Game(name=f"/help | On {len(self.guilds)} servers")
         )
 
     async def load_extensions(self):
         await CogManager.load_cogs(self)
 
     async def on_ready(self):
+        await self.set_activity()
         in_container = os.environ.get("IN_DOCKER", False)
 
         log.info(f"Client Name: \t{self.user.name}")
         log.info(f"Client ID: \t{self.user.id}")
         log.info(f"Client Disc: \t{self.user.discriminator}")
+        log.info(f"Guild Count: \t{len(self.guilds)}")
 
         log.info(f"Is in container: \t{in_container}")
 
@@ -79,6 +85,9 @@ class Client(commands.Bot):
             await channel.send(
                 guild.logs.leave.message.format(user=member, guild=member.guild)
             )
+
+    async def on_guild_join(self, _guild):
+        await self.set_activity()
 
     async def on_message(self, ctx):
         if ctx.author.bot:
