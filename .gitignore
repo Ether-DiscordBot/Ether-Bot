@@ -15,6 +15,7 @@ Pipfile.lock
 .idea/
 *.iws
 .vscode/
+.fleet/
 *.sublime-project
 *.sublime-workspace
 
