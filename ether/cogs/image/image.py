@@ -50,6 +50,16 @@ class Image(commands.Cog, name="image"):
 
         await ctx.respond(file=File(fp=image.bytes, filename="mr_incredible.png"))
 
+    @image.command(name="philosoraptor")
+    @locale_doc
+    async def philosoraptor(self, ctx, top: str, bottom: str):
+        """Philosoraptor meme"""
+        image = ImageModifier("philosoraptor.png")
+        image.write(top, (200, 33), 28, 2, "mm", fill=(255, 255, 255))
+        image.write(bottom, (200, 333), 28, 2, "mm", fill=(255, 255, 255))
+
+        await ctx.respond(file=File(fp=image.bytes, filename="philosoraptor.png"))
+
 
 class ImageModifier:
     FONT = ImageFont.truetype(
