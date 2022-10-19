@@ -110,9 +110,23 @@ class Admin(commands.Cog, name="admin"):
     @admin.command(name="warn")
     @commands.has_permissions(ban_members=True)
     async def warn(self, ctx, member: User, reason: str = None):
-        """Warn a member"""
-        # TODO Warn a member of the server
-        pass
+        """Give someone a warning"""
+
+        await Database.GuildUser.warn(member.id, ctx.guild.id, reason=reason)
+
+        guild = await Database.Guild.get_or_none(ctx.guild_id)
+
+        if guild.logs and guild.logs.moderation and guild.logs.moderation.enabled:
+            if channel := ctx.guild.get_channel(guild.logs.moderation.channel_id):
+                await channel.send(
+                    embed=EtherLogs.warn(member, ctx.author.id, ctx.channel.id, reason)
+                )
+
+        return await ctx.respond(
+            embed=Embed(description=f"Warned {member.mention}"),
+            ephermeral=True,
+            delete_after=5,
+        )
 
     @admin.command(name="mute")
     @commands.has_permissions(moderate_members=True)

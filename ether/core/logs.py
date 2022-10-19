@@ -31,3 +31,8 @@ class EtherLogs:
         embed.description = "[`[unban]`](https://www.youtube.com/watch?v=dQw4w9WgXcQ)"
         embed.colour = Colors.BAN
         return embed
+
+    def warn(self, author_id: int, channel_id: int, reason: Optional[str]):
+        embed = EtherLogs.base_log("WARN", self, author_id, channel_id, reason)
+        embed.colour = Colors.WARN
+        return embed
