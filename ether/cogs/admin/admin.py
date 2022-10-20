@@ -107,26 +107,6 @@ class Admin(commands.Cog, name="admin"):
             embed=Embed(description=f"Log channel set to <#{channel.id}>")
         )
 
-    @admin.command(name="mute")
-    @commands.has_permissions(moderate_members=True)
-    async def mute(
-        self,
-        ctx,
-        member: User,
-        time: Option(int, "Time in sec", min_value=1, default=-1),
-        reason: str = None,
-    ):
-        """Mute a member for a specific time"""
-        # TODO Mute a member
-        pass
-
-    @admin.command(name="unmute")
-    @commands.has_permissions(moderate_members=True)
-    async def unmute(self, ctx, member: User):
-        """Unmute a member"""
-        # TODO Unmute a member
-        pass
-
     @admin.command(name="ban")
     @commands.has_permissions(ban_members=True)
     async def ban(self, ctx, member: User, reason: str = None):
