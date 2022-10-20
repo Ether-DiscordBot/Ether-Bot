@@ -1,10 +1,11 @@
-from discord import SlashCommandGroup
+from discord import ApplicationCommand, Message, NotFound, Role, SlashCommandGroup
+from discord.errors import HTTPException
 from discord.ext import commands
-from pycord18n.extension import _
+from ether.core.i18n import _
 
-# from ether.core.db import Database
-from ether.core.db.client import ReactionRole
+from ether.core.db.client import Database, ReactionRole
 from ether.core.constants import Emoji
+from ether.core.utils import EtherEmbeds
 
 
 class Reactions(commands.Cog, name="reaction"):
@@ -50,17 +51,34 @@ class Reactions(commands.Cog, name="reaction"):
         if r_message:
             await r_message.delete()
 
-    # @reactions.command()
-    # @commands.is_owner()
-    # async def test(self, ctx: ApplicationCommand):
-    #     embed = Embed(title="Reactions roles message", description="There is a reactions roles message.")
-    #     msg: Message = await ctx.channel.send(embed=embed)
+    @reactions.command()
+    @commands.is_owner()
+    async def add(
+        self, ctx: ApplicationCommand, message_id: str, emoji: str, role: Role
+    ):
+        try:
+            msg: Message = await ctx.fetch_message(message_id)
+        except NotFound:
+            return await ctx.respond(
+                embed=EtherEmbeds.error(_("Message not found!")),
+                ephemeral=True,
+                delete_after=5,
+            )
 
-    #     await msg.add_reaction("🚀")
-    #     await msg.add_reaction("💎")
+        try:
+            await msg.add_reaction(emoji)
 
-    #     options = [Database.ReactionRole.ReactionRoleOption.create(role_id=697741680409051198, reaction="🚀"),
-    #                Database.ReactionRole.ReactionRoleOption.create(role_id=697741680409051198, reaction="💎")]
-    #     await Database.ReactionRole.create(msg.id, options)
+            options = [
+                Database.ReactionRole.ReactionRoleOption.create(
+                    role_id=role.id, reaction=emoji
+                )
+            ]
+            await Database.ReactionRole.create(msg.id, options)
 
-    #     await ctx.respond("✅ Done !", delete_after=5)
+            await ctx.respond("✅ Done !", delete_after=5, ephemeral=True)
+        except HTTPException:
+            await ctx.respond(
+                embed=EtherEmbeds.error(_("Emoji not found!")),
+                ephemeral=True,
+                delete_after=5,
+            )

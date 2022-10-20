@@ -23,7 +23,7 @@ class Help(discord.Cog):
 
         self.owner_cogs = []
         self.admin_cogs = ["Admin"]
-        self.ignore_cogs = ["Help", "Reactions"]
+        self.ignore_cogs = ["Help"]
 
     @commands.slash_command(name="help")
     @locale_doc
