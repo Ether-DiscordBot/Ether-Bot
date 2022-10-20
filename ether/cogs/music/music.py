@@ -10,7 +10,7 @@ import wavelink
 import humanize
 from discord.ext import commands
 from discord import ApplicationContext, Embed, SlashCommandGroup
-from pycord18n.extension import _
+from ether.core.i18n import _
 
 from ether.core.constants import Colors
 from ether.core.db.client import Database, Guild, Playlist

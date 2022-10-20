@@ -7,7 +7,7 @@ import requests
 from PIL import Image, ImageDraw, ImageFont
 from discord import File, SlashCommandGroup
 from discord.ext import commands
-from pycord18n.extension import _
+from ether.core.i18n import _
 
 from ether.core.utils import LevelsHandler, EtherEmbeds
 from ether.core.db import Database

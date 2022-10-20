@@ -1,7 +1,7 @@
 import discord
 from discord import Embed
 from discord.ext import commands, pages
-from pycord18n.extension import _
+from ether.core.i18n import _
 
 from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji, Links, Other

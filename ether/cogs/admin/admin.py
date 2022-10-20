@@ -10,7 +10,7 @@ from ether.core.db.client import Database, Guild, Logs, JoinLog, LeaveLog, Moder
 from ether.core.logs import EtherLogs
 from ether.core.utils import EtherEmbeds
 from ether.core.constants import Emoji
-from pycord18n.extension import _
+from ether.core.i18n import _
 
 
 class Admin(commands.Cog, name="admin"):

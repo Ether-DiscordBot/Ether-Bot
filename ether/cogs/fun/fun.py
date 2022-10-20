@@ -12,7 +12,7 @@ from discord import (
 )
 from discord.ext import commands
 from howlongtobeatpy import HowLongToBeat
-from pycord18n.extension import _
+from ether.core.i18n import _
 
 from ether.core.utils import EtherEmbeds, NerglishTranslator
 from ether.core.i18n import locale_doc
