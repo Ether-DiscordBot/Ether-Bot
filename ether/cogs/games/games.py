@@ -62,11 +62,11 @@ class TicTacToe:
     @classmethod
     def minimax(cls, board, ai_player, other_player):
         if cls.check_win(board, other_player):
-            return {"score": -10}
+            return -10
         elif cls.check_win(board, ai_player):
-            return {"score": 10}
+            return 10
         else:
-            return {"score": 0}
+            return 0
 
 
 class Games(commands.Cog, name="games"):
@@ -82,12 +82,7 @@ class Games(commands.Cog, name="games"):
     @games.command(name="tictactoe")
     @locale_doc
     async def tictactoe(
-        self,
-        ctx: ApplicationContext,
-        opponent: Optional[Member] = None,
-        difficulty: Option(
-            int, "Difficulty level", min_value=1, max_value=3, default=1
-        ) = 1,
+        self, ctx: ApplicationContext, opponent: Optional[Member] = None
     ):
         """Play a game of Tic-Tac-Toe with a friend or the bot!"""
         vs_ai = (
@@ -113,7 +108,9 @@ class Games(commands.Cog, name="games"):
         author_sign = None
 
         for sign, player in players.items():
-            if player.id == ctx.author.id:
+            if player.id == opponent.id:
+                opponent_sign = sign
+            elif player.id == ctx.author.id:
                 author_sign = sign
 
         global turn
@@ -179,22 +176,26 @@ class Games(commands.Cog, name="games"):
                 button = view.children[possibilities[0]]
                 return await callback(button, interaction)
 
-            good_pos = []
             for p in possibilities:
-                new_board = board.copy()
-                new_board[p] = players[turn]
+                # Probability of win for the bot (opponent)
+                new_o_board = board.copy()
+                new_o_board[p] = opponent_sign
 
-                proba = TicTacToe.minimax(
-                    new_board, players[turn], players[author_sign]
-                )["score"]
+                o_proba = TicTacToe.minimax(new_o_board, opponent_sign, author_sign)
+                if o_proba == 10:
+                    button = view.children[p]
+                    break
 
-                if proba == 10:
-                    good_pos.append(p)
+                # Probability of win for the opponent (author)
 
-            if good_pos:
-                button = view.children[possibilities[random.choice(good_pos)]]
-            if neutral_pos := []:
-                button = view.children[possibilities[random.choice(neutral_pos)]]
+                new_a_board = board.copy()
+                new_a_board[p] = author_sign
+
+                a_proba = TicTacToe.minimax(new_a_board, opponent_sign, author_sign)
+
+                if a_proba == -10:
+                    button = view.children[p]
+                    break
             else:
                 button = view.children[random.choice(possibilities)]
 
