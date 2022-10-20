@@ -3,8 +3,8 @@ import random
 import discord
 
 from discord.ext import commands
-from ether.core.db.client import Database, Guild, GuildUser
 
+from ether.core.db.client import Database, Guild, GuildUser
 from ether.core.lavalink_status import lavalink_request
 from ether.core.logging import log
 from ether.core.i18n import init_i18n
