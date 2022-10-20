@@ -1,7 +1,7 @@
 from typing import Optional
 
 import discord
-from discord import Embed, Member, Option, Role, SlashCommandGroup, TextChannel, User
+from discord import Embed, Member, Option, SlashCommandGroup, TextChannel, User
 from humanize import precisedelta
 
 from discord.ext import commands
@@ -107,27 +107,6 @@ class Admin(commands.Cog, name="admin"):
             embed=Embed(description=f"Log channel set to <#{channel.id}>")
         )
 
-    @admin.command(name="warn")
-    @commands.has_permissions(ban_members=True)
-    async def warn(self, ctx, member: User, reason: str = None):
-        """Give someone a warning"""
-
-        await Database.GuildUser.warn(member.id, ctx.guild.id, reason=reason)
-
-        guild = await Database.Guild.get_or_none(ctx.guild_id)
-
-        if guild.logs and guild.logs.moderation and guild.logs.moderation.enabled:
-            if channel := ctx.guild.get_channel(guild.logs.moderation.channel_id):
-                await channel.send(
-                    embed=EtherLogs.warn(member, ctx.author.id, ctx.channel.id, reason)
-                )
-
-        return await ctx.respond(
-            embed=Embed(description=f"Warned {member.mention}"),
-            ephermeral=True,
-            delete_after=5,
-        )
-
     @admin.command(name="mute")
     @commands.has_permissions(moderate_members=True)
     async def mute(
@@ -146,13 +125,6 @@ class Admin(commands.Cog, name="admin"):
     async def unmute(self, ctx, member: User):
         """Unmute a member"""
         # TODO Unmute a member
-        pass
-
-    @admin.command(name="captcha")
-    @commands.has_permissions(administrator=True)
-    async def captcha(self, ctx, role: Role, channel: TextChannel = None):
-        """Set the captcha role and channel"""
-        # TODO Captcha verification
         pass
 
     @admin.command(name="ban")

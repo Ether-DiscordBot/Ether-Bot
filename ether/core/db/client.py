@@ -91,15 +91,6 @@ class Database:
 
             await user.set({GuildUser.exp: new_exp})
 
-        @staticmethod
-        async def warn(user_id, guild_id, reason):
-            user = await Database.GuildUser.get_or_create(user_id, guild_id)
-
-            if not user:
-                return
-
-            await user.update({"$push": {"warns": Warn(reason=reason)}})
-
     @staticmethod
     class ReactionRole:
         @staticmethod
@@ -219,11 +210,6 @@ class Guild(Document):
         return await Guild.from_id(ctx.guild.id)
 
 
-class Warn(BaseModel):
-    reason: Optional[str] = None
-    ts: datetime = Field(default_factory=datetime.now)
-
-
 class GuildUser(Document):
     class Settings:
         name = "guild_users"
@@ -233,7 +219,6 @@ class GuildUser(Document):
     description: str = ""
     exp: int = 0
     levels: int = 1
-    warns: List[Warn] = []
 
     async def from_id(user_id: int, guild_id: int):
         return await Database.GuildUser.get_or_create(user_id, guild_id)
