@@ -44,9 +44,7 @@ class Admin(commands.Cog, name="admin"):
             }
         )
         if enabled == False:
-            return await ctx.respond(
-                embed=Embed(description=f"Welcome channel disabled")
-            )
+            return await ctx.respond(embed=Embed(description="Welcome channel disabled"))
         return await ctx.respond(
             embed=Embed(description=f"Welcome channel set to <#{channel.id}>")
         )

@@ -41,7 +41,7 @@ class Levels(commands.Cog, name="levels"):
     @locale_doc
     async def profile(self, ctx, user: discord.Member = None):
         """Get the profile of a user"""
-        user = user if user else ctx.user
+        user = user or ctx.user
         dbuser = (
             await Database.GuildUser.get_or_create(  # FIXME Always return the same user
                 user.id, ctx.guild_id

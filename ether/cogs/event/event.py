@@ -92,7 +92,7 @@ class Event(commands.Cog):
             )
 
     @commands.Cog.listener()
-    async def remove_cog(ctx, extension):
+    async def remove_cog(self, extension):
         log.info(f"Removed cog: {extension}")
 
     @commands.Cog.listener()

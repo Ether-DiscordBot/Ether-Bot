@@ -85,12 +85,8 @@ class Games(commands.Cog, name="games"):
         self, ctx: ApplicationContext, opponent: Optional[Member] = None
     ):
         """Play a game of Tic-Tac-Toe with a friend or the bot!"""
-        vs_ai = (
-            True
-            if (opponent and opponent.id == self.client.user.id) or not opponent
-            else False
-        )
-        opponent = opponent if opponent else self.client.user
+        vs_ai = bool((opponent and opponent.id == self.client.user.id) or not opponent)
+        opponent = opponent or self.client.user
 
         if not vs_ai and opponent.bot:
             return await ctx.respond(

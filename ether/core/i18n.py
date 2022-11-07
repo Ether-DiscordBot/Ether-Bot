@@ -66,17 +66,9 @@ def translate(string: str, locale: Optional[str] = None) -> str:
     """
     return string
 
-    try:
-        return i18n.get_text(string, locale, should_fallback=False)
-    except InvalidTranslationKeyError:
-        log.warn(f"Translation of {string} not found for {locale}!")
-        return string
-
 
 def get_locale(ctx: Context) -> str:
-    preferences = "en"  # Get Guild locale preferences
-
-    return preferences
+    return "en"
 
 
 def i18n_docstring(func: Callable[[Any], Any]) -> Callable[[Any], Any]:

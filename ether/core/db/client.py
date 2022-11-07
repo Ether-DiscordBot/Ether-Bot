@@ -31,18 +31,12 @@ class Database:
         @staticmethod
         async def get_or_create(guild_id: int):
             guild = await Database.Guild.get_or_none(guild_id)
-            if guild:
-                return guild
-
-            return await Database.Guild.create(guild_id)
+            return guild or await Database.Guild.create(guild_id)
 
         @staticmethod
         async def get_or_none(guild_id: int):
             guild = await Guild.find_one(Guild.id == guild_id)
-            if guild:
-                return guild
-
-            return None
+            return guild or None
 
     class GuildUser:
         @staticmethod
@@ -56,20 +50,14 @@ class Database:
         @staticmethod
         async def get_or_create(user_id: int, guild_id: int):
             user = await Database.GuildUser.get_or_none(user_id, guild_id)
-            if user:
-                return user
-
-            return await Database.GuildUser.create(user_id, guild_id)
+            return user or await Database.GuildUser.create(user_id, guild_id)
 
         @staticmethod
         async def get_or_none(user_id: int, guild_id: int):
             user = await GuildUser.find_one(
                 GuildUser.user_id == user_id and GuildUser.guild_id == guild_id
             )
-            if user:
-                return user
-
-            return None
+            return user or None
 
         @staticmethod
         async def add_exp(user_id, guild_id, amount):
@@ -104,20 +92,14 @@ class Database:
         @staticmethod
         async def get_or_create(message_id: int):
             reaction = await Database.ReactionRole.get_or_none(message_id)
-            if reaction:
-                return reaction
-
-            return await Database.ReactionRole.create(message_id)
+            return reaction or await Database.ReactionRole.create(message_id)
 
         @staticmethod
         async def get_or_none(message_id: int):
             reaction = await ReactionRole.find_one(
                 ReactionRole.message_id == message_id
             )
-            if reaction:
-                return reaction
-
-            return None
+            return reaction or None
 
         class ReactionRoleOption:
             @staticmethod
@@ -136,18 +118,12 @@ class Database:
         @staticmethod
         async def get_or_create(message_id: int):
             playlist = await Database.Playlist.get_or_none(message_id)
-            if playlist:
-                return playlist
-
-            return await Database.Playlist.create(message_id)
+            return playlist or await Database.Playlist.create(message_id)
 
         @staticmethod
         async def get_or_none(message_id: int):
             playlist = await Playlist.find_one(Playlist.message_id == message_id)
-            if playlist:
-                return playlist
-
-            return None
+            return playlist or None
 
 
 def init_database(db_uri):
@@ -200,14 +176,14 @@ class Guild(Document):
     auto_role: Optional[int] = None
     music_channel_id: Optional[int] = None
 
-    async def from_id(guild_id: int):
-        return await Database.Guild.get_or_create(guild_id)
+    async def from_id(self):
+        return await Database.Guild.get_or_create(self)
 
-    async def from_guild_object(guild: GuildModel):
-        return await Guild.from_id(guild.id)
+    async def from_guild_object(self):
+        return await Guild.from_id(self.id)
 
-    async def from_context(ctx: Context):
-        return await Guild.from_id(ctx.guild.id)
+    async def from_context(self):
+        return await Guild.from_id(self.guild.id)
 
 
 class GuildUser(Document):
@@ -220,14 +196,14 @@ class GuildUser(Document):
     exp: int = 0
     levels: int = 1
 
-    async def from_id(user_id: int, guild_id: int):
-        return await Database.GuildUser.get_or_create(user_id, guild_id)
+    async def from_id(self, guild_id: int):
+        return await Database.GuildUser.get_or_create(self, guild_id)
 
-    async def from_member_object(member: MemberModel):
-        return await GuildUser.from_id(member.id, member.guild.id)
+    async def from_member_object(self):
+        return await GuildUser.from_id(self.id, self.guild.id)
 
-    async def from_context(ctx: Context):
-        return await GuildUser.from_id(ctx.author.id, ctx.guild.id)
+    async def from_context(self):
+        return await GuildUser.from_id(self.author.id, self.guild.id)
 
 
 class User(Document):
@@ -238,14 +214,14 @@ class User(Document):
     description: Optional[str] = None
     card_color: int = 0xA5D799
 
-    async def from_id(user_id: int):
-        return await Database.User.get_or_create(user_id)
+    async def from_id(self):
+        return await Database.User.get_or_create(self)
 
-    async def from_user_object(user: UserModel):
-        return await User.from_id(user.id)
+    async def from_user_object(self):
+        return await User.from_id(self.id)
 
-    async def from_context(ctx: Context):
-        return await User.from_id(ctx.author.id)
+    async def from_context(self):
+        return await User.from_id(self.author.id)
 
 
 class Playlist(Document):
@@ -255,14 +231,14 @@ class Playlist(Document):
     message_id: int
     playlist_link: str
 
-    async def from_id(message_id: int):
-        return await Database.Playlist.get_or_none(message_id)
+    async def from_id(self):
+        return await Database.Playlist.get_or_none(self)
 
-    async def from_message_object(message: MessageModel):
-        return await ReactionRole.from_id(message.id)
+    async def from_message_object(self):
+        return await ReactionRole.from_id(self.id)
 
-    async def from_context(ctx: Context):
-        return await ReactionRole.from_id(ctx.message.id)
+    async def from_context(self):
+        return await ReactionRole.from_id(self.message.id)
 
 
 class ReactionRoleOption(BaseModel):
@@ -277,11 +253,11 @@ class ReactionRole(Document):
     message_id: int
     options: List[ReactionRoleOption]
 
-    async def from_id(message_id: int):
-        return await Database.ReactionRole.get_or_none(message_id)
+    async def from_id(self):
+        return await Database.ReactionRole.get_or_none(self)
 
-    async def from_message_object(message: MessageModel):
-        return await ReactionRole.from_id(message.id)
+    async def from_message_object(self):
+        return await ReactionRole.from_id(self.id)
 
-    async def from_context(ctx: Context):
-        return await ReactionRole.from_id(ctx.message.id)
+    async def from_context(self):
+        return await ReactionRole.from_id(self.message.id)
