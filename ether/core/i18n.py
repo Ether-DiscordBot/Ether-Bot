@@ -1,7 +1,7 @@
 import json
 from os import path
 
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 from pycord18n.i18n import InvalidTranslationKeyError
 from pycord18n.extension import I18nExtension, _
 from pycord18n.language import Language
@@ -59,11 +59,13 @@ i18n: I18nExtension = I18nExtension(
 )
 
 
-def translate(string: str, locale: str) -> str:
+def translate(string: str, locale: Optional[str] = None) -> str:
     """Translate a string.
 
     This function is used to translate a string to the current locale.
     """
+    return string
+
     try:
         return i18n.get_text(string, locale, should_fallback=False)
     except InvalidTranslationKeyError:
@@ -94,3 +96,4 @@ def init_i18n(client):
 
 
 locale_doc = i18n_docstring
+_ = translate

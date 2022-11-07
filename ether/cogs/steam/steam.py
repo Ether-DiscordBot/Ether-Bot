@@ -2,7 +2,7 @@ import requests
 
 from discord import ApplicationCommand, Embed, SlashCommandGroup
 from discord.ext import commands, tasks
-from pycord18n.extension import _
+from ether.core.i18n import _
 
 from ether.core.logging import log
 from ether.core.i18n import locale_doc

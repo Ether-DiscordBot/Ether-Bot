@@ -3,40 +3,44 @@ from typing import Optional
 from discord import Embed, Member, SlashCommandGroup, user_command
 from discord.ext import commands
 from humanize import naturaldate, naturalsize
-from pycord18n.extension import _
+from ether.core.i18n import _
 
 from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji
 
 
 class InformationHandler:
-    def get_user_infos(self) -> Embed:
-        avatar = self.display_avatar
+    @classmethod
+    def get_user_infos(cls, user) -> Embed:
+        avatar = user.avatar.url if user.avatar else user.default_avatar.url
 
-        embed = Embed(description=f"**ID:** {self.id}")
+        embed = Embed(description=f"**ID:** {user.id}")
         embed.set_author(
-            name=f"{self.name}#{self.discriminator}", icon_url=avatar, url=avatar
+            name=f"{user.name}#{user.discriminator}", icon_url=avatar, url=avatar
         )
 
         embed.set_thumbnail(url=avatar)
         embed.add_field(
             name="Account creation date",
-            value=naturaldate(self.created_at),
+            value=naturaldate(user.created_at),
             inline=False,
         )
 
         embed.add_field(
             name="Server join date",
-            value=naturaldate(self.joined_at),
+            value=naturaldate(user.joined_at),
             inline=False,
         )
 
         return embed
 
-    def get_user_avatar(self, user) -> Embed:
+    @classmethod
+    def get_user_avatar(cls, user) -> Embed:
+        avatar = user.avatar.url if user.avatar else user.default_avatar.url
+
         return Embed(
-            description="**{0.display_name}'s** [avatar]({0.avatar_url}):".format(user)
-        ).set_image(url=user.display_avatar)
+            description=f"**{user.display_name}'s** [avatar]({avatar}):"
+        ).set_image(url=avatar)
 
 
 class Information(commands.Cog, name="information"):
@@ -48,14 +52,14 @@ class Information(commands.Cog, name="information"):
 
     @infos.command(name="user")
     @locale_doc
-    async def user(self, ctx, *, member: Member = None):
+    async def user(self, ctx, member: Member = None):
         """Get informations about a user"""
         member = member or ctx.author
         await ctx.respond(embed=InformationHandler.get_user_infos(member))
 
     @user_command(name="User infos")
     @locale_doc
-    async def user_infos(self, ctx, *, member: Member):
+    async def user_infos(self, ctx, member: Member):
         """Get informations about a user"""
         await ctx.respond(embed=InformationHandler.get_user_infos(member))
 

@@ -1,7 +1,7 @@
 from typing import Optional
 
 import discord
-from discord import Embed, Member, Option, Role, SlashCommandGroup, TextChannel, User
+from discord import Embed, Member, Option, SlashCommandGroup, TextChannel, User
 from humanize import precisedelta
 
 from discord.ext import commands
@@ -10,7 +10,7 @@ from ether.core.db.client import Database, Guild, Logs, JoinLog, LeaveLog, Moder
 from ether.core.logs import EtherLogs
 from ether.core.utils import EtherEmbeds
 from ether.core.constants import Emoji
-from pycord18n.extension import _
+from ether.core.i18n import _
 
 
 class Admin(commands.Cog, name="admin"):
@@ -106,40 +106,6 @@ class Admin(commands.Cog, name="admin"):
         return await ctx.respond(
             embed=Embed(description=f"Log channel set to <#{channel.id}>")
         )
-
-    @admin.command(name="warn")
-    @commands.has_permissions(ban_members=True)
-    async def warn(self, ctx, member: User, reason: str = None):
-        """Warn a member"""
-        # TODO Warn a member of the server
-        pass
-
-    @admin.command(name="mute")
-    @commands.has_permissions(moderate_members=True)
-    async def mute(
-        self,
-        ctx,
-        member: User,
-        time: Option(int, "Time in sec", min_value=1, default=-1),
-        reason: str = None,
-    ):
-        """Mute a member for a specific time"""
-        # TODO Mute a member
-        pass
-
-    @admin.command(name="unmute")
-    @commands.has_permissions(moderate_members=True)
-    async def unmute(self, ctx, member: User):
-        """Unmute a member"""
-        # TODO Unmute a member
-        pass
-
-    @admin.command(name="captcha")
-    @commands.has_permissions(administrator=True)
-    async def captcha(self, ctx, role: Role, channel: TextChannel = None):
-        """Set the captcha role and channel"""
-        # TODO Captcha verification
-        pass
 
     @admin.command(name="ban")
     @commands.has_permissions(ban_members=True)

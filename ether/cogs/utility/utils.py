@@ -6,7 +6,7 @@ import requests
 from discord import ApplicationContext, Embed
 from discord.commands import SlashCommandGroup, slash_command
 from discord.ext import commands
-from pycord18n.extension import _
+from ether.core.i18n import _
 
 from ether.core.utils import EtherEmbeds
 from ether.core.i18n import locale_doc

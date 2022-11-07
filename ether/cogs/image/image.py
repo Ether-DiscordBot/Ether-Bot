@@ -5,7 +5,7 @@ import re
 from discord import File, SlashCommandGroup
 from discord.ext import commands
 from PIL import Image as Img, ImageDraw, ImageFont
-from pycord18n.extension import _
+from ether.core.i18n import _
 
 from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji

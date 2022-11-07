@@ -9,7 +9,7 @@ from discord import (
     TextChannel,
 )
 from discord.ext import commands
-from pycord18n.extension import _
+from ether.core.i18n import _
 
 from ether.core.constants import Colors
 from ether.core.utils import EtherEmbeds

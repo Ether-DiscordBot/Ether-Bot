@@ -1,7 +1,7 @@
 import discord
 from discord import Embed
 from discord.ext import commands, pages
-from pycord18n.extension import _
+from ether.core.i18n import _
 
 from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji, Links, Other
@@ -23,7 +23,7 @@ class Help(discord.Cog):
 
         self.owner_cogs = []
         self.admin_cogs = ["Admin"]
-        self.ignore_cogs = ["Help", "Reactions"]
+        self.ignore_cogs = ["Help"]
 
     @commands.slash_command(name="help")
     @locale_doc

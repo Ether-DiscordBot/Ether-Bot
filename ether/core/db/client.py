@@ -1,22 +1,18 @@
 import asyncio
 from typing import List, Optional
 from uuid import UUID, uuid4
+from datetime import datetime
 
-from beanie import Document, init_beanie
+from beanie import Document, init_beanie, TimeSeriesConfig
 from discord import Guild as GuildModel
 from discord import Member as MemberModel
 from discord import Message as MessageModel
 from discord import User as UserModel
 from discord.ext.commands import Context
 from motor.motor_asyncio import AsyncIOMotorClient
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-try:
-    from ether.core.utils import LevelsHandler
-
-    levels_handler_import = True
-except ImportError:
-    levels_handler_import = False
+from ether.core.utils import LevelsHandler
 
 
 class Database:
@@ -24,6 +20,7 @@ class Database:
     client = None
 
     class Guild:
+        @staticmethod
         async def create(guild_id: int):
             guild = Guild(id=guild_id)
 
@@ -31,6 +28,7 @@ class Database:
 
             return await Database.Guild.get_or_none(guild_id)
 
+        @staticmethod
         async def get_or_create(guild_id: int):
             guild = await Database.Guild.get_or_none(guild_id)
             if guild:
@@ -38,6 +36,7 @@ class Database:
 
             return await Database.Guild.create(guild_id)
 
+        @staticmethod
         async def get_or_none(guild_id: int):
             guild = await Guild.find_one(Guild.id == guild_id)
             if guild:
@@ -46,6 +45,7 @@ class Database:
             return None
 
     class GuildUser:
+        @staticmethod
         async def create(user_id: int, guild_id: int):
             user = GuildUser(user_id=user_id, guild_id=guild_id)
 
@@ -53,6 +53,7 @@ class Database:
 
             return await Database.GuildUser.get_or_none(user_id, guild_id)
 
+        @staticmethod
         async def get_or_create(user_id: int, guild_id: int):
             user = await Database.GuildUser.get_or_none(user_id, guild_id)
             if user:
@@ -60,6 +61,7 @@ class Database:
 
             return await Database.GuildUser.create(user_id, guild_id)
 
+        @staticmethod
         async def get_or_none(user_id: int, guild_id: int):
             user = await GuildUser.find_one(
                 GuildUser.user_id == user_id and GuildUser.guild_id == guild_id
@@ -69,11 +71,9 @@ class Database:
 
             return None
 
+        @staticmethod
         async def add_exp(user_id, guild_id, amount):
-            if not levels_handler_import:
-                return
-
-            user = await Database.GuildUser.get_or_none(user_id, guild_id)
+            user = await Database.GuildUser.get_or_create(user_id, guild_id)
 
             if not user:
                 return
@@ -91,7 +91,9 @@ class Database:
 
             await user.set({GuildUser.exp: new_exp})
 
+    @staticmethod
     class ReactionRole:
+        @staticmethod
         async def create(message_id: int, options: List):
             reaction = ReactionRole(message_id=message_id, options=options)
 
@@ -99,6 +101,7 @@ class Database:
 
             return await Database.ReactionRole.get_or_none(message_id)
 
+        @staticmethod
         async def get_or_create(message_id: int):
             reaction = await Database.ReactionRole.get_or_none(message_id)
             if reaction:
@@ -106,6 +109,7 @@ class Database:
 
             return await Database.ReactionRole.create(message_id)
 
+        @staticmethod
         async def get_or_none(message_id: int):
             reaction = await ReactionRole.find_one(
                 ReactionRole.message_id == message_id
@@ -116,10 +120,12 @@ class Database:
             return None
 
         class ReactionRoleOption:
+            @staticmethod
             def create(role_id: int, reaction: str):
                 return ReactionRoleOption(role_id=role_id, reaction=reaction)
 
     class Playlist:
+        @staticmethod
         async def create(message_id: int, playlist_link: str):
             playlist = Playlist(message_id=message_id, playlist_link=playlist_link)
 
@@ -127,6 +133,7 @@ class Database:
 
             return await Database.Playlist.get_or_none(message_id)
 
+        @staticmethod
         async def get_or_create(message_id: int):
             playlist = await Database.Playlist.get_or_none(message_id)
             if playlist:
@@ -134,6 +141,7 @@ class Database:
 
             return await Database.Playlist.create(message_id)
 
+        @staticmethod
         async def get_or_none(message_id: int):
             playlist = await Playlist.find_one(Playlist.message_id == message_id)
             if playlist:

@@ -3,8 +3,8 @@ import random
 import discord
 
 from discord.ext import commands
-from ether.core.db.client import Database, Guild, GuildUser
 
+from ether.core.db.client import Database, Guild, GuildUser
 from ether.core.lavalink_status import lavalink_request
 from ether.core.logging import log
 from ether.core.i18n import init_i18n
@@ -80,7 +80,16 @@ class Event(commands.Cog):
                         f"Congratulation <@{ctx.author.id}>, you just pass to level {new_level}!"
                     )
 
-        await self.client.process_commands(ctx)
+    @commands.Cog.listener()
+    async def on_application_command(self, ctx):
+        if random.randint(1, 100) <= 5:
+            await ctx.channel.send(
+                embed=discord.Embed(
+                    title="Support us!",
+                    description="Ether is a free and open source bot, if you like it, please vote for the bot on [Top.gg](https://top.gg/bot/985100792270819389) and consider supporting us on [Ko-fi](https://ko-fi.com/holycrusader)!",
+                    color=0x2F3136,
+                )
+            )
 
     @commands.Cog.listener()
     async def remove_cog(ctx, extension):
