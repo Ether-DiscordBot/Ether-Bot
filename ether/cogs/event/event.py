@@ -80,8 +80,6 @@ class Event(commands.Cog):
                         f"Congratulation <@{ctx.author.id}>, you just pass to level {new_level}!"
                     )
 
-        await self.client.process_commands(ctx)
-
     @commands.Cog.listener()
     async def remove_cog(ctx, extension):
         log.info(f"Removed cog: {extension}")
