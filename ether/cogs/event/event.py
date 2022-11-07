@@ -81,6 +81,17 @@ class Event(commands.Cog):
                     )
 
     @commands.Cog.listener()
+    async def on_application_command(self, ctx):
+        if random.randint(1, 100) <= 5:
+            await ctx.channel.send(
+                embed=discord.Embed(
+                    title="Support us!",
+                    description="Ether is a free and open source bot, if you like it, please vote for the bot on [Top.gg](https://top.gg/bot/985100792270819389) and consider supporting us on [Ko-fi](https://ko-fi.com/holycrusader)!",
+                    color=0x2F3136,
+                )
+            )
+
+    @commands.Cog.listener()
     async def remove_cog(ctx, extension):
         log.info(f"Removed cog: {extension}")
 
