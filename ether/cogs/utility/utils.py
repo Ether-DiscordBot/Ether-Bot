@@ -26,16 +26,30 @@ class Utils(commands.Cog, name="utils"):
 
     @slash_command()
     @commands.cooldown(1, 5, commands.BucketType.user)
+    async def vote(self, ctx: ApplicationContext) -> None:
+        """Get the link to vote for the bot"""
+
+        await ctx.respond(
+            embed=Embed(
+                title="Thank you for supporting us ❤️!",
+                description=_(
+                    "Click [here](https://top.gg/bot/985100792270819389/vote) to vote for me!"
+                ),
+            )
+        )
+
+    @slash_command()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def ping(self, ctx: ApplicationContext) -> None:
         """Pong!"""
 
-        embed = Embed(
-            title=":ping_pong: Pong !",
-            description=f"Bot latency: `{round(self.client.latency * 1000)}ms`",
+        await ctx.respond(
+            embed=Embed(
+                title=":ping_pong: Pong !",
+                description=f"Bot latency: `{round(self.client.latency * 1000)}ms`",
+            )
         )
-
-        await ctx.respond(embed=embed)
 
     @utils.command(name="flipcoin")
     @locale_doc
