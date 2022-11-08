@@ -1,9 +1,10 @@
 import re
-from random import choice, random
+import operator
+from random import choice, random, randint
 from typing import Optional
 
 import requests
-from discord import ApplicationContext, Embed
+from discord import ApplicationContext, Embed, Option
 from discord.commands import SlashCommandGroup, slash_command
 from discord.ext import commands
 from ether.core.i18n import _
@@ -13,6 +14,7 @@ from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji
 
 URBAN_PATTERN = r"\[(.*?)]"
+ops = {"+": operator.add, "-": operator.sub, "*": operator.mul, "/": operator.truediv}
 
 
 class Utils(commands.Cog, name="utils"):
@@ -73,6 +75,48 @@ class Utils(commands.Cog, name="utils"):
         ]
         list = [i for i in items if i]
         return await ctx.respond(choice(list))
+
+    @utils.command(name="roll")
+    async def roll(
+        self,
+        ctx: ApplicationContext,
+        dice: Option(str, "Dices to roll. (syntax: `1d6, 2d20+2`)", required=True),
+    ):
+        """Roll a dice"""
+
+        def eval_binary_expr(op1, oper, op2):
+            op1, op2 = int(op1), int(op2)
+            return ops[oper](op1, op2)
+
+        def _roll(match):
+            a, b = match.group(1).split("d")
+            return str(randint(int(a), int(a) * int(b)))
+
+        try:
+            results = [r.lstrip() for r in re.sub("(\d+d\d+)", _roll, dice).split(",")]
+            result = [
+                eval_binary_expr(*re.findall(r"(?:\d+)|(?:[\+\-\*\/])", r))
+                if not r.isdigit()
+                else r
+                for r in results
+            ]
+
+        except Exception:
+            return await ctx.respond(
+                embed=EtherEmbeds.error(
+                    "An error occured, please check the syntax of your dices."
+                ),
+                ephemeral=True,
+                delete_after=5,
+            )
+
+        result = "\n".join(
+            f"║ {str(t).lstrip().ljust(10)}║ {str(r).lstrip().ljust(5)}║"
+            for t, r in zip(dice.split(","), result)
+        )
+        await ctx.respond(
+            f"```\n╔═══════════╦══════╗\n║ Dice      ║ Sum  ║\n╟───────────╫──────╢\n{result}\n╚═══════════╩══════╝```"
+        )
 
     @utils.command(name="urban")
     @locale_doc
