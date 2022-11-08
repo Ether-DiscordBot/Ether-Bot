@@ -100,10 +100,9 @@ class Games(commands.Cog, name="games"):
 
         board = [" " for _ in range(9)]
 
-        ps = [ctx.author, opponent]
-        random.shuffle(ps)
-
-        players = {"X": ps[0], "O": ps[1]}
+        players = {"X": opponent, "O": ctx.author}
+        if random.randint(0, 1) == 0:
+            players = {"X": ctx.author, "O": opponent}
 
         author_sign = None
 
@@ -136,7 +135,6 @@ class Games(commands.Cog, name="games"):
                 button.view.disable_all_items()
                 button.view.stop()
             elif not TicTacToe.empty_indexies(board):
-                print(board)
                 content = "Tie!"
                 button.view.disable_all_items()
                 button.view.stop()
