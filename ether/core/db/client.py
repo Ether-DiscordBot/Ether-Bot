@@ -1,16 +1,14 @@
 import asyncio
 from typing import List, Optional
-from uuid import UUID, uuid4
-from datetime import datetime
 
-from beanie import Document, init_beanie, TimeSeriesConfig
+from beanie import Document, init_beanie
 from discord import Guild as GuildModel
 from discord import Member as MemberModel
 from discord import Message as MessageModel
 from discord import User as UserModel
 from discord.ext.commands import Context
 from motor.motor_asyncio import AsyncIOMotorClient
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from ether.core.utils import LevelsHandler
 
