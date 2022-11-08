@@ -1,5 +1,5 @@
 import random
-from typing import Optional
+from typing import Literal, Optional
 
 import discord
 from discord import ApplicationContext, Member, SlashCommandGroup
@@ -13,7 +13,7 @@ from ether.core.constants import Emoji
 
 class TicTacToe:
     class Button(discord.ui.Button):
-        def __init__(self, index, row, callback):
+        def __init__(self, index, row, callback) -> None:
             super().__init__(
                 style=discord.ButtonStyle.secondary, label="\u200b", row=row
             )
@@ -24,7 +24,7 @@ class TicTacToe:
             return await self._callback(self, interaction)
 
         @classmethod
-        def getButtonStyle(cls, value):
+        def getButtonStyle(cls, value) -> discord.ButtonStyle:
             if value == "X":
                 return discord.ButtonStyle.blue
             elif value == "O":
@@ -60,7 +60,7 @@ class TicTacToe:
         return [i for i, x in enumerate(board) if x == " "]
 
     @classmethod
-    def minimax(cls, board, ai_player, other_player):
+    def minimax(cls, board, ai_player, other_player) -> Literal[-10, 10, 0]:
         if cls.check_win(board, other_player):
             return -10
         elif cls.check_win(board, ai_player):
@@ -85,7 +85,7 @@ class Games(commands.Cog, name="games"):
         self, ctx: ApplicationContext, opponent: Optional[Member] = None
     ):
         """Play a game of Tic-Tac-Toe with a friend or the bot!"""
-        vs_ai = (
+        vs_ai: bool = (
             True
             if (opponent and opponent.id == self.client.user.id) or not opponent
             else False
@@ -98,13 +98,11 @@ class Games(commands.Cog, name="games"):
                 delete_after=5,
             )
 
-        board = [" " for _ in range(9)]
+        board: list[str] = [" " for _ in range(9)]
 
         players = {"X": opponent, "O": ctx.author}
         if random.randint(0, 1) == 0:
             players = {"X": ctx.author, "O": opponent}
-
-        author_sign = None
 
         for sign, player in players.items():
             if player.id == opponent.id:
@@ -115,7 +113,7 @@ class Games(commands.Cog, name="games"):
         global turn
         turn = "X"
 
-        async def callback(button, interaction):
+        async def callback(button, interaction) -> None:
             global turn
             if players[turn].id != self.client.user.id and (
                 interaction.user.id != players[turn].id or button.label in ["X", "O"]
@@ -160,14 +158,14 @@ class Games(commands.Cog, name="games"):
 
         view.timeout = 30.0
 
-        async def timeout():
+        async def timeout() -> None:
             view.disable_all_items()
             await ctx.edit(content="Too late...", view=view)
             view.stop()
 
         view.on_timeout = timeout
 
-        async def ai_play(interaction):
+        async def ai_play(interaction) -> None:
             possibilities = TicTacToe.empty_indexies(board)
 
             if len(possibilities) <= 1:
