@@ -1,7 +1,8 @@
 import asyncio
-from typing import List, Optional
+from typing import List, Optional, Literal
 
 from beanie import Document, init_beanie
+from beanie.operators import AddToSet
 from discord import Guild as GuildModel
 from discord import Member as MemberModel
 from discord import Message as MessageModel
@@ -92,20 +93,22 @@ class Database:
     @staticmethod
     class ReactionRole:
         @staticmethod
-        async def create(message_id: int, options: List):
-            reaction = ReactionRole(message_id=message_id, options=options)
+        async def create(message_id: int, options: List, type: int = 0):
+            reaction = ReactionRole(message_id=message_id, options=options, type=type)
 
             await reaction.insert()
 
             return await Database.ReactionRole.get_or_none(message_id)
 
         @staticmethod
-        async def get_or_create(message_id: int):
+        async def get_or_create(
+            message_id: int, options: Optional[List] = None, type: int = 0
+        ):
             reaction = await Database.ReactionRole.get_or_none(message_id)
             if reaction:
                 return reaction
 
-            return await Database.ReactionRole.create(message_id)
+            return await Database.ReactionRole.create(message_id, options, type)
 
         @staticmethod
         async def get_or_none(message_id: int):
@@ -116,6 +119,14 @@ class Database:
                 return reaction
 
             return None
+
+        @staticmethod
+        async def update_or_create(message_id: int, option, _type: int = 0):
+            reaction = await Database.ReactionRole.get_or_none(message_id)
+            if reaction:
+                return await reaction.update({"$push": {ReactionRole.options: option}})
+
+            return await Database.ReactionRole.create(message_id, [option], _type)
 
         class ReactionRoleOption:
             @staticmethod
@@ -274,6 +285,11 @@ class ReactionRole(Document):
 
     message_id: int
     options: List[ReactionRoleOption]
+    type: Literal[0, 1, 2, 3] = 0
+    # 0 => normal
+    # 1 => unique
+    # 2 => verify
+    # 3 => drop
 
     async def from_id(message_id: int):
         return await Database.ReactionRole.get_or_none(message_id)
