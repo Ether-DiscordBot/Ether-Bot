@@ -60,6 +60,17 @@ class Image(commands.Cog, name="image"):
 
         await ctx.respond(file=File(fp=image.bytes, filename="philosoraptor.png"))
 
+    @image.command(name="never_again")
+    @locale_doc
+    async def never_again(self, ctx, first: str, second: str, third: str):
+        """Never again meme"""
+        image = ImageModifier("never_again.png")
+        image.write(first, (125, 200), 15, 3, "mm", fill=(0, 0, 0))
+        image.write(second, (350, 200), 15, 3, "mm", fill=(0, 0, 0))
+        image.write(third, (100, 480), 15, 3, "mm", fill=(0, 0, 0))
+
+        await ctx.respond(file=File(fp=image.bytes, filename="never_again.png"))
+
 
 class ImageModifier:
     FONT = ImageFont.truetype(
