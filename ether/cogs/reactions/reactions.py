@@ -96,7 +96,7 @@ class Reactions(commands.Cog, name="reaction"):
             await r_message.delete()
 
     @reactions.command()
-    @commands.is_owner()
+    @commands.has_permissions(manage_roles=True)
     async def add(
         self,
         ctx: ApplicationCommand,
