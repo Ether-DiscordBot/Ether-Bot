@@ -23,41 +23,32 @@ class TicTacToe:
         async def callback(self, interaction):
             return await self._callback(self, interaction)
 
-        @classmethod
-        def getButtonStyle(cls, value) -> discord.ButtonStyle:
-            if value == "X":
-                return discord.ButtonStyle.blue
-            elif value == "O":
-                return discord.ButtonStyle.red
-            else:
-                return discord.ButtonStyle.gray
-
     @classmethod
     def check_win(cls, board, player: str) -> bool:
         b = board
 
         # Check rows
-        rows = [[b[i], b[i + 1], b[i + 2]] for i in range(0, 8, 3)]
-        for row in rows:
+        for row in [[b[i], b[i + 1], b[i + 2]] for i in range(0, 8, 3)]:
             if all(i == player for i in row):
                 return True
 
         # Check columns
-        cols = [[b[i], b[i + 3], b[i + 6]] for i in range(3)]
-        for col in cols:
+        for col in [[b[i], b[i + 3], b[i + 6]] for i in range(3)]:
             if all(i == player for i in col):
                 return True
 
         # Check diagonals
-        diags = [
-            [b[0], b[4], b[8]],
-            [b[2], b[4], b[6]],
-        ]
-        return any(all(i == player for i in diag) for diag in diags)
+        return any(
+            all(i == player for i in diag)
+            for diag in [
+                [b[0], b[4], b[8]],
+                [b[2], b[4], b[6]],
+            ]
+        )
 
     @classmethod
     def empty_indexies(cls, board) -> list:
-        return [i for i, x in enumerate(board) if x == " "]
+        return [i for i, x in enumerate(board) if x == 0]
 
     @classmethod
     def minimax(cls, board, ai_player, other_player) -> Literal[-10, 10, 0]:
@@ -98,11 +89,10 @@ class Games(commands.Cog, name="games"):
                 delete_after=5,
             )
 
-        board: list[str] = [" " for _ in range(9)]
+        board: list[int] = [0 for _ in range(9)]
 
-        players = {"X": opponent, "O": ctx.author}
-        if random.randint(0, 1) == 0:
-            players = {"X": ctx.author, "O": opponent}
+        players = {1: opponent, 2: ctx.author}
+        # 1 => "X", 2 => "O"
 
         for sign, player in players.items():
             if player.id == opponent.id:
@@ -111,7 +101,7 @@ class Games(commands.Cog, name="games"):
                 author_sign = sign
 
         global turn
-        turn = "X"
+        turn = 1 if random.randint(0, 1) == 0 else 2
 
         async def callback(button, interaction) -> None:
             global turn
@@ -123,9 +113,9 @@ class Games(commands.Cog, name="games"):
 
             board[button.index] = turn
 
-            button.label = turn
+            button.label = "X" if turn == 1 else "O"
             button.style = (
-                discord.ButtonStyle.green if turn == "X" else discord.ButtonStyle.red
+                discord.ButtonStyle.green if turn == 1 else discord.ButtonStyle.red
             )
 
             if TicTacToe.check_win(board, turn):
@@ -137,7 +127,7 @@ class Games(commands.Cog, name="games"):
                 button.view.disable_all_items()
                 button.view.stop()
             else:
-                turn = "O" if turn == "X" else "X"
+                turn = 2 if turn == 1 else 1
                 content = f"<@{ctx.author.id}> VS <@{self.client.user.id if vs_ai else opponent.id}>\nIt's the turn of {players[turn]}! *(you have 30 sec)*"
 
             if interaction.response.is_done():
@@ -153,8 +143,7 @@ class Games(commands.Cog, name="games"):
 
         view = discord.ui.View()
         for i in range(9):
-            btn = TicTacToe.Button(row=int(i / 3), index=i, callback=callback)
-            view.add_item(btn)
+            view.add_item(TicTacToe.Button(row=int(i / 3), index=i, callback=callback))
 
         view.timeout = 30.0
 
