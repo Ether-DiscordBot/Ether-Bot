@@ -23,6 +23,9 @@ class EtherEmbeds:
     def error(description: str):
         return Embed(description=description, colour=Colors.ERROR)
 
+    def success(description: str):
+        return Embed(description=description, colour=Colors.SUCCESS)
+
 
 class NerglishTranslator:
     """

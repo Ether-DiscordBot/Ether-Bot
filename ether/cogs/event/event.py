@@ -69,11 +69,11 @@ class Event(commands.Cog):
             return
 
         if Database.client != None:
-            await Guild.from_guild_object(ctx.guild)
+            guild = await Guild.from_guild_object(ctx.guild)
             await GuildUser.from_member_object(ctx.author)
             if random.randint(1, 100) <= 33:
                 new_level = await Database.GuildUser.add_exp(
-                    ctx.author.id, ctx.guild.id, 4
+                    ctx.author.id, ctx.guild.id, 4 * guild.exp_mult
                 )
                 if new_level:
                     await ctx.channel.send(

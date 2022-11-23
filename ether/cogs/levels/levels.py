@@ -1,16 +1,17 @@
 import base64
 import io
 import os
+from typing import Optional
 import discord
 
 import requests
 from PIL import Image, ImageDraw, ImageFont
-from discord import File, SlashCommandGroup
+from discord import File, SlashCommandGroup, Embed, Option, OptionChoice
 from discord.ext import commands
 from ether.core.i18n import _
 
 from ether.core.utils import LevelsHandler, EtherEmbeds
-from ether.core.db import Database
+from ether.core.db import Database, User, GuildUser, Guild
 from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji
 
@@ -23,11 +24,31 @@ class Levels(commands.Cog, name="levels"):
     levels = SlashCommandGroup("levels", "levels commands!")
 
     @levels.command(name="boosters")
+    @commands.has_permissions(moderate_members=True)
     @locale_doc
-    async def boosters(self, ctx):
+    async def boost(
+        self,
+        ctx,
+        multiplier: Option(
+            float, "Set the experience multiplier of this server (default: 1.0)"
+        ),
+    ) -> None:
         """Get the boosters of the server"""
-        # TODO View all xp roles booster in the server
-        pass
+        db_guild = await Guild.from_id(ctx.guild.id)
+
+        if multiplier > 5:
+            await ctx.respond("The multiplier must be less than 5.0")
+            return
+        elif multiplier < 0:
+            await ctx.respond("The multiplier must be greater than 0.0")
+            return
+
+        await db_guild.set({Guild.exp_mult: multiplier})
+
+        await ctx.respond(
+            embed=EtherEmbeds.success(f"Experience multiplier set to `{multiplier}`!"),
+            delete_after=5,
+        )
 
     @levels.command(name="xp")
     @commands.has_permissions(moderate_members=True)
@@ -37,21 +58,71 @@ class Levels(commands.Cog, name="levels"):
         # TODO Set a user to a specific level or xp value
         pass
 
+    @levels.command(name="leaderboard")
+    @locale_doc
+    async def leaderboard(self, ctx):
+        """Get the leaderboard of the server"""
+        members = await Database.GuildUser.get_all(ctx.guild.id, max=10)
+        members.sort(key=lambda x: (x.levels, x.exp), reverse=True)
+
+        embed = Embed(title=_("Leaderboard"), description="")
+        i = 0
+        for member in members:
+            i += 1
+            match i:
+                case 1:
+                    place = "🥇"
+                case 2:
+                    place = "🥈"
+                case 3:
+                    place = "🥉"
+                case _:
+                    place = f"#{i}"
+
+            user = await ctx.guild.fetch_member(member.user_id)
+            embed.description += f"{place} {user.mention} - Level **{member.levels}** | **{member.exp}** xp\n"
+
+        await ctx.respond(embed=embed)
+
+    @levels.command(name="set_background")
+    @locale_doc
+    async def set_background(
+        self,
+        ctx,
+        background: Option(
+            int,
+            name="background",
+            description="Choose the background of your rank card",
+            choices=[
+                OptionChoice("Grainy (default)", value=0),
+                OptionChoice("Art Deco", value=1),
+                OptionChoice("Rapture", value=2),
+                OptionChoice("Mucha", value=3),
+            ],
+        ),
+    ):
+        """Set the background of your rank card"""
+        db_user = await User.from_id(ctx.author.id)
+        await db_user.set({User.background: background})
+
+        await ctx.respond(
+            embed=EtherEmbeds.success(_("✅ Your background has been changed!")),
+            delete_after=5,
+        )
+
     @levels.command(name="profile")
     @locale_doc
-    async def profile(self, ctx, user: discord.Member = None):
+    async def profile(self, ctx, member: Optional[discord.Member] = None):
         """Get the profile of a user"""
-        user = user if user else ctx.user
-        dbuser = (
-            await Database.GuildUser.get_or_create(  # FIXME Always return the same user
-                user.id, ctx.guild_id
-            )
-        )
-        if not dbuser:
+        user = member if member else ctx.author
+        db_guild_user = await GuildUser.from_member_object(user)
+        db_user = await User.from_id(user.id)
+
+        if not db_guild_user or not db_user:
             return await ctx.respond(
                 embed=EtherEmbeds.error("Error when trying to get your profile!")
             )
-        card = CardHandler.create_card(user, dbuser)
+        card = CardHandler.create_card(user, db_user, db_guild_user)
         image = io.BytesIO(base64.b64decode(card))
         return await ctx.respond(file=File(fp=image, filename=f"{user.name}_card.png"))
 
@@ -72,18 +143,25 @@ class CardHandler:
     MASK = Image.open("ether/assets/mask.png", "r").convert("L")
     MAX_SIZE_BAR = 634
 
-    def create_card(self, db_user):
-        img = Image.open("ether/assets/background.png").convert("RGBA")
+    BACKGROUNDS = [
+        Image.open("ether/assets/backgrounds/grainy.png").convert("RGBA"),
+        Image.open("ether/assets/backgrounds/art_deco.png").convert("RGBA"),
+        Image.open("ether/assets/backgrounds/rapture.png").convert("RGBA"),
+        Image.open("ether/assets/backgrounds/mucha.png").convert("RGBA"),
+    ]
+
+    def create_card(user, db_user, db_guild_user):
+        img = CardHandler.BACKGROUNDS[db_user.background].copy()
         # Profile Picture
-        r = requests.get(self.display_avatar)
+        r = requests.get(user.display_avatar)
         pp = Image.open(io.BytesIO(r.content))
         pp = pp.resize(CardHandler.MASK.size)
 
         # Advancement
         exp_advancement = (
             CardHandler.MAX_SIZE_BAR
-            * db_user.exp
-            / LevelsHandler.get_next_level(db_user.levels)
+            * db_guild_user.exp
+            / LevelsHandler.get_next_level(db_guild_user.levels)
         )
 
         img.paste(pp, (34, 56), CardHandler.MASK)
@@ -120,14 +198,16 @@ class CardHandler:
             outline=(255, 255, 255),
         )
 
-        level_size = draw.textsize(str(db_user.levels), font=CardHandler.LEVEL_FONT)
+        level_size = draw.textsize(
+            str(db_guild_user.levels), font=CardHandler.LEVEL_FONT
+        )
 
         draw.text(
             xy=(
                 228 + exp_advancement - (level_size[0] / 2) + 3,
                 162 - (level_size[1] / 2),
             ),
-            text=f"{db_user.levels}",
+            text=f"{db_guild_user.levels}",
             fill=(64, 64, 64),
             font=CardHandler.LEVEL_FONT,
         )
@@ -136,7 +216,7 @@ class CardHandler:
         # Name
         draw.text(
             xy=(228, 89),
-            text=f"{self.name[:13]}",
+            text=f"{user.name[:20]}",
             fill=(255, 255, 255),
             font=CardHandler.BASE_FONT,
         )
@@ -144,25 +224,25 @@ class CardHandler:
         # Discriminator
         draw.text(
             xy=(
-                228 + CardHandler.BASE_FONT.getsize(f"{self.name[:13]}")[0] + 5,
+                228 + CardHandler.BASE_FONT.getsize(f"{user.name[:20]}")[0] + 5,
                 101,
             ),
-            text=f"#{self.discriminator}",
+            text=f"#{user.discriminator}",
             fill=(175, 175, 175),
             font=CardHandler.DISC_FONT,
         )
 
         # Experience
-        exp_size = draw.textsize(str(db_user.exp), CardHandler.EXP_FONT)
+        exp_size = draw.textsize(str(db_guild_user.exp), CardHandler.EXP_FONT)
         draw.text(
             xy=(228, 183),
-            text=f"{db_user.exp}",
+            text=f"{db_guild_user.exp}",
             fill=(255, 255, 255),
             font=CardHandler.EXP_FONT,
         )
         draw.text(
             xy=(228 + exp_size[0], 183),
-            text=f"/{LevelsHandler.get_next_level(db_user.levels)}exp",
+            text=f"/{LevelsHandler.get_next_level(db_guild_user.levels)}exp",
             fill=(175, 175, 175),
             font=CardHandler.EXP_FONT,
         )

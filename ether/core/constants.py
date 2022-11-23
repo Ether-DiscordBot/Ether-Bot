@@ -1,9 +1,9 @@
 # COLORS
 class Colors:
 
+    DEFAULT = 0x5865F2
     ERROR = 0xED4245
     SUCCESS = 0x57F287
-    DEFAULT = 0x5865F2
     BAN = 0xED4245
     KICK = 0xFEE75C
     WARN = 0xFEE75C
