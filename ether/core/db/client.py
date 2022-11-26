@@ -130,8 +130,8 @@ class Database:
     @staticmethod
     class ReactionRole:
         @staticmethod
-        async def create(message_id: int, options: List, type: int = 0):
-            reaction = ReactionRole(message_id=message_id, options=options, type=type)
+        async def create(message_id: int, options: List, _type: int = 0):
+            reaction = ReactionRole(message_id=message_id, options=options, type=_type)
 
             await reaction.insert()
             log.info(f"Creating reaction role (message id: {message_id})")
@@ -326,7 +326,7 @@ class ReactionRole(Document):
 
     message_id: int
     options: List[ReactionRoleOption]
-    type: Literal[0, 1, 2, 3] = 0
+    _type: Literal[0, 1, 2, 3] = 0
     # 0 => normal
     # 1 => unique
     # 2 => verify

@@ -6,7 +6,8 @@ import discord
 
 import requests
 from PIL import Image, ImageDraw, ImageFont
-from discord import File, SlashCommandGroup, Embed, Option, OptionChoice
+from discord import SlashCommandGroup, Embed, Option, OptionChoice
+from discord.file import File
 from discord.ext import commands
 from ether.core.i18n import _
 
