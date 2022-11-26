@@ -46,6 +46,8 @@ class Reactions(commands.Cog, name="reaction"):
                 ][0]
 
                 match reaction.type:
+                    case 0:  # normal
+                        await payload.member.add_roles(role)
                     case 1:  # unique
                         for r in message.reactions:
                             users = await r.users().flatten()
@@ -58,13 +60,10 @@ class Reactions(commands.Cog, name="reaction"):
                                         await r.remove(m)
                         await payload.member.add_roles(role)
                     case 2:  # verify
-                        await payload.member.add_roles(role)
                         await msg_reaction.remove(payload.member)
+                        await payload.member.add_roles(role)
                     case 3:  # drop
                         await payload.member.remove_roles(role)
-                        await msg_reaction.remove(payload.member)
-                    case _:  # normal
-                        await payload.member.add_roles(role)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
@@ -79,15 +78,16 @@ class Reactions(commands.Cog, name="reaction"):
                 role = guild.get_role(matchs_emojis[0].role_id)
 
                 member = guild.get_member(payload.user_id)
+
                 match reaction.type:
+                    case 0:  # normal
+                        await member.remove_roles(role)
                     case 1:  # unique
                         await member.remove_roles(role)
-                    case 2:  # verify\
+                    case 2:  # verify
                         pass
                     case 3:  # drop
                         await member.add_roles(role)
-                    case _:  # normal
-                        await member.remove_roles(role)
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
@@ -106,15 +106,17 @@ class Reactions(commands.Cog, name="reaction"):
         _type: Option(
             int,
             name="type",
-            description="Reaction type (replace is already set)",
+            description="Reaction type",
             choices=[
-                OptionChoice(name="normal", value=0),
-                OptionChoice(name="unique", value=1),
-                OptionChoice(name="verify", value=2),
-                OptionChoice(name="drop", value=3),
+                OptionChoice(name="normal", value=0),  # Add or remove role
+                OptionChoice(name="unique", value=1),  # Only one role per messages
+                OptionChoice(name="verify", value=2),  # Claim one time for ever
+                OptionChoice(name="drop", value=3),  # Can only remove role
             ],
         ) = 0,
     ):
+        """Add a reaction role to a message"""
+
         try:
             msg: Message = await ctx.fetch_message(message_id)
         except NotFound:
