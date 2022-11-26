@@ -45,7 +45,7 @@ class Reactions(commands.Cog, name="reaction"):
                     or (r.is_custom_emoji() and r.emoji.name == payload.emoji.name)
                 ][0]
 
-                match reaction.type:
+                match reaction._type:
                     case 0:  # normal
                         await payload.member.add_roles(role)
                     case 1:  # unique
@@ -79,7 +79,7 @@ class Reactions(commands.Cog, name="reaction"):
 
                 member = guild.get_member(payload.user_id)
 
-                match reaction.type:
+                match reaction._type:
                     case 0:  # normal
                         await member.remove_roles(role)
                     case 1:  # unique
