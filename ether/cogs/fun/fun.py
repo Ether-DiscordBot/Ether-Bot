@@ -5,15 +5,15 @@ import os
 from discord import (
     ApplicationCommand,
     Embed,
-    Interaction,
+    ApplicationContext,
     Option,
     OptionChoice,
     SlashCommandGroup,
 )
 from discord.ext import commands
 from howlongtobeatpy import HowLongToBeat
-from ether.core.i18n import _
 
+from ether.core.i18n import _
 from ether.core.utils import EtherEmbeds, NerglishTranslator
 from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji
@@ -60,7 +60,7 @@ class Fun(commands.Cog, name="fun"):
 
     @fun.command()
     @locale_doc
-    async def gif(self, interaction: Interaction, *, query):
+    async def gif(self, ctx: ApplicationContext, *, query):
         """Search a gif on giphy"""
         r = get(
             f"https://api.giphy.com/v1/gifs/random?tag={query}&api_key={self.giphy_api_key}"
@@ -68,7 +68,7 @@ class Fun(commands.Cog, name="fun"):
 
         r = r.json()
         if not r["data"]:
-            await interaction.response.send_message(
+            await ctx.respond(
                 embed=EtherEmbeds.error(
                     "Sorry, I could not find any gifs with this query.", delete_after=5
                 )
@@ -76,10 +76,10 @@ class Fun(commands.Cog, name="fun"):
             return
         gif_url = r["data"]["url"]
 
-        await interaction.response.send_message(gif_url)
+        await ctx.respond(gif_url)
 
     @fun.command()
-    async def sticker(self, interaction: Interaction, *, query):
+    async def sticker(self, ctx: ApplicationContext, *, query):
         """Search a sticker on giphy"""
         r = get(
             f"https://api.giphy.com/v1/stickers/random?tag={query}&api_key={self.giphy_api_key}"
@@ -87,7 +87,7 @@ class Fun(commands.Cog, name="fun"):
 
         r = r.json()
         if not r["data"]:
-            await interaction.response.send_message(
+            await ctx.respond(
                 embed=EtherEmbeds.error(
                     "Sorry, I could not find any gifs with this query.", delete_after=5
                 )
@@ -95,40 +95,38 @@ class Fun(commands.Cog, name="fun"):
             return
         sticker_url = r["data"]["images"]["original"]["url"]
 
-        await interaction.response.send_message(sticker_url)
+        await ctx.respond(sticker_url)
 
     @fun.command(name="8-ball")
-    async def height_ball(self, interaction: Interaction, question: str):
+    async def height_ball(self, ctx: ApplicationContext, question: str):
         """Ask the magic 8-ball a question!"""
 
-        await interaction.response.send_message(
-            f"🎱 {choice(choice(self.HEIGHT_BALL_ANSWERS))}"
-        )
+        await ctx.respond(f"🎱 {choice(choice(self.HEIGHT_BALL_ANSWERS))}")
 
     @fun.command(name="say")
     async def say(
         self,
-        interaction: Interaction,
+        ctx: ApplicationContext,
         message: str,
         hide: Option(bool, "Hide ?", default=False),
     ):
         """Make the bot say something"""
 
         if hide:
-            await interaction.response.send_message(
+            await ctx.respond(
                 "👌 Done! (only you can see this message)",
                 ephemeral=True,
                 delete_after=5,
             )
-            await interaction.channel.send(message)
+            await ctx.channel.send(message)
             return
 
-        await interaction.response.send_message(message)
+        await ctx.respond(message)
 
     @fun.command(name="horoscope")
     async def horoscope(
         self,
-        interaction: Interaction,
+        ctx: ApplicationContext,
         sign: Option(
             str,
             "choose an astrological sign",
@@ -159,7 +157,7 @@ class Fun(commands.Cog, name="fun"):
             title=f":{sign.lower()}: Horoscope", description=f"{r['horoscope']}\n\n"
         )
 
-        await interaction.response.send_message(embed=embed)
+        await ctx.respond(embed=embed)
 
     @fun.command(name="nerglish")
     async def nerglish(self, ctx: ApplicationCommand, text: str):
