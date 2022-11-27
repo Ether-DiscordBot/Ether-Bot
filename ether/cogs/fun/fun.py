@@ -1,4 +1,5 @@
-from random import choice
+from random import choice, randint, seed
+from typing import Optional
 from requests import get, request
 import os
 
@@ -6,6 +7,7 @@ from discord import (
     ApplicationCommand,
     Embed,
     ApplicationContext,
+    Member,
     Option,
     OptionChoice,
     SlashCommandGroup,
@@ -122,6 +124,45 @@ class Fun(commands.Cog, name="fun"):
             return
 
         await ctx.respond(message)
+
+    @fun.command(name="howgay")
+    async def howgay(self, ctx: ApplicationContext, user: Optional[Member] = None):
+        """The bot guesses how gay your are"""
+
+        user = ctx.author if not user else user
+
+        seed(user.id / 268)
+        gaymeter = randint(0, 100)
+
+        if user == ctx.author:
+            return await ctx.respond(f"You are gay at `{gaymeter}%` !")
+        await ctx.respond(f"{user.mention} is gay at `{gaymeter}%` !")
+
+    @fun.command(name="attractive")
+    async def pretty(self, ctx: ApplicationContext, user: Optional[Member] = None):
+        """The bot tells you how attractive you are"""
+
+        user = ctx.author if not user else user
+
+        seed(user.id / 294)
+        attractivemeter = randint(0, 100)
+
+        if user == ctx.author:
+            return await ctx.respond(f"You are `{attractivemeter}%` attractive !")
+        await ctx.respond(f"{user.mention} is `{attractivemeter}%` attractive !")
+
+    @fun.command(name="hot")
+    async def hot(self, ctx: ApplicationContext, user: Optional[Member] = None):
+        """The bot guesses how hot you are"""
+
+        user = ctx.author if not user else user
+
+        seed(user.id / 15)
+        hotmeter = randint(0, 100)
+
+        if user == ctx.author:
+            return await ctx.respond(f"You are `{hotmeter}%` hot!")
+        await ctx.respond(f"{user.mention} is `{hotmeter}%` hot!")
 
     @fun.command(name="horoscope")
     async def horoscope(
