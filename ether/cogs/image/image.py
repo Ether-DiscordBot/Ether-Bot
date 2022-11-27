@@ -73,6 +73,15 @@ class Image(commands.Cog, name="image"):
 
         await ctx.respond(file=File(fp=image.bytes, filename="never_again.png"))
 
+    @image.command(name="doom_bonked_zombie")
+    @locale_doc
+    async def doom_bonked_zombie(self, ctx: ApplicationContext, text: str):
+        """Doom bonked zombie meme"""
+        image = ImageModifier("doom_bonked_zombie.jpg")
+        image.write(text, (400, 10), 30, 4, "ma", fill=(255, 255, 255))
+
+        await ctx.respond(file=File(fp=image.bytes, filename="doom_bonked_zombie.jpg"))
+
 
 class ImageModifier:
     FONT = ImageFont.truetype(
