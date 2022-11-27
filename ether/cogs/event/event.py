@@ -1,7 +1,7 @@
 import os
 import random
-import discord
 
+from discord import ApplicationContext, Embed, HTTPException, errors
 from discord.ext import commands
 
 from ether.core.db.client import Database, Guild, GuildUser
@@ -84,7 +84,7 @@ class Event(commands.Cog):
     async def on_application_command(self, ctx):
         if random.randint(1, 100) <= 5:
             await ctx.channel.send(
-                embed=discord.Embed(
+                embed=Embed(
                     title="Support us!",
                     description="Ether is a free and open source bot, if you like it, please vote for the bot on [Top.gg](https://top.gg/bot/985100792270819389) and consider supporting us on [Ko-fi](https://ko-fi.com/holycrusader)!",
                     color=0x2F3136,
@@ -92,19 +92,19 @@ class Event(commands.Cog):
             )
 
     @commands.Cog.listener()
-    async def remove_cog(ctx, extension):
+    async def remove_cog(self, ctx: ApplicationContext, extension):
         log.info(f"Removed cog: {extension}")
 
     @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
+    async def on_command_error(self, ctx: ApplicationContext, error):
         ignored = (
             commands.NoPrivateMessage,
             commands.DisabledCommand,
             commands.CheckFailure,
             commands.CommandNotFound,
             commands.UserInputError,
-            discord.HTTPException,
-            discord.errors.NotFound,
+            HTTPException,
+            errors.NotFound,
         )
         error = getattr(error, "original", error)
 

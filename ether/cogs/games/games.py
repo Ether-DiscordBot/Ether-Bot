@@ -196,7 +196,7 @@ class Games(commands.Cog, name="games"):
 
     @games.command(name="rps")
     @locale_doc
-    async def rps(self, ctx, opponent: Member):
+    async def rps(self, ctx: ApplicationContext, opponent: Member):
         """Play a game of Rock-Paper-Scissors with a friend!"""
         # TODO Rock/Paper/Scissors
         pass

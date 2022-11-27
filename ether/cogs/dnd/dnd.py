@@ -1,6 +1,6 @@
 import requests
 
-from discord import ApplicationCommand, Embed, Option, OptionChoice, SlashCommandGroup
+from discord import ApplicationContext, Embed, Option, OptionChoice, SlashCommandGroup
 from discord.ext import commands
 
 from ether.core.utils import EtherEmbeds
@@ -23,7 +23,7 @@ class DnD(commands.Cog, name="dnd"):
     @locale_doc
     async def infos(
         self,
-        ctx: ApplicationCommand,
+        ctx: ApplicationContext,
         _class: Option(
             str,
             name="class",
@@ -94,7 +94,7 @@ class DnD(commands.Cog, name="dnd"):
     @locale_doc
     async def spells(
         self,
-        ctx: ApplicationCommand,
+        ctx: ApplicationContext,
         _class: Option(
             str,
             name="class",
@@ -145,7 +145,7 @@ class DnD(commands.Cog, name="dnd"):
 
     @dnd.command(name="spell")
     @locale_doc
-    async def spell(self, ctx: ApplicationCommand, spell: str):
+    async def spell(self, ctx: ApplicationContext, spell: str):
         """Get informations about a spell"""
         spell = spell.lower().replace(" ", "-")
 

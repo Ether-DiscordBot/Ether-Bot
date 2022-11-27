@@ -4,7 +4,7 @@ from requests import get, request
 import os
 
 from discord import (
-    ApplicationCommand,
+    ApplicationContext,
     Embed,
     ApplicationContext,
     Member,
@@ -13,7 +13,6 @@ from discord import (
     SlashCommandGroup,
 )
 from discord.ext import commands
-from howlongtobeatpy import HowLongToBeat
 
 from ether.core.i18n import _
 from ether.core.utils import EtherEmbeds, NerglishTranslator
@@ -150,8 +149,8 @@ class Fun(commands.Cog, name="fun"):
         attractivemeter = randint(0, 100)
 
         if user == ctx.author:
-            return await ctx.respond(f"You are `{attractivemeter}%` attractive !")
-        await ctx.respond(f"{user.mention} is `{attractivemeter}%` attractive !")
+            return await ctx.respond(f"You are `{attractivemeter}%` attractive!")
+        await ctx.respond(f"{user.mention} is `{attractivemeter}%` attractive!")
 
     @fun.command(name="howhot")
     async def howhot(self, ctx: ApplicationContext, user: Optional[Member] = None):
@@ -203,41 +202,7 @@ class Fun(commands.Cog, name="fun"):
         await ctx.respond(embed=embed)
 
     @fun.command(name="nerglish")
-    async def nerglish(self, ctx: ApplicationCommand, text: str):
+    async def nerglish(self, ctx: ApplicationContext, text: str):
         """Translate text to nerglish"""
         translated = NerglishTranslator.translate(text)
         await ctx.respond(translated)
-
-    @fun.command(name="howlongtobeat")
-    async def howlongtobeat(self, ctx: ApplicationCommand, game: str):
-        """Get the time to beat a game"""
-        results_list = await HowLongToBeat().async_search(game_name=game)
-        if results_list is not None and len(results_list) > 0:
-            data = max(results_list, key=lambda element: element.similarity)
-        else:
-            return await ctx.respond(
-                embed=EtherEmbeds.error("Sorry, we could not find your game."),
-                ephemeral=True,
-            )
-
-        embed = Embed(title=data.game_name, url=data.game_web_link)
-        embed.add_field(
-            name=data.gameplay_main_label,
-            value=f"{data.gameplay_main} {data.gameplay_main_unit}",
-        )
-        embed.add_field(
-            name=data.gameplay_main_extra_label,
-            value=f"{data.gameplay_main_extra} {data.gameplay_main_extra_unit}",
-        )
-        embed.add_field(
-            name=data.gameplay_completionist_label,
-            value=f"{data.gameplay_completionist} {data.gameplay_completionist_unit}",
-        )
-
-        embed.set_thumbnail(url=f"https://howlongtobeat.com{data.game_image_url}")
-        embed.set_footer(
-            text="Powered by howlongtobeat.com",
-            icon_url="https://pbs.twimg.com/profile_images/433503450404368384/tdnd53zT_400x400.png",
-        )
-
-        await ctx.respond(embed=embed)

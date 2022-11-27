@@ -6,7 +6,7 @@ import discord
 
 import requests
 from PIL import Image, ImageDraw, ImageFont
-from discord import SlashCommandGroup, Embed, Option, OptionChoice
+from discord import ApplicationContext, SlashCommandGroup, Embed, Option, OptionChoice
 from discord.file import File
 from discord.ext import commands
 from ether.core.i18n import _
@@ -29,7 +29,7 @@ class Levels(commands.Cog, name="levels"):
     @locale_doc
     async def boost(
         self,
-        ctx,
+        ctx: ApplicationContext,
         multiplier: Option(
             float, "Set the experience multiplier of this server (default: 1.0)"
         ),
@@ -54,7 +54,7 @@ class Levels(commands.Cog, name="levels"):
     @levels.command(name="xp")
     @commands.has_permissions(moderate_members=True)
     @locale_doc
-    async def xp(self, level: int = -1, xp: int = -1):
+    async def xp(self, ctx: ApplicationContext, level: int = -1, xp: int = -1):
         """Set the xp or the level"""
         # TODO Set a user to a specific level or xp value
         pass
@@ -89,7 +89,7 @@ class Levels(commands.Cog, name="levels"):
     @locale_doc
     async def set_background(
         self,
-        ctx,
+        ctx: ApplicationContext,
         background: Option(
             int,
             name="background",
@@ -113,7 +113,9 @@ class Levels(commands.Cog, name="levels"):
 
     @levels.command(name="profile")
     @locale_doc
-    async def profile(self, ctx, member: Optional[discord.Member] = None):
+    async def profile(
+        self, ctx: ApplicationContext, member: Optional[discord.Member] = None
+    ):
         """Get the profile of a user"""
         user = member if member else ctx.author
         db_guild_user = await GuildUser.from_member_object(user)

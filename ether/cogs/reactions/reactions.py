@@ -1,5 +1,5 @@
 from discord import (
-    ApplicationCommand,
+    ApplicationContext,
     Message,
     NotFound,
     Role,
@@ -99,7 +99,7 @@ class Reactions(commands.Cog, name="reaction"):
     @commands.has_permissions(manage_roles=True)
     async def add(
         self,
-        ctx: ApplicationCommand,
+        ctx: ApplicationContext,
         message_id: str,
         emoji: str,
         role: Role,

@@ -1,7 +1,14 @@
 from typing import Optional
 
 import discord
-from discord import Embed, Member, Option, SlashCommandGroup, TextChannel, User
+from discord import (
+    ApplicationContext,
+    Embed,
+    Member,
+    SlashCommandGroup,
+    TextChannel,
+    User,
+)
 from humanize import precisedelta
 
 from discord.ext import commands
@@ -109,7 +116,7 @@ class Admin(commands.Cog, name="admin"):
 
     @admin.command(name="ban")
     @commands.has_permissions(ban_members=True)
-    async def ban(self, ctx, member: User, reason: str = None):
+    async def ban(self, ctx: ApplicationContext, member: User, reason: str = None):
         """Ban a member"""
         guild = await Database.Guild.get_or_none(ctx.guild_id)
 
@@ -141,7 +148,7 @@ class Admin(commands.Cog, name="admin"):
 
     @admin.command(name="kick")
     @commands.has_permissions(kick_members=True)
-    async def kick(self, ctx, member: Member, reason=None):
+    async def kick(self, ctx: ApplicationContext, member: Member, reason=None):
         """Kick a member"""
         guild = await Database.Guild.get_or_none(ctx.guild_id)
 
@@ -173,7 +180,7 @@ class Admin(commands.Cog, name="admin"):
 
     @admin.command(name="clear")
     @commands.has_permissions(manage_messages=True)
-    async def clear(self, ctx, amount: int):
+    async def clear(self, ctx: ApplicationContext, amount: int):
         """Clear a specific amount of messages"""
         deleted = await ctx.channel.purge(limit=amount + 1)
         embed = Embed(description=f"Deleted {len(deleted) - 1} message(s).")
@@ -182,7 +189,7 @@ class Admin(commands.Cog, name="admin"):
 
     @admin.command(name="slowmode")
     @commands.has_permissions(manage_channels=True)
-    async def slowmode(self, ctx, cooldown: int):
+    async def slowmode(self, ctx: ApplicationContext, cooldown: int):
         """Set the slowmode of the channel"""
         await ctx.channel.edit(slowmode_delay=cooldown)
         if cooldown == 0:

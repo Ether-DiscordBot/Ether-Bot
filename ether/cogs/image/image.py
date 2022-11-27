@@ -2,7 +2,7 @@ import io
 import os
 import re
 
-from discord import File, SlashCommandGroup
+from discord import ApplicationContext, File, SlashCommandGroup
 from discord.ext import commands
 from PIL import Image as Img, ImageDraw, ImageFont
 from ether.core.i18n import _
@@ -23,7 +23,7 @@ class Image(commands.Cog, name="image"):
 
     @image.command(name="hold_up")
     @locale_doc
-    async def hold_up(self, ctx, text: str):
+    async def hold_up(self, ctx: ApplicationContext, text: str):
         """Hold up!"""
         image = ImageModifier("hold-up.png")
         image.write(text, (10, 10), 30, 4)
@@ -32,7 +32,7 @@ class Image(commands.Cog, name="image"):
 
     @image.command(name="vault-boy")
     @locale_doc
-    async def vault_boy(self, ctx, up: str, bottom: str):
+    async def vault_boy(self, ctx: ApplicationContext, up: str, bottom: str):
         """Vault boy meme"""
         image = ImageModifier("vault-boy.jpg")
         image.write(up, (200, 33), 25, 2, "mm")
@@ -42,7 +42,7 @@ class Image(commands.Cog, name="image"):
 
     @image.command(name="mr_incredible")
     @locale_doc
-    async def mr_incredible(self, ctx, left: str, right: str):
+    async def mr_incredible(self, ctx: ApplicationContext, left: str, right: str):
         """Mr Incredible meme"""
         image = ImageModifier("mr-incredible.png")
         image.write(left, (178, 365), 20, 1, "mm", fill=(255, 255, 255))
@@ -52,7 +52,7 @@ class Image(commands.Cog, name="image"):
 
     @image.command(name="philosoraptor")
     @locale_doc
-    async def philosoraptor(self, ctx, top: str, bottom: str):
+    async def philosoraptor(self, ctx: ApplicationContext, top: str, bottom: str):
         """Philosoraptor meme"""
         image = ImageModifier("philosoraptor.png")
         image.write(top, (200, 33), 28, 2, "mm", fill=(255, 255, 255))
@@ -62,7 +62,9 @@ class Image(commands.Cog, name="image"):
 
     @image.command(name="never_again")
     @locale_doc
-    async def never_again(self, ctx, first: str, second: str, third: str):
+    async def never_again(
+        self, ctx: ApplicationContext, first: str, second: str, third: str
+    ):
         """Never again meme"""
         image = ImageModifier("never_again.png")
         image.write(first, (125, 200), 15, 3, "mm", fill=(0, 0, 0))
