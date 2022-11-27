@@ -138,8 +138,10 @@ class Fun(commands.Cog, name="fun"):
             return await ctx.respond(f"You are gay at `{gaymeter}%` !")
         await ctx.respond(f"{user.mention} is gay at `{gaymeter}%` !")
 
-    @fun.command(name="attractive")
-    async def pretty(self, ctx: ApplicationContext, user: Optional[Member] = None):
+    @fun.command(name="howattractive")
+    async def howattractive(
+        self, ctx: ApplicationContext, user: Optional[Member] = None
+    ):
         """The bot tells you how attractive you are"""
 
         user = ctx.author if not user else user
@@ -151,8 +153,8 @@ class Fun(commands.Cog, name="fun"):
             return await ctx.respond(f"You are `{attractivemeter}%` attractive !")
         await ctx.respond(f"{user.mention} is `{attractivemeter}%` attractive !")
 
-    @fun.command(name="hot")
-    async def hot(self, ctx: ApplicationContext, user: Optional[Member] = None):
+    @fun.command(name="howhot")
+    async def howhot(self, ctx: ApplicationContext, user: Optional[Member] = None):
         """The bot guesses how hot you are"""
 
         user = ctx.author if not user else user
