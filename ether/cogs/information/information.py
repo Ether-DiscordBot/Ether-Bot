@@ -51,6 +51,7 @@ class Information(commands.Cog, name="information"):
     infos = SlashCommandGroup("infos", "Infos commands!")
 
     @infos.command(name="user")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def user(self, ctx: ApplicationContext, member: Member = None):
         """Get informations about a user"""
@@ -58,12 +59,14 @@ class Information(commands.Cog, name="information"):
         await ctx.respond(embed=InformationHandler.get_user_infos(member))
 
     @user_command(name="User infos")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def user_infos(self, ctx: ApplicationContext, member: Member):
         """Get informations about a user"""
         await ctx.respond(embed=InformationHandler.get_user_infos(member))
 
     @infos.command(name="server")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def server(self, ctx):
         """Get informations about the server"""
@@ -93,6 +96,7 @@ class Information(commands.Cog, name="information"):
         await ctx.respond(embed=embed)
 
     @infos.command(name="avatar")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def avatar(self, ctx: ApplicationContext, member: Optional[Member] = None):
         """Get the avatar of a user"""
@@ -100,6 +104,7 @@ class Information(commands.Cog, name="information"):
         return await ctx.respond(embed=InformationHandler.get_user_avatar(user))
 
     @user_command(name="User avatar")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def user_avatar(self, ctx: ApplicationContext, member: Member):
         """Get the avatar of a user"""

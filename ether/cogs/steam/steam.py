@@ -40,6 +40,7 @@ class Steam(commands.Cog, name="steam"):
         self.steam_app_list = r["applist"]["apps"]
 
     @steam.command(name="game")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def get_game(self, ctx: ApplicationContext, query: str):
         """Get infos about a game"""
@@ -104,6 +105,7 @@ class Steam(commands.Cog, name="steam"):
         await ctx.respond(embed=embed)
 
     @steam.command(name="specials")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def specials(self, ctx: ApplicationContext):
         """Get the current steam specials"""
@@ -125,6 +127,7 @@ class Steam(commands.Cog, name="steam"):
         await ctx.respond(embed=embed)
 
     @steam.command(name="top")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def top(self, ctx: ApplicationContext):
         """Get the current steam top sellers"""
@@ -148,6 +151,7 @@ class Steam(commands.Cog, name="steam"):
         await ctx.respond(embed=embed)
 
     @steam.command(name="new")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def new(self, ctx: ApplicationContext):
         """Get the current steam new releases"""

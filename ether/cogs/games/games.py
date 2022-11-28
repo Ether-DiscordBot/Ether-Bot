@@ -71,6 +71,7 @@ class Games(commands.Cog, name="games"):
     games = SlashCommandGroup("games", "Games commands!")
 
     @games.command(name="tictactoe")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def tictactoe(
         self, ctx: ApplicationContext, opponent: Optional[Member] = None
@@ -195,6 +196,7 @@ class Games(commands.Cog, name="games"):
             await ai_play(ctx.interaction)
 
     @games.command(name="rps")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def rps(self, ctx: ApplicationContext, opponent: Member):
         """Play a game of Rock-Paper-Scissors with a friend!"""

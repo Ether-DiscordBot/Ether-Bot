@@ -57,19 +57,22 @@ class Reddit(commands.Cog, name="reddit"):
 
         await ctx.respond(embed=embed)
 
-    @reddit.command()
+    @reddit.command(name="meme")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def meme(self, ctx: ApplicationContext):
         """Get a random meme from r/memes"""
         await self._reddit(ctx, subrd="memes")
 
-    @reddit.command()
+    @reddit.command(name="aww")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def aww(self, ctx: ApplicationContext):
         """Get a random cute animal from r/aww"""
         await self._reddit(ctx, subrd="aww")
 
-    @reddit.command()
+    @reddit.command(name="sadcat")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def sadcat(self, ctx: ApplicationContext):
         """Get a random sad cat from r/sadcats"""
@@ -77,6 +80,7 @@ class Reddit(commands.Cog, name="reddit"):
 
     @reddit.command(name="follow")
     @commands.has_permissions(manage_guild=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def follow(
         self,
@@ -101,6 +105,7 @@ class Reddit(commands.Cog, name="reddit"):
 
     @reddit.command(name="list")
     @commands.has_permissions(manage_guild=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def _list(self, ctx):
         """List all followed subreddits"""

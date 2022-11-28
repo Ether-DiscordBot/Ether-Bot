@@ -14,6 +14,7 @@ from ether.core.i18n import _
 from ether.core.db.client import Database, ReactionRole
 from ether.core.constants import Emoji
 from ether.core.utils import EtherEmbeds
+from ether.core.i18n import locale_doc
 
 
 class Reactions(commands.Cog, name="reaction"):
@@ -24,6 +25,8 @@ class Reactions(commands.Cog, name="reaction"):
     reactions = SlashCommandGroup("reactions", "Reactions roles commands!")
 
     @commands.Cog.listener()
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @locale_doc
     async def on_raw_reaction_add(self, payload):
         if payload.member.bot:
             return
@@ -66,6 +69,8 @@ class Reactions(commands.Cog, name="reaction"):
                         await payload.member.remove_roles(role)
 
     @commands.Cog.listener()
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @locale_doc
     async def on_raw_reaction_remove(self, payload):
         message_id = payload.message_id
         emoji = payload.emoji.name
@@ -90,6 +95,8 @@ class Reactions(commands.Cog, name="reaction"):
                         await member.add_roles(role)
 
     @commands.Cog.listener()
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @locale_doc
     async def on_raw_message_delete(self, payload):
         r_message = await ReactionRole.from_id(payload.message_id)
         if r_message:
@@ -97,6 +104,8 @@ class Reactions(commands.Cog, name="reaction"):
 
     @reactions.command()
     @commands.has_permissions(manage_roles=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @locale_doc
     async def add(
         self,
         ctx: ApplicationContext,

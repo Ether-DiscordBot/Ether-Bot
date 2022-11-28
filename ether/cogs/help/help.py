@@ -26,6 +26,7 @@ class Help(commands.Cog):
         self.ignore_cogs = ["Help", "Event"]
 
     @commands.slash_command(name="help")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def help(self, ctx):
         """Help command"""

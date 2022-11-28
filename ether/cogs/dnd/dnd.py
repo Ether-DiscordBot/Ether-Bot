@@ -20,6 +20,7 @@ class DnD(commands.Cog, name="dnd"):
     _class = dnd.create_subgroup("class", "Class commands!")
 
     @_class.command(name="infos")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def infos(
         self,
@@ -91,6 +92,7 @@ class DnD(commands.Cog, name="dnd"):
         await ctx.respond(embed=embed)
 
     @_class.command(name="spells")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def spells(
         self,
@@ -144,6 +146,7 @@ class DnD(commands.Cog, name="dnd"):
         await ctx.respond(embed=embed)
 
     @dnd.command(name="spell")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def spell(self, ctx: ApplicationContext, spell: str):
         """Get informations about a spell"""

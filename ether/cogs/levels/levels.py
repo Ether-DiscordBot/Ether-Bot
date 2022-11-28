@@ -26,6 +26,7 @@ class Levels(commands.Cog, name="levels"):
 
     @levels.command(name="boosters")
     @commands.has_permissions(moderate_members=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def boost(
         self,
@@ -53,6 +54,7 @@ class Levels(commands.Cog, name="levels"):
 
     @levels.command(name="xp")
     @commands.has_permissions(moderate_members=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def xp(self, ctx: ApplicationContext, level: int = -1, xp: int = -1):
         """Set the xp or the level"""
@@ -60,6 +62,7 @@ class Levels(commands.Cog, name="levels"):
         pass
 
     @levels.command(name="leaderboard")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def leaderboard(self, ctx):
         """Get the leaderboard of the server"""
@@ -86,6 +89,7 @@ class Levels(commands.Cog, name="levels"):
         await ctx.respond(embed=embed)
 
     @levels.command(name="set_background")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def set_background(
         self,
@@ -112,6 +116,7 @@ class Levels(commands.Cog, name="levels"):
         )
 
     @levels.command(name="profile")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def profile(
         self, ctx: ApplicationContext, member: Optional[discord.Member] = None

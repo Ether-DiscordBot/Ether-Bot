@@ -199,6 +199,7 @@ class Music(commands.Cog, name="music"):
 
     @music.command(name="join")
     @commands.guild_only()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def _connect(self, ctx: ApplicationContext) -> Optional[Player]:
         """Connect the bot to your voice channel"""
@@ -228,6 +229,7 @@ class Music(commands.Cog, name="music"):
 
     @music.command(name="leave")
     @commands.guild_only()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def _disconnect(self, ctx: ApplicationContext):
         """Disconnect the bot from your voice channel"""
@@ -245,6 +247,7 @@ class Music(commands.Cog, name="music"):
 
     @music.command(name="search")
     @commands.guild_only()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def search(self, ctx: ApplicationContext, *, search: wavelink.YouTubeTrack):
         """Search a song on YouTube"""
@@ -252,6 +255,7 @@ class Music(commands.Cog, name="music"):
 
     @music.command(name="play")
     @commands.guild_only()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def _play(self, ctx: ApplicationContext, *, query: str):
         """Play a song from YouTube"""
@@ -328,6 +332,7 @@ class Music(commands.Cog, name="music"):
 
     @music.command(name="stop")
     @commands.guild_only()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def _stop(self, ctx: ApplicationContext):
         """Stop the current song"""
@@ -343,6 +348,7 @@ class Music(commands.Cog, name="music"):
 
     @music.command(name="pause")
     @commands.guild_only()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def pause(self, ctx: ApplicationContext):
         """Pause the current song"""
@@ -364,6 +370,7 @@ class Music(commands.Cog, name="music"):
 
     @music.command(name="resume")
     @commands.guild_only()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def resume(self, ctx: ApplicationContext):
         """Resume the current song"""
@@ -383,6 +390,7 @@ class Music(commands.Cog, name="music"):
 
     @music.command(name="skip")
     @commands.guild_only()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def _skip(self, ctx: ApplicationContext):
         """Skip the current song"""
@@ -399,6 +407,7 @@ class Music(commands.Cog, name="music"):
 
     @music.command(name="shuffle")
     @commands.guild_only()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def _shuffle(self, ctx: ApplicationContext):
         """Shuffle the queue"""
@@ -425,6 +434,7 @@ class Music(commands.Cog, name="music"):
 
     @music.command(name="queue")
     @commands.guild_only()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def queue(self, ctx: ApplicationContext):
         """Show the current queue"""
@@ -473,6 +483,7 @@ class Music(commands.Cog, name="music"):
     @music.command(name="playlist")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def playlist(self, ctx: ApplicationContext, playlist_link):
         """Play a playlist from youtube"""

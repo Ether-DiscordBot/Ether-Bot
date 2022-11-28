@@ -22,6 +22,7 @@ class Image(commands.Cog, name="image"):
     image = SlashCommandGroup("image", "Image commands!")
 
     @image.command(name="hold_up")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def hold_up(self, ctx: ApplicationContext, text: str):
         """Hold up!"""
@@ -31,6 +32,7 @@ class Image(commands.Cog, name="image"):
         await ctx.respond(file=File(fp=image.bytes, filename="hold-up.png"))
 
     @image.command(name="vault-boy")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def vault_boy(self, ctx: ApplicationContext, up: str, bottom: str):
         """Vault boy meme"""
@@ -41,6 +43,7 @@ class Image(commands.Cog, name="image"):
         await ctx.respond(file=File(fp=image.bytes, filename="vault_boy.jpg"))
 
     @image.command(name="mr_incredible")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def mr_incredible(self, ctx: ApplicationContext, left: str, right: str):
         """Mr Incredible meme"""
@@ -51,6 +54,7 @@ class Image(commands.Cog, name="image"):
         await ctx.respond(file=File(fp=image.bytes, filename="mr_incredible.png"))
 
     @image.command(name="philosoraptor")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def philosoraptor(self, ctx: ApplicationContext, top: str, bottom: str):
         """Philosoraptor meme"""
@@ -61,6 +65,7 @@ class Image(commands.Cog, name="image"):
         await ctx.respond(file=File(fp=image.bytes, filename="philosoraptor.png"))
 
     @image.command(name="never_again")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def never_again(
         self, ctx: ApplicationContext, first: str, second: str, third: str
@@ -74,6 +79,7 @@ class Image(commands.Cog, name="image"):
         await ctx.respond(file=File(fp=image.bytes, filename="never_again.png"))
 
     @image.command(name="doom_bonked_zombie")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def doom_bonked_zombie(self, ctx: ApplicationContext, text: str):
         """Doom bonked zombie meme"""

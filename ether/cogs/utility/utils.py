@@ -53,6 +53,7 @@ class Utils(commands.Cog, name="utils"):
         )
 
     @utils.command(name="flipcoin")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def flip_coin(self, ctx: ApplicationContext) -> None:
         """Flip a coin"""
@@ -60,6 +61,7 @@ class Utils(commands.Cog, name="utils"):
         await ctx.respond(result)
 
     @utils.command(name="choose")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def choose(
         self,
@@ -92,6 +94,8 @@ class Utils(commands.Cog, name="utils"):
         return await ctx.respond(choice(list))
 
     @utils.command(name="roll")
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @locale_doc
     async def roll(
         self,
         ctx: ApplicationContext,
@@ -134,6 +138,7 @@ class Utils(commands.Cog, name="utils"):
         )
 
     @utils.command(name="urban")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @locale_doc
     async def urban(self, ctx: ApplicationContext, term: str):
         """Search for a term on Urban Dictionary"""
@@ -181,6 +186,8 @@ class Utils(commands.Cog, name="utils"):
             )
 
     @utils.command(name="howlongtobeat")
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @locale_doc
     async def howlongtobeat(self, ctx: ApplicationContext, game: str):
         """Get the time to beat a game"""
         results_list = await HowLongToBeat().async_search(game_name=game)
