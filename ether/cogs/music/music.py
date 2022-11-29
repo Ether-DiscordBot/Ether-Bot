@@ -473,8 +473,8 @@ class Music(commands.Cog, name="music"):
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def playlist(self, ctx: ApplicationContext, playlist_link):
-        """Play a playlist from youtube"""
+    async def playlist(self, ctx: ApplicationContext, playlist_link: str):
+        """Setup a playlist player for a YouTube playlist"""
         if not re.match(PLAYLIST_REG, playlist_link):
             ctx.respond(
                 embed=EtherEmbeds.error("The url is incorrect!"), delete_after=5
@@ -491,6 +491,13 @@ class Music(commands.Cog, name="music"):
             )
 
         r = r.json()
+        if not r["items"]:
+            return await ctx.respond(
+                embed=EtherEmbeds.error(
+                    "Could not find the playlist! Please make sure to put the playlist in public or not listed"
+                ),
+                delete_after=5,
+            )
         data = r["items"][0]["snippet"]
         embed = Embed(title=f"[Playlist] {data['title']}", url=playlist_link)
         embed.set_thumbnail(url=data["thumbnails"]["default"]["url"])
