@@ -17,7 +17,6 @@ from ether.core.db.client import Database, Guild, Playlist
 from ether.core.logging import log
 from ether.core.utils import EtherEmbeds
 from ether.core.config import config
-from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji
 
 PLAYLIST_REG = re.compile(
@@ -200,7 +199,6 @@ class Music(commands.Cog, name="music"):
     @music.command(name="join")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def _connect(self, ctx: ApplicationContext) -> Optional[Player]:
         """Connect the bot to your voice channel"""
 
@@ -230,7 +228,6 @@ class Music(commands.Cog, name="music"):
     @music.command(name="leave")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def _disconnect(self, ctx: ApplicationContext):
         """Disconnect the bot from your voice channel"""
 
@@ -248,7 +245,6 @@ class Music(commands.Cog, name="music"):
     @music.command(name="search")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def search(self, ctx: ApplicationContext, *, search: wavelink.YouTubeTrack):
         """Search a song on YouTube"""
         print(search)
@@ -256,7 +252,6 @@ class Music(commands.Cog, name="music"):
     @music.command(name="play")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def _play(self, ctx: ApplicationContext, *, query: str):
         """Play a song from YouTube"""
         vc: Player = await self._connect(ctx)
@@ -333,7 +328,6 @@ class Music(commands.Cog, name="music"):
     @music.command(name="stop")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def _stop(self, ctx: ApplicationContext):
         """Stop the current song"""
         vc: Player = await self._connect(ctx)
@@ -349,7 +343,6 @@ class Music(commands.Cog, name="music"):
     @music.command(name="pause")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def pause(self, ctx: ApplicationContext):
         """Pause the current song"""
         vc: Player = await self._connect(ctx)
@@ -371,7 +364,6 @@ class Music(commands.Cog, name="music"):
     @music.command(name="resume")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def resume(self, ctx: ApplicationContext):
         """Resume the current song"""
         vc: Player = await self._connect(ctx)
@@ -391,7 +383,6 @@ class Music(commands.Cog, name="music"):
     @music.command(name="skip")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def _skip(self, ctx: ApplicationContext):
         """Skip the current song"""
         vc: Player = await self._connect(ctx)
@@ -408,7 +399,6 @@ class Music(commands.Cog, name="music"):
     @music.command(name="shuffle")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def _shuffle(self, ctx: ApplicationContext):
         """Shuffle the queue"""
         vc: Player = await self._connect(ctx)
@@ -435,7 +425,6 @@ class Music(commands.Cog, name="music"):
     @music.command(name="queue")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def queue(self, ctx: ApplicationContext):
         """Show the current queue"""
         vc: Player = await self._connect(ctx)
@@ -484,7 +473,6 @@ class Music(commands.Cog, name="music"):
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def playlist(self, ctx: ApplicationContext, playlist_link):
         """Play a playlist from youtube"""
         if not re.match(PLAYLIST_REG, playlist_link):
@@ -530,7 +518,6 @@ class Music(commands.Cog, name="music"):
     @music.command(name="lavalinkinfo")
     @commands.guild_only()
     @commands.is_owner()
-    @locale_doc
     async def lavalink_info(self, ctx: ApplicationContext):
         """Show lavalink info"""
         player = ctx.guild.voice_client

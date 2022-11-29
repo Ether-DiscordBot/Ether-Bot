@@ -13,7 +13,6 @@ from ether.core.i18n import _
 
 from ether.core.utils import LevelsHandler, EtherEmbeds
 from ether.core.db import Database, User, GuildUser, Guild
-from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji
 
 
@@ -27,7 +26,6 @@ class Levels(commands.Cog, name="levels"):
     @levels.command(name="boosters")
     @commands.has_permissions(moderate_members=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def boost(
         self,
         ctx: ApplicationContext,
@@ -55,7 +53,6 @@ class Levels(commands.Cog, name="levels"):
     @levels.command(name="xp")
     @commands.has_permissions(moderate_members=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def xp(self, ctx: ApplicationContext, level: int = -1, xp: int = -1):
         """Set the xp or the level"""
         # TODO Set a user to a specific level or xp value
@@ -63,7 +60,6 @@ class Levels(commands.Cog, name="levels"):
 
     @levels.command(name="leaderboard")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def leaderboard(self, ctx):
         """Get the leaderboard of the server"""
         members = await Database.GuildUser.get_all(ctx.guild.id, max=10)
@@ -90,7 +86,6 @@ class Levels(commands.Cog, name="levels"):
 
     @levels.command(name="set_background")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def set_background(
         self,
         ctx: ApplicationContext,
@@ -117,7 +112,6 @@ class Levels(commands.Cog, name="levels"):
 
     @levels.command(name="profile")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def profile(
         self, ctx: ApplicationContext, member: Optional[discord.Member] = None
     ):

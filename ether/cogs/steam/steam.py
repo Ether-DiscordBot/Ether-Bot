@@ -5,7 +5,6 @@ from discord.ext import commands, tasks
 from ether.core.i18n import _
 
 from ether.core.logging import log
-from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji
 
 
@@ -41,7 +40,6 @@ class Steam(commands.Cog, name="steam"):
 
     @steam.command(name="game")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def get_game(self, ctx: ApplicationContext, query: str):
         """Get infos about a game"""
         app = self.search(query)
@@ -106,7 +104,6 @@ class Steam(commands.Cog, name="steam"):
 
     @steam.command(name="specials")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def specials(self, ctx: ApplicationContext):
         """Get the current steam specials"""
         r = requests.get("https://store.steampowered.com/api/featuredcategories")
@@ -128,7 +125,6 @@ class Steam(commands.Cog, name="steam"):
 
     @steam.command(name="top")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def top(self, ctx: ApplicationContext):
         """Get the current steam top sellers"""
         r = requests.get("https://store.steampowered.com/api/featuredcategories")
@@ -152,7 +148,6 @@ class Steam(commands.Cog, name="steam"):
 
     @steam.command(name="new")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def new(self, ctx: ApplicationContext):
         """Get the current steam new releases"""
         r = requests.get("https://store.steampowered.com/api/featuredcategories")

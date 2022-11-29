@@ -17,7 +17,7 @@ from ether.core.db.client import Database, Guild, Logs, JoinLog, LeaveLog, Moder
 from ether.core.logs import EtherLogs
 from ether.core.utils import EtherEmbeds
 from ether.core.constants import Emoji
-from ether.core.i18n import _, locale_doc
+from ether.core.i18n import _
 
 
 class Admin(commands.Cog, name="admin"):
@@ -32,7 +32,6 @@ class Admin(commands.Cog, name="admin"):
     @config.command(name="welcome")
     @commands.has_permissions(manage_guild=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def welcome(
         self,
         ctx: commands.Context,
@@ -63,7 +62,6 @@ class Admin(commands.Cog, name="admin"):
     @config.command(name="leave")
     @commands.has_permissions(manage_guild=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def leave(
         self,
         ctx: commands.Context,
@@ -93,7 +91,6 @@ class Admin(commands.Cog, name="admin"):
     @config.command(name="log")
     @commands.has_permissions(manage_guild=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def log(
         self,
         ctx: commands.Context,
@@ -122,7 +119,6 @@ class Admin(commands.Cog, name="admin"):
 
     @admin.command(name="ban")
     @commands.has_permissions(ban_members=True)
-    @locale_doc
     async def ban(self, ctx: ApplicationContext, member: User, reason: str = None):
         """Ban a member"""
         guild = await Database.Guild.get_or_none(ctx.guild_id)
@@ -155,7 +151,6 @@ class Admin(commands.Cog, name="admin"):
 
     @admin.command(name="kick")
     @commands.has_permissions(kick_members=True)
-    @locale_doc
     async def kick(self, ctx: ApplicationContext, member: Member, reason=None):
         """Kick a member"""
         guild = await Database.Guild.get_or_none(ctx.guild_id)
@@ -189,7 +184,6 @@ class Admin(commands.Cog, name="admin"):
     @admin.command(name="clear")
     @commands.has_permissions(manage_messages=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def clear(self, ctx: ApplicationContext, amount: int):
         """Clear a specific amount of messages"""
         deleted = await ctx.channel.purge(limit=amount + 1)
@@ -200,7 +194,6 @@ class Admin(commands.Cog, name="admin"):
     @admin.command(name="slowmode")
     @commands.has_permissions(manage_channels=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def slowmode(self, ctx: ApplicationContext, cooldown: int):
         """Set the slowmode of the channel"""
         await ctx.channel.edit(slowmode_delay=cooldown)

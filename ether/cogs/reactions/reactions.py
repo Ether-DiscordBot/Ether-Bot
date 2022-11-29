@@ -14,7 +14,6 @@ from ether.core.i18n import _
 from ether.core.db.client import Database, ReactionRole
 from ether.core.constants import Emoji
 from ether.core.utils import EtherEmbeds
-from ether.core.i18n import locale_doc
 
 
 class Reactions(commands.Cog, name="reaction"):
@@ -99,7 +98,6 @@ class Reactions(commands.Cog, name="reaction"):
     @reactions.command()
     @commands.has_permissions(manage_roles=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def add(
         self,
         ctx: ApplicationContext,

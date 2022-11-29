@@ -1,5 +1,6 @@
 import json
 from os import path
+from functools import wraps
 
 from typing import Any, Callable, Optional
 from pycord18n.i18n import InvalidTranslationKeyError
@@ -9,7 +10,7 @@ from discord.ext.commands import Context
 
 from ether.core.logging import log
 
-default_locale = "en_US"
+default_locale = "en"
 locale_dir = path.join(path.dirname(path.realpath(__file__)), "locales")
 
 i18n: I18nExtension = I18nExtension(
@@ -59,41 +60,28 @@ i18n: I18nExtension = I18nExtension(
 )
 
 
-def translate(string: str, locale: Optional[str] = None) -> str:
+def translate(string: str, locale: Optional[str] = None, **kwargs) -> str:
     """Translate a string.
 
     This function is used to translate a string to the current locale.
     """
-    return string
 
     try:
-        return i18n.get_text(string, locale, should_fallback=False)
+        return i18n.contextual_get_text(string, should_fallback=False, **kwargs)
     except InvalidTranslationKeyError:
-        log.warn(f"Translation of {string} not found for {locale}!")
+        log.warn(
+            f"Translation of '{string}' not found for locale `{i18n.get_current_locale()}`!"
+        )
         return string
 
 
 def get_locale(ctx: Context) -> str:
-    preferences = "en"  # Get Guild locale preferences
-
-    return preferences
-
-
-def i18n_docstring(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
-    """Decorator to translate docstrings.
-
-    This decorator is used to translate docstrings of functions and classes.
-    """
-
-    # func.__doc__ = translate(func.__doc__, "en")
-    func.__doc__ = func.__doc__
-
-    return func
+    locale = ctx.locale.split("-")[0]
+    return locale if locale in i18n._languages else default_locale
 
 
 def init_i18n(client):
     i18n.init_bot(client, get_locale)
 
 
-locale_doc = i18n_docstring
 _ = translate

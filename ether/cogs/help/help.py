@@ -3,7 +3,6 @@ from discord import Embed
 from discord.ext import commands, pages
 from ether.core.i18n import _
 
-from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji, Links, Other
 
 
@@ -27,7 +26,6 @@ class Help(commands.Cog):
 
     @commands.slash_command(name="help")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def help(self, ctx):
         """Help command"""
         extensions, desc_array, options = [], [], []

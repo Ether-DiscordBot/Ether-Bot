@@ -7,7 +7,6 @@ from discord.ext import commands
 from ether.core.i18n import _
 
 from ether.core.utils import EtherEmbeds
-from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji
 
 
@@ -72,7 +71,6 @@ class Games(commands.Cog, name="games"):
 
     @games.command(name="tictactoe")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def tictactoe(
         self, ctx: ApplicationContext, opponent: Optional[Member] = None
     ):
@@ -197,7 +195,6 @@ class Games(commands.Cog, name="games"):
 
     @games.command(name="rps")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def rps(self, ctx: ApplicationContext, opponent: Member):
         """Play a game of Rock-Paper-Scissors with a friend!"""
         # TODO Rock/Paper/Scissors

@@ -11,7 +11,6 @@ from howlongtobeatpy import HowLongToBeat
 
 from ether.core.i18n import _
 from ether.core.utils import EtherEmbeds
-from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji
 
 URBAN_PATTERN = r"\[(.*?)]"
@@ -41,20 +40,20 @@ class Utils(commands.Cog, name="utils"):
 
     @slash_command()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def ping(self, ctx: ApplicationContext) -> None:
         """Pong!"""
 
         await ctx.respond(
             embed=Embed(
-                title=":ping_pong: Pong !",
-                description=f"Bot latency: `{round(self.client.latency * 1000)}ms`",
+                title=":ping_pong:" + _("Pong!"),
+                description=_(
+                    "Bot latency: `{x}ms`", x=round(self.client.latency * 1000)
+                ),
             )
         )
 
     @utils.command(name="flipcoin")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def flip_coin(self, ctx: ApplicationContext) -> None:
         """Flip a coin"""
         result = _("Heads") if round(random()) else _("Tails")
@@ -62,7 +61,6 @@ class Utils(commands.Cog, name="utils"):
 
     @utils.command(name="choose")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def choose(
         self,
         ctx: ApplicationContext,
@@ -95,7 +93,6 @@ class Utils(commands.Cog, name="utils"):
 
     @utils.command(name="roll")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def roll(
         self,
         ctx: ApplicationContext,
@@ -139,7 +136,6 @@ class Utils(commands.Cog, name="utils"):
 
     @utils.command(name="urban")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def urban(self, ctx: ApplicationContext, term: str):
         """Search for a term on Urban Dictionary"""
         r = requests.get(f"https://api.urbandictionary.com/v0/define?term={term}")
@@ -187,7 +183,6 @@ class Utils(commands.Cog, name="utils"):
 
     @utils.command(name="howlongtobeat")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def howlongtobeat(self, ctx: ApplicationContext, game: str):
         """Get the time to beat a game"""
         results_list = await HowLongToBeat().async_search(game_name=game)

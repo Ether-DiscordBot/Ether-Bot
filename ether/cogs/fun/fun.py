@@ -16,7 +16,6 @@ from discord.ext import commands
 
 from ether.core.i18n import _
 from ether.core.utils import EtherEmbeds, NerglishTranslator
-from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji
 
 
@@ -61,7 +60,6 @@ class Fun(commands.Cog, name="fun"):
 
     @fun.command(name="gif")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def gif(self, ctx: ApplicationContext, *, query):
         """Search a gif on giphy"""
         r = get(
@@ -82,7 +80,6 @@ class Fun(commands.Cog, name="fun"):
 
     @fun.command(name="sticker")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def sticker(self, ctx: ApplicationContext, *, query):
         """Search a sticker on giphy"""
         r = get(
@@ -103,7 +100,6 @@ class Fun(commands.Cog, name="fun"):
 
     @fun.command(name="8-ball")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def height_ball(self, ctx: ApplicationContext, question: str):
         """Ask the magic 8-ball a question!"""
 
@@ -111,7 +107,6 @@ class Fun(commands.Cog, name="fun"):
 
     @fun.command(name="say")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def say(
         self,
         ctx: ApplicationContext,
@@ -133,7 +128,6 @@ class Fun(commands.Cog, name="fun"):
 
     @fun.command(name="howgay")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def howgay(self, ctx: ApplicationContext, user: Optional[Member] = None):
         """The bot guesses how gay your are"""
 
@@ -148,7 +142,6 @@ class Fun(commands.Cog, name="fun"):
 
     @fun.command(name="howattractive")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def howattractive(
         self, ctx: ApplicationContext, user: Optional[Member] = None
     ):
@@ -165,7 +158,6 @@ class Fun(commands.Cog, name="fun"):
 
     @fun.command(name="howhot")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def howhot(self, ctx: ApplicationContext, user: Optional[Member] = None):
         """The bot guesses how hot you are"""
 
@@ -180,7 +172,6 @@ class Fun(commands.Cog, name="fun"):
 
     @fun.command(name="horoscope")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def horoscope(
         self,
         ctx: ApplicationContext,
@@ -218,7 +209,6 @@ class Fun(commands.Cog, name="fun"):
 
     @fun.command(name="nerglish")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def nerglish(self, ctx: ApplicationContext, text: str):
         """Translate text to nerglish"""
         translated = NerglishTranslator.translate(text)

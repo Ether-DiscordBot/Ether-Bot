@@ -4,7 +4,6 @@ from discord import ApplicationContext, Embed, Option, OptionChoice, SlashComman
 from discord.ext import commands
 
 from ether.core.utils import EtherEmbeds
-from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji
 
 
@@ -21,7 +20,6 @@ class DnD(commands.Cog, name="dnd"):
 
     @_class.command(name="infos")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def infos(
         self,
         ctx: ApplicationContext,
@@ -93,7 +91,6 @@ class DnD(commands.Cog, name="dnd"):
 
     @_class.command(name="spells")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def spells(
         self,
         ctx: ApplicationContext,
@@ -147,7 +144,6 @@ class DnD(commands.Cog, name="dnd"):
 
     @dnd.command(name="spell")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def spell(self, ctx: ApplicationContext, spell: str):
         """Get informations about a spell"""
         spell = spell.lower().replace(" ", "-")

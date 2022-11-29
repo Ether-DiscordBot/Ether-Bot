@@ -5,7 +5,6 @@ from discord.ext import commands
 from humanize import naturaldate, naturalsize
 from ether.core.i18n import _
 
-from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji
 
 
@@ -52,7 +51,6 @@ class Information(commands.Cog, name="information"):
 
     @infos.command(name="user")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def user(self, ctx: ApplicationContext, member: Member = None):
         """Get informations about a user"""
         member = member or ctx.author
@@ -60,14 +58,12 @@ class Information(commands.Cog, name="information"):
 
     @user_command(name="User infos")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def user_infos(self, ctx: ApplicationContext, member: Member):
         """Get informations about a user"""
         await ctx.respond(embed=InformationHandler.get_user_infos(member))
 
     @infos.command(name="server")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def server(self, ctx):
         """Get informations about the server"""
         guild = ctx.guild
@@ -97,7 +93,6 @@ class Information(commands.Cog, name="information"):
 
     @infos.command(name="avatar")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def avatar(self, ctx: ApplicationContext, member: Optional[Member] = None):
         """Get the avatar of a user"""
         user = member or ctx.author
@@ -105,7 +100,6 @@ class Information(commands.Cog, name="information"):
 
     @user_command(name="User avatar")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def user_avatar(self, ctx: ApplicationContext, member: Member):
         """Get the avatar of a user"""
         return await ctx.respond(embed=InformationHandler.get_user_avatar(member))

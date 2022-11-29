@@ -7,7 +7,6 @@ from discord.ext import commands
 from PIL import Image as Img, ImageDraw, ImageFont
 from ether.core.i18n import _
 
-from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji
 
 
@@ -23,7 +22,6 @@ class Image(commands.Cog, name="image"):
 
     @image.command(name="hold_up")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def hold_up(self, ctx: ApplicationContext, text: str):
         """Hold up!"""
         image = ImageModifier("hold-up.png")
@@ -33,7 +31,6 @@ class Image(commands.Cog, name="image"):
 
     @image.command(name="vault-boy")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def vault_boy(self, ctx: ApplicationContext, up: str, bottom: str):
         """Vault boy meme"""
         image = ImageModifier("vault-boy.jpg")
@@ -44,7 +41,6 @@ class Image(commands.Cog, name="image"):
 
     @image.command(name="mr_incredible")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def mr_incredible(self, ctx: ApplicationContext, left: str, right: str):
         """Mr Incredible meme"""
         image = ImageModifier("mr-incredible.png")
@@ -55,7 +51,6 @@ class Image(commands.Cog, name="image"):
 
     @image.command(name="philosoraptor")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def philosoraptor(self, ctx: ApplicationContext, top: str, bottom: str):
         """Philosoraptor meme"""
         image = ImageModifier("philosoraptor.png")
@@ -66,7 +61,6 @@ class Image(commands.Cog, name="image"):
 
     @image.command(name="never_again")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def never_again(
         self, ctx: ApplicationContext, first: str, second: str, third: str
     ):
@@ -80,7 +74,6 @@ class Image(commands.Cog, name="image"):
 
     @image.command(name="doom_bonked_zombie")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @locale_doc
     async def doom_bonked_zombie(self, ctx: ApplicationContext, text: str):
         """Doom bonked zombie meme"""
         image = ImageModifier("doom_bonked_zombie.jpg")

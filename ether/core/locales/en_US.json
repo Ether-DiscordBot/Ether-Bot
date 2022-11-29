@@ -1,3 +1,4 @@
 {
-    "Pong!": "Pong!"
+    "Pong!": "Pong!",
+    "Bot latency: `{x}ms`": "Latence du bot : `{x}ms`"
 }
