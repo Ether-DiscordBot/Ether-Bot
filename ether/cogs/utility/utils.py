@@ -120,7 +120,7 @@ class Utils(commands.Cog, name="utils"):
         except Exception:
             return await ctx.respond(
                 embed=EtherEmbeds.error(
-                    "An error occured, please check the syntax of your dices."
+                    _("An error occured, please check the syntax of your dices.")
                 ),
                 ephemeral=True,
                 delete_after=5,
@@ -176,7 +176,7 @@ class Utils(commands.Cog, name="utils"):
         else:
             await ctx.respond(
                 embed=EtherEmbeds.error(
-                    f'Could not find any definition of **"{term}"**!'
+                    'Could not find any definition of **"{term}"**!'
                 ),
                 delete_after=5,
             )
