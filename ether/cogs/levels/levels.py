@@ -116,7 +116,7 @@ class Levels(commands.Cog, name="levels"):
         self, ctx: ApplicationContext, member: Optional[discord.Member] = None
     ):
         """Get the profile of a user"""
-        user = member if member else ctx.author
+        user = member or ctx.author
         db_guild_user = await GuildUser.from_member_object(user)
         db_user = await User.from_id(user.id)
 

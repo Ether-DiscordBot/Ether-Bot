@@ -90,22 +90,17 @@ class Help(commands.Cog):
         for cmd in cog.get_commands():
             if isinstance(cmd, discord.commands.core.SlashCommandGroup):
                 for sub_cmd in cmd.walk_commands():
-                    brief = (
-                        "No information."
-                        if not sub_cmd.description
-                        else sub_cmd.description
-                    )
+                    brief = sub_cmd.description or "No information."
                     commands.append(f"`/{sub_cmd.qualified_name}` - {brief}\n")
 
-        embeds = []
-
-        for i in range(0, len(commands), 25):
-            embeds.append(
-                Embed(
-                    title=f"{cog.help_icon} {cog.qualified_name} commands",
-                    description="".join(commands[i : i + 25]),
-                )
+        embeds = [
+            Embed(
+                title=f"{cog.help_icon} {cog.qualified_name} commands",
+                description="".join(commands[i : i + 25]),
             )
+            for i in range(0, len(commands), 25)
+        ]
+
 
         if len(embeds) > 1:
             return pages.Paginator(
@@ -116,11 +111,8 @@ class Help(commands.Cog):
 
     async def callback(self, interaction: discord.Interaction):
         category = interaction.data["values"][0]
-        paginator = self.build_cog_response(category)
-
-        if paginator:
+        if paginator := self.build_cog_response(category):
             return await interaction.response.edit_message(embed=paginator)
-            # await paginator.edit(interaction.message)
         return await interaction.response.edit_message(
             embed=Embed(description="Interaction closed."), delete_after=5
         )

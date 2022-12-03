@@ -56,10 +56,11 @@ class Admin(commands.Cog, name="admin"):
         )
         if enabled == False:
             return await ctx.respond(
-                embed=EtherEmbeds.success(description=f"Welcome channel disabled"),
+                embed=EtherEmbeds.success(description="Welcome channel disabled"),
                 ephemeral=True,
                 delete_after=5,
             )
+
         return await ctx.respond(
             embed=EtherEmbeds.success(
                 description=f"Welcome channel set to <#{channel.id}>"

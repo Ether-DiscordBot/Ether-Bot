@@ -111,11 +111,12 @@ class Utils(commands.Cog, name="utils"):
         try:
             results = [r.lstrip() for r in re.sub("(\d+d\d+)", _roll, dice).split(",")]
             result = [
-                eval_binary_expr(*re.findall(r"(?:\d+)|(?:[\+\-\*\/])", r))
-                if not r.isdigit()
-                else r
+                r
+                if r.isdigit()
+                else eval_binary_expr(*re.findall(r"(?:\d+)|(?:[\+\-\*\/])", r))
                 for r in results
             ]
+
 
         except Exception:
             return await ctx.respond(
