@@ -49,19 +49,23 @@ class Admin(commands.Cog, name="admin"):
             {
                 Guild.logs: Logs(
                     join=JoinLog(channel_id=channel.id, enabled=enabled, image=image),
-                    leave=guild.logs.leave,
-                    moderation=guild.logs.moderation,
+                    leave=guild.logs.leave or None if guild.logs else None,
+                    moderation=guild.logs.moderation or None if guild.logs else None,
                 ).dict()
             }
         )
         if enabled == False:
             return await ctx.respond(
-                embed=EtherEmbeds.success(description=f"Welcome channel disabled")
+                embed=EtherEmbeds.success(description=f"Welcome channel disabled"),
+                ephemeral=True,
+                delete_after=5,
             )
         return await ctx.respond(
             embed=EtherEmbeds.success(
                 description=f"Welcome channel set to <#{channel.id}>"
-            )
+            ),
+            ephemeral=True,
+            delete_after=5,
         )
 
     @config.command(name="leave")
@@ -81,20 +85,24 @@ class Admin(commands.Cog, name="admin"):
             {
                 Guild.logs: Logs(
                     leave=LeaveLog(channel_id=channel.id, enabled=enabled),
-                    join=guild.logs.join,
-                    moderation=guild.logs.moderation,
+                    join=guild.logs.join or None if guild.logs else None,
+                    moderation=guild.logs.moderation or None if guild.logs else None,
                 ).dict()
             }
         )
 
         if enabled == False:
             return await ctx.respond(
-                embed=EtherEmbeds.success(description="Leave channel disabled")
+                embed=EtherEmbeds.success(description="Leave channel disabled"),
+                ephemeral=True,
+                delete_after=5,
             )
         return await ctx.respond(
             embed=EtherEmbeds.success(
                 description=f"Leave channel set to <#{channel.id}>"
-            )
+            ),
+            ephemeral=True,
+            delete_after=5,
         )
 
     @config.command(name="log")
@@ -114,18 +122,24 @@ class Admin(commands.Cog, name="admin"):
             {
                 Guild.logs: Logs(
                     moderation=ModerationLog(channel_id=channel.id, enabled=enabled),
-                    join=guild.logs.join,
-                    leave=guild.logs.leave,
+                    join=guild.logs.join or None if guild.logs else None,
+                    leave=guild.logs.leave or None if guild.logs else None,
                 ).dict()
             }
         )
 
         if enabled == False:
             return await ctx.respond(
-                embed=EtherEmbeds.success(description="Log channel disabled")
+                embed=EtherEmbeds.success(description="Log channel disabled"),
+                ephemeral=True,
+                delete_after=5,
             )
         return await ctx.respond(
-            embed=EtherEmbeds.success(description=f"Log channel set to <#{channel.id}>")
+            embed=EtherEmbeds.success(
+                description=f"Log channel set to <#{channel.id}>"
+            ),
+            ephemeral=True,
+            delete_after=5,
         )
 
     @admin.command(name="ban")
