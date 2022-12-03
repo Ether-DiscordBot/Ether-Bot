@@ -152,7 +152,8 @@ class CardHandler:
         Image.open("ether/assets/backgrounds/mucha.png").convert("RGBA"),
     ]
 
-    def create_card(user, db_user, db_guild_user):
+    @classmethod
+    def create_card(cls, user, db_user, db_guild_user):
         img = CardHandler.BACKGROUNDS[db_user.background].copy()
         # Profile Picture
         r = requests.get(user.display_avatar)
