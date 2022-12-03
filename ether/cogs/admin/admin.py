@@ -4,6 +4,7 @@ import discord
 from discord import (
     ApplicationContext,
     Embed,
+    File,
     Member,
     SlashCommandGroup,
     TextChannel,
@@ -12,6 +13,7 @@ from discord import (
 from humanize import precisedelta
 
 from discord.ext import commands
+from ether.cogs.event.welcomecard import WelcomeCard
 from ether.core.constants import Colors
 from ether.core.db.client import Database, Guild, Logs, JoinLog, LeaveLog, ModerationLog
 from ether.core.logs import EtherLogs
@@ -37,6 +39,7 @@ class Admin(commands.Cog, name="admin"):
         ctx: commands.Context,
         channel: Optional[TextChannel] = None,
         enabled: Optional[bool] = True,
+        image: Optional[bool] = False,
     ):
         """Set the welcome channel"""
         guild = await Database.Guild.get_or_create(ctx.guild.id)
@@ -45,7 +48,7 @@ class Admin(commands.Cog, name="admin"):
         await guild.set(
             {
                 Guild.logs: Logs(
-                    join=JoinLog(channel_id=channel.id, enabled=enabled),
+                    join=JoinLog(channel_id=channel.id, enabled=enabled, image=image),
                     leave=guild.logs.leave,
                     moderation=guild.logs.moderation,
                 ).dict()
@@ -53,10 +56,12 @@ class Admin(commands.Cog, name="admin"):
         )
         if enabled == False:
             return await ctx.respond(
-                embed=Embed(description=f"Welcome channel disabled")
+                embed=EtherEmbeds.success(description=f"Welcome channel disabled")
             )
         return await ctx.respond(
-            embed=Embed(description=f"Welcome channel set to <#{channel.id}>")
+            embed=EtherEmbeds.success(
+                description=f"Welcome channel set to <#{channel.id}>"
+            )
         )
 
     @config.command(name="leave")
@@ -83,9 +88,13 @@ class Admin(commands.Cog, name="admin"):
         )
 
         if enabled == False:
-            return await ctx.respond(embed=Embed(description="Leave channel disabled"))
+            return await ctx.respond(
+                embed=EtherEmbeds.success(description="Leave channel disabled")
+            )
         return await ctx.respond(
-            embed=Embed(description=f"Leave channel set to <#{channel.id}>")
+            embed=EtherEmbeds.success(
+                description=f"Leave channel set to <#{channel.id}>"
+            )
         )
 
     @config.command(name="log")
@@ -112,9 +121,11 @@ class Admin(commands.Cog, name="admin"):
         )
 
         if enabled == False:
-            return await ctx.respond(embed=Embed(description="Log channel disabled"))
+            return await ctx.respond(
+                embed=EtherEmbeds.success(description="Log channel disabled")
+            )
         return await ctx.respond(
-            embed=Embed(description=f"Log channel set to <#{channel.id}>")
+            embed=EtherEmbeds.success(description=f"Log channel set to <#{channel.id}>")
         )
 
     @admin.command(name="ban")
@@ -128,8 +139,6 @@ class Admin(commands.Cog, name="admin"):
                 embed=EtherEmbeds.error("Sorry, an unexpected error has occurred!"),
                 delete_after=5,
             )
-
-        # TODO replace try/except by a condition to check permissions
 
         try:
             await ctx.guild.ban(member)

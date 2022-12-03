@@ -1,8 +1,9 @@
 import os
 import random
 
-from discord import ApplicationContext, Embed, HTTPException, errors
+from discord import ApplicationContext, Embed, File, HTTPException, errors
 from discord.ext import commands
+from ether.cogs.event.welcomecard import WelcomeCard
 
 from ether.core.db.client import Database, Guild, GuildUser
 from ether.core.lavalink_status import lavalink_request
@@ -41,6 +42,11 @@ class Event(commands.Cog):
 
         if guild.logs and guild.logs.join and guild.logs.join.enabled:
             channel = member.guild.get_channel(guild.logs.join.channel_id)
+            if guild.logs.join.image:
+                card = WelcomeCard.create_card(member, member.guild)
+                return await channel.send(
+                    file=File(fp=card, filename=f"welcome_{member.name}.png")
+                )
             await channel.send(
                 guild.logs.join.message.format(user=member, guild=member.guild)
             )
