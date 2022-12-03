@@ -7,7 +7,7 @@ from ether.cogs.music.music import Player
 from ether.core.db.client import Guild, Playlist
 
 
-class Playlist(commands.Cog):
+class PlaylistCog(commands.Cog):
     def __init__(self, client) -> None:
         self.client = client
 
