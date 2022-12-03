@@ -8,8 +8,8 @@ from ether.core.db.client import Guild, Playlist
 
 
 class Playlist(commands.Cog):
-    def __init__(self) -> None:
-        pass
+    def __init__(self, client) -> None:
+        self.client = client
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
