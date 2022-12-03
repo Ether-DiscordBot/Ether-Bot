@@ -179,13 +179,6 @@ class Music(commands.Cog, name="music"):
             )
             return vc
 
-    @music.command(name="search")
-    @commands.guild_only()
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def search(self, ctx: ApplicationContext, *, search: wavelink.YouTubeTrack):
-        """Search a song on YouTube"""
-        print(search)
-
     @music.command(name="play")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
