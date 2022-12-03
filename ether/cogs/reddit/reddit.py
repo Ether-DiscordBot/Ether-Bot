@@ -2,7 +2,7 @@ import os
 
 from discord import (
     Embed,
-    Interaction,
+    ApplicationContext,
     Option,
     OptionChoice,
     SlashCommandGroup,
@@ -16,7 +16,6 @@ from ether.core.utils import EtherEmbeds
 from ether.core.reddit import RedditPostCacher
 from ether.core.logging import logging
 from ether.core.config import config
-from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji
 
 
@@ -32,7 +31,7 @@ class Reddit(commands.Cog, name="reddit"):
 
     reddit = SlashCommandGroup("reddit", "Reddit commands!")
 
-    async def _reddit(self, interaction: Interaction, subrd):
+    async def _reddit(self, ctx: ApplicationContext, subrd):
         post = await self.cache.get_random_post(subrd)
 
         if post.over_18:
@@ -40,7 +39,7 @@ class Reddit(commands.Cog, name="reddit"):
 
         if post is None:
             logging.error(f"Reddit post image error with sub: {subrd}")
-            return await interaction.response.send_message(
+            return await ctx.respond(
                 embed=EtherEmbeds.error(
                     "😕 We are sorry, we have done a lot of research but we can't find any image."
                 ),
@@ -55,32 +54,32 @@ class Reddit(commands.Cog, name="reddit"):
         embed.set_image(url=post.url)
         embed.set_footer(text=f"⬆️ {post.score} │ 💬 {post.num_comments}")
 
-        await interaction.response.send_message(embed=embed)
+        await ctx.respond(embed=embed)
 
-    @reddit.command()
-    @locale_doc
-    async def meme(self, interaction: Interaction):
+    @reddit.command(name="meme")
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def meme(self, ctx: ApplicationContext):
         """Get a random meme from r/memes"""
-        await self._reddit(interaction, subrd="memes")
+        await self._reddit(ctx, subrd="memes")
 
-    @reddit.command()
-    @locale_doc
-    async def aww(self, interaction: Interaction):
+    @reddit.command(name="aww")
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def aww(self, ctx: ApplicationContext):
         """Get a random cute animal from r/aww"""
-        await self._reddit(interaction, subrd="aww")
+        await self._reddit(ctx, subrd="aww")
 
-    @reddit.command()
-    @locale_doc
-    async def sadcat(self, interaction: Interaction):
+    @reddit.command(name="sadcat")
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def sadcat(self, ctx: ApplicationContext):
         """Get a random sad cat from r/sadcats"""
-        await self._reddit(interaction, subrd="sadcats")
+        await self._reddit(ctx, subrd="sadcats")
 
     @reddit.command(name="follow")
     @commands.has_permissions(manage_guild=True)
-    @locale_doc
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def follow(
         self,
-        ctx,
+        ctx: ApplicationContext,
         subreddit: str,
         channel: TextChannel,
         nsfw: bool = False,
@@ -101,7 +100,7 @@ class Reddit(commands.Cog, name="reddit"):
 
     @reddit.command(name="list")
     @commands.has_permissions(manage_guild=True)
-    @locale_doc
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def _list(self, ctx):
         """List all followed subreddits"""
         # TODO List all followed subereddits

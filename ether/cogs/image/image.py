@@ -2,12 +2,11 @@ import io
 import os
 import re
 
-from discord import File, SlashCommandGroup
+from discord import ApplicationContext, File, SlashCommandGroup
 from discord.ext import commands
 from PIL import Image as Img, ImageDraw, ImageFont
 from ether.core.i18n import _
 
-from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji
 
 
@@ -22,8 +21,8 @@ class Image(commands.Cog, name="image"):
     image = SlashCommandGroup("image", "Image commands!")
 
     @image.command(name="hold_up")
-    @locale_doc
-    async def hold_up(self, ctx, text: str):
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def hold_up(self, ctx: ApplicationContext, text: str):
         """Hold up!"""
         image = ImageModifier("hold-up.png")
         image.write(text, (10, 10), 30, 4)
@@ -31,8 +30,8 @@ class Image(commands.Cog, name="image"):
         await ctx.respond(file=File(fp=image.bytes, filename="hold-up.png"))
 
     @image.command(name="vault-boy")
-    @locale_doc
-    async def vault_boy(self, ctx, up: str, bottom: str):
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def vault_boy(self, ctx: ApplicationContext, up: str, bottom: str):
         """Vault boy meme"""
         image = ImageModifier("vault-boy.jpg")
         image.write(up, (200, 33), 25, 2, "mm")
@@ -41,8 +40,8 @@ class Image(commands.Cog, name="image"):
         await ctx.respond(file=File(fp=image.bytes, filename="vault_boy.jpg"))
 
     @image.command(name="mr_incredible")
-    @locale_doc
-    async def mr_incredible(self, ctx, left: str, right: str):
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def mr_incredible(self, ctx: ApplicationContext, left: str, right: str):
         """Mr Incredible meme"""
         image = ImageModifier("mr-incredible.png")
         image.write(left, (178, 365), 20, 1, "mm", fill=(255, 255, 255))
@@ -51,14 +50,36 @@ class Image(commands.Cog, name="image"):
         await ctx.respond(file=File(fp=image.bytes, filename="mr_incredible.png"))
 
     @image.command(name="philosoraptor")
-    @locale_doc
-    async def philosoraptor(self, ctx, top: str, bottom: str):
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def philosoraptor(self, ctx: ApplicationContext, top: str, bottom: str):
         """Philosoraptor meme"""
         image = ImageModifier("philosoraptor.png")
         image.write(top, (200, 33), 28, 2, "mm", fill=(255, 255, 255))
         image.write(bottom, (200, 333), 28, 2, "mm", fill=(255, 255, 255))
 
         await ctx.respond(file=File(fp=image.bytes, filename="philosoraptor.png"))
+
+    @image.command(name="never_again")
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def never_again(
+        self, ctx: ApplicationContext, first: str, second: str, third: str
+    ):
+        """Never again meme"""
+        image = ImageModifier("never_again.png")
+        image.write(first, (125, 200), 15, 3, "mm", fill=(0, 0, 0))
+        image.write(second, (350, 200), 15, 3, "mm", fill=(0, 0, 0))
+        image.write(third, (100, 480), 15, 3, "mm", fill=(0, 0, 0))
+
+        await ctx.respond(file=File(fp=image.bytes, filename="never_again.png"))
+
+    @image.command(name="doom_bonked_zombie")
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def doom_bonked_zombie(self, ctx: ApplicationContext, text: str):
+        """Doom bonked zombie meme"""
+        image = ImageModifier("doom_bonked_zombie.jpg")
+        image.write(text, (400, 10), 30, 4, "ma", fill=(255, 255, 255))
+
+        await ctx.respond(file=File(fp=image.bytes, filename="doom_bonked_zombie.jpg"))
 
 
 class ImageModifier:

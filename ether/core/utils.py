@@ -6,22 +6,26 @@ from ether.core.constants import Colors
 
 
 class LevelsHandler:
-    def get_level(self, exp):
-        return int(math.sqrt(max(LevelsHandler.level_to_exp(self) + exp, 1)) * 0.2)
-
-    def get_next_level(self):
-        return 50 * pow(self, 2)
+    @classmethod
+    def get_next_level(cls, exp):
+        return 50 * pow(exp, 2)
 
 
 class Utils(object):
-    def get_avatar_url(user, format="png", size="64"):
+    @classmethod
+    def get_avatar_url(cls, user, format="png", size="64"):
         if user:
             return f"https://cdn.discordapp.com/avatars/{user.id}/{user.avatar}.{format}?size={size}"
 
 
 class EtherEmbeds:
-    def error(description: str):
+    @classmethod
+    def error(cls, description: str):
         return Embed(description=description, colour=Colors.ERROR)
+
+    @classmethod
+    def success(cls, description: str):
+        return Embed(description=description, colour=Colors.SUCCESS)
 
 
 class NerglishTranslator:
@@ -83,10 +87,11 @@ class NerglishTranslator:
         "z": "lr",
     }
 
-    def translate(self) -> str:
+    @classmethod
+    def translate(cls, text) -> str:
         result = ""
 
-        for word in self.split(" "):
+        for word in text.split(" "):
             if word.startswith(("<", ":")) and word.endswith((">", ":")):
                 continue
 

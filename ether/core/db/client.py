@@ -1,23 +1,49 @@
 import asyncio
-from typing import List, Optional
-from uuid import UUID, uuid4
-from datetime import datetime
+from typing import List, Optional, Literal
 
-from beanie import Document, init_beanie, TimeSeriesConfig
+from beanie import Document, init_beanie
+from beanie.operators import AddToSet
 from discord import Guild as GuildModel
 from discord import Member as MemberModel
 from discord import Message as MessageModel
 from discord import User as UserModel
 from discord.ext.commands import Context
 from motor.motor_asyncio import AsyncIOMotorClient
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from ether.core.utils import LevelsHandler
+from ether.core.logging import log
 
 
 class Database:
 
     client = None
+
+    class User:
+        @staticmethod
+        async def create(user_id: int):
+            user = User(id=user_id)
+
+            await user.insert()
+            log.info(f"Creating user (id: {user_id})")
+
+            return await Database.User.get_or_none(user_id)
+
+        @staticmethod
+        async def get_or_create(user_id: int):
+            user = await Database.User.get_or_none(user_id)
+            if user:
+                return user
+
+            return await Database.User.create(user_id)
+
+        @staticmethod
+        async def get_or_none(user_id: int):
+            user = await User.find_one(User.id == user_id)
+            if user:
+                return user
+
+            return None
 
     class Guild:
         @staticmethod
@@ -25,6 +51,7 @@ class Database:
             guild = Guild(id=guild_id)
 
             await guild.insert()
+            log.info(f"Creating guild (id: {guild_id})")
 
             return await Database.Guild.get_or_none(guild_id)
 
@@ -50,6 +77,7 @@ class Database:
             user = GuildUser(user_id=user_id, guild_id=guild_id)
 
             await user.insert()
+            log.info(f"Creating guild user (user id: {user_id}, guild id: {guild_id})")
 
             return await Database.GuildUser.get_or_none(user_id, guild_id)
 
@@ -64,10 +92,18 @@ class Database:
         @staticmethod
         async def get_or_none(user_id: int, guild_id: int):
             user = await GuildUser.find_one(
-                GuildUser.user_id == user_id and GuildUser.guild_id == guild_id
+                GuildUser.user_id == user_id, GuildUser.guild_id == guild_id
             )
             if user:
                 return user
+
+            return None
+
+        @staticmethod
+        async def get_all(guild_id: int, max: int = 100):
+            users = await GuildUser.find(GuildUser.guild_id == guild_id).to_list(max)
+            if users:
+                return users
 
             return None
 
@@ -94,20 +130,23 @@ class Database:
     @staticmethod
     class ReactionRole:
         @staticmethod
-        async def create(message_id: int, options: List):
-            reaction = ReactionRole(message_id=message_id, options=options)
+        async def create(message_id: int, options: List, _type: int = 0):
+            reaction = ReactionRole(message_id=message_id, options=options, type=_type)
 
             await reaction.insert()
+            log.info(f"Creating reaction role (message id: {message_id})")
 
             return await Database.ReactionRole.get_or_none(message_id)
 
         @staticmethod
-        async def get_or_create(message_id: int):
+        async def get_or_create(
+            message_id: int, options: Optional[List] = None, type: int = 0
+        ):
             reaction = await Database.ReactionRole.get_or_none(message_id)
             if reaction:
                 return reaction
 
-            return await Database.ReactionRole.create(message_id)
+            return await Database.ReactionRole.create(message_id, options, type)
 
         @staticmethod
         async def get_or_none(message_id: int):
@@ -118,6 +157,14 @@ class Database:
                 return reaction
 
             return None
+
+        @staticmethod
+        async def update_or_create(message_id: int, option, _type: int = 0):
+            reaction = await Database.ReactionRole.get_or_none(message_id)
+            if reaction:
+                return await reaction.update({"$push": {ReactionRole.options: option}})
+
+            return await Database.ReactionRole.create(message_id, [option], _type)
 
         class ReactionRoleOption:
             @staticmethod
@@ -130,6 +177,7 @@ class Database:
             playlist = Playlist(message_id=message_id, playlist_link=playlist_link)
 
             await playlist.insert()
+            log.info(f"Creating playlist (message id: {message_id})")
 
             return await Database.Playlist.get_or_none(message_id)
 
@@ -199,6 +247,7 @@ class Guild(Document):
     logs: Optional[Logs] = None
     auto_role: Optional[int] = None
     music_channel_id: Optional[int] = None
+    exp_mult: float = 1.0
 
     async def from_id(guild_id: int):
         return await Database.Guild.get_or_create(guild_id)
@@ -237,6 +286,7 @@ class User(Document):
     id: int
     description: Optional[str] = None
     card_color: int = 0xA5D799
+    background: int = 0
 
     async def from_id(user_id: int):
         return await Database.User.get_or_create(user_id)
@@ -276,6 +326,11 @@ class ReactionRole(Document):
 
     message_id: int
     options: List[ReactionRoleOption]
+    _type: Literal[0, 1, 2, 3] = 0
+    # 0 => normal
+    # 1 => unique
+    # 2 => verify
+    # 3 => drop
 
     async def from_id(message_id: int):
         return await Database.ReactionRole.get_or_none(message_id)

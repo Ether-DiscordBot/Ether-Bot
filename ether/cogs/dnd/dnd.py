@@ -1,10 +1,9 @@
 import requests
 
-from discord import ApplicationCommand, Embed, Option, OptionChoice, SlashCommandGroup
+from discord import ApplicationContext, Embed, Option, OptionChoice, SlashCommandGroup
 from discord.ext import commands
 
 from ether.core.utils import EtherEmbeds
-from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji
 
 
@@ -20,10 +19,10 @@ class DnD(commands.Cog, name="dnd"):
     _class = dnd.create_subgroup("class", "Class commands!")
 
     @_class.command(name="infos")
-    @locale_doc
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def infos(
         self,
-        ctx: ApplicationCommand,
+        ctx: ApplicationContext,
         _class: Option(
             str,
             name="class",
@@ -91,10 +90,10 @@ class DnD(commands.Cog, name="dnd"):
         await ctx.respond(embed=embed)
 
     @_class.command(name="spells")
-    @locale_doc
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def spells(
         self,
-        ctx: ApplicationCommand,
+        ctx: ApplicationContext,
         _class: Option(
             str,
             name="class",
@@ -144,8 +143,8 @@ class DnD(commands.Cog, name="dnd"):
         await ctx.respond(embed=embed)
 
     @dnd.command(name="spell")
-    @locale_doc
-    async def spell(self, ctx: ApplicationCommand, spell: str):
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def spell(self, ctx: ApplicationContext, spell: str):
         """Get informations about a spell"""
         spell = spell.lower().replace(" ", "-")
 

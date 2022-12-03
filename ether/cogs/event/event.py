@@ -1,8 +1,9 @@
 import os
 import random
-import discord
 
+from discord import ApplicationContext, Embed, File, HTTPException, errors
 from discord.ext import commands
+from ether.cogs.event.welcomecard import WelcomeCard
 
 from ether.core.db.client import Database, Guild, GuildUser
 from ether.core.lavalink_status import lavalink_request
@@ -41,6 +42,11 @@ class Event(commands.Cog):
 
         if guild.logs and guild.logs.join and guild.logs.join.enabled:
             channel = member.guild.get_channel(guild.logs.join.channel_id)
+            if guild.logs.join.image:
+                card = WelcomeCard.create_card(member, member.guild)
+                return await channel.send(
+                    file=File(fp=card, filename=f"welcome_{member.name}.png")
+                )
             await channel.send(
                 guild.logs.join.message.format(user=member, guild=member.guild)
             )
@@ -69,11 +75,11 @@ class Event(commands.Cog):
             return
 
         if Database.client != None:
-            await Guild.from_guild_object(ctx.guild)
+            guild = await Guild.from_guild_object(ctx.guild)
             await GuildUser.from_member_object(ctx.author)
             if random.randint(1, 100) <= 33:
                 new_level = await Database.GuildUser.add_exp(
-                    ctx.author.id, ctx.guild.id, 4
+                    ctx.author.id, ctx.guild.id, 4 * guild.exp_mult
                 )
                 if new_level:
                     await ctx.channel.send(
@@ -84,7 +90,7 @@ class Event(commands.Cog):
     async def on_application_command(self, ctx):
         if random.randint(1, 100) <= 5:
             await ctx.channel.send(
-                embed=discord.Embed(
+                embed=Embed(
                     title="Support us!",
                     description="Ether is a free and open source bot, if you like it, please vote for the bot on [Top.gg](https://top.gg/bot/985100792270819389) and consider supporting us on [Ko-fi](https://ko-fi.com/holycrusader)!",
                     color=0x2F3136,
@@ -92,19 +98,19 @@ class Event(commands.Cog):
             )
 
     @commands.Cog.listener()
-    async def remove_cog(ctx, extension):
+    async def remove_cog(self, ctx: ApplicationContext, extension):
         log.info(f"Removed cog: {extension}")
 
     @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
+    async def on_command_error(self, ctx: ApplicationContext, error):
         ignored = (
             commands.NoPrivateMessage,
             commands.DisabledCommand,
             commands.CheckFailure,
             commands.CommandNotFound,
             commands.UserInputError,
-            discord.HTTPException,
-            discord.errors.NotFound,
+            HTTPException,
+            errors.NotFound,
         )
         error = getattr(error, "original", error)
 

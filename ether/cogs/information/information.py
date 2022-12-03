@@ -1,11 +1,10 @@
 from typing import Optional
 
-from discord import Embed, Member, SlashCommandGroup, user_command
+from discord import ApplicationContext, Embed, Member, SlashCommandGroup, user_command
 from discord.ext import commands
 from humanize import naturaldate, naturalsize
 from ether.core.i18n import _
 
-from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji
 
 
@@ -51,20 +50,20 @@ class Information(commands.Cog, name="information"):
     infos = SlashCommandGroup("infos", "Infos commands!")
 
     @infos.command(name="user")
-    @locale_doc
-    async def user(self, ctx, member: Member = None):
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def user(self, ctx: ApplicationContext, member: Member = None):
         """Get informations about a user"""
         member = member or ctx.author
         await ctx.respond(embed=InformationHandler.get_user_infos(member))
 
     @user_command(name="User infos")
-    @locale_doc
-    async def user_infos(self, ctx, member: Member):
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def user_infos(self, ctx: ApplicationContext, member: Member):
         """Get informations about a user"""
         await ctx.respond(embed=InformationHandler.get_user_infos(member))
 
     @infos.command(name="server")
-    @locale_doc
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def server(self, ctx):
         """Get informations about the server"""
         guild = ctx.guild
@@ -93,14 +92,14 @@ class Information(commands.Cog, name="information"):
         await ctx.respond(embed=embed)
 
     @infos.command(name="avatar")
-    @locale_doc
-    async def avatar(self, ctx, member: Optional[Member] = None):
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def avatar(self, ctx: ApplicationContext, member: Optional[Member] = None):
         """Get the avatar of a user"""
         user = member or ctx.author
         return await ctx.respond(embed=InformationHandler.get_user_avatar(user))
 
     @user_command(name="User avatar")
-    @locale_doc
-    async def user_avatar(self, ctx, member: Member):
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def user_avatar(self, ctx: ApplicationContext, member: Member):
         """Get the avatar of a user"""
         return await ctx.respond(embed=InformationHandler.get_user_avatar(member))

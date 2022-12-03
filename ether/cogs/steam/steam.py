@@ -1,11 +1,10 @@
 import requests
 
-from discord import ApplicationCommand, Embed, SlashCommandGroup
+from discord import ApplicationContext, Embed, SlashCommandGroup
 from discord.ext import commands, tasks
 from ether.core.i18n import _
 
 from ether.core.logging import log
-from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji
 
 
@@ -40,8 +39,8 @@ class Steam(commands.Cog, name="steam"):
         self.steam_app_list = r["applist"]["apps"]
 
     @steam.command(name="game")
-    @locale_doc
-    async def get_game(self, ctx: ApplicationCommand, query: str):
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def get_game(self, ctx: ApplicationContext, query: str):
         """Get infos about a game"""
         app = self.search(query)
         if not app:
@@ -104,8 +103,8 @@ class Steam(commands.Cog, name="steam"):
         await ctx.respond(embed=embed)
 
     @steam.command(name="specials")
-    @locale_doc
-    async def specials(self, ctx: ApplicationCommand):
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def specials(self, ctx: ApplicationContext):
         """Get the current steam specials"""
         r = requests.get("https://store.steampowered.com/api/featuredcategories")
         if not r.ok:
@@ -125,8 +124,8 @@ class Steam(commands.Cog, name="steam"):
         await ctx.respond(embed=embed)
 
     @steam.command(name="top")
-    @locale_doc
-    async def top(self, ctx: ApplicationCommand):
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def top(self, ctx: ApplicationContext):
         """Get the current steam top sellers"""
         r = requests.get("https://store.steampowered.com/api/featuredcategories")
         if not r.ok:
@@ -148,8 +147,8 @@ class Steam(commands.Cog, name="steam"):
         await ctx.respond(embed=embed)
 
     @steam.command(name="new")
-    @locale_doc
-    async def new(self, ctx: ApplicationCommand):
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def new(self, ctx: ApplicationContext):
         """Get the current steam new releases"""
         r = requests.get("https://store.steampowered.com/api/featuredcategories")
         if not r.ok:

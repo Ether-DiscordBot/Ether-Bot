@@ -3,11 +3,10 @@ from discord import Embed
 from discord.ext import commands, pages
 from ether.core.i18n import _
 
-from ether.core.i18n import locale_doc
 from ether.core.constants import Emoji, Links, Other
 
 
-class Help(discord.Cog):
+class Help(commands.Cog):
     def __init__(self, client):
         self.client = client
 
@@ -23,10 +22,10 @@ class Help(discord.Cog):
 
         self.owner_cogs = []
         self.admin_cogs = ["Admin"]
-        self.ignore_cogs = ["Help"]
+        self.ignore_cogs = ["Help", "Event"]
 
     @commands.slash_command(name="help")
-    @locale_doc
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def help(self, ctx):
         """Help command"""
         extensions, desc_array, options = [], [], []
