@@ -98,6 +98,20 @@ class Music(commands.Cog, name="music"):
         if player.message:
             await player.message.delete()
 
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        if (
+            member.bot
+            or not before.channel
+            or not member.guild.me.voice
+            or before.channel.id != member.guild.me.voice.channel.id
+        ):
+            return
+
+        if not after.channel and len(before.channel.members) <= 1:
+            vc: Player = member.guild.voice_client
+            await vc.disconnect()
+
     async def connect_with_payload(self, payload) -> Optional[Player]:
         if not payload.member.voice:
             return None
