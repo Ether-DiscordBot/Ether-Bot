@@ -2,6 +2,7 @@ from random import choice, randint, seed
 from typing import Optional
 from requests import get, request
 import os
+import urllib.parse
 
 from discord import (
     ApplicationContext,
@@ -213,3 +214,11 @@ class Fun(commands.Cog, name="fun"):
         """Translate text to nerglish"""
         translated = NerglishTranslator.translate(text)
         await ctx.respond(translated)
+
+    @fun.command(name="lmgtfy")
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def lmgtfy(self, ctx: ApplicationContext, text: str):
+        """Let me google that for you"""
+        await ctx.respond(
+            f"https://letmegooglethat.com/?q={urllib.parse.quote_plus(text)}"
+        )
