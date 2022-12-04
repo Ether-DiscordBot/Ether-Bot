@@ -472,7 +472,7 @@ class Music(commands.Cog, name="music"):
 
         for identifier, node in wavelink.NodePool._nodes.items():
             embed.add_field(
-                name=f"Node: identifier",
+                name=f"Node: {identifier}",
                 value=f"Is Connected: `{node.is_connected()}`\n"
                 f"Node Memory: `{humanize.naturalsize(node.stats.memory_used)}/{humanize.naturalsize(node.stats.memory_allocated)}` | `({humanize.naturalsize(node.stats.memory_free)} free)`\n"
                 f"Node CPU: `{node.stats.cpu_cores}`\n"

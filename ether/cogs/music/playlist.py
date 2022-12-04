@@ -1,4 +1,5 @@
 import random
+import discord
 
 from discord.ext import commands
 import wavelink
@@ -81,8 +82,11 @@ class PlaylistCog(commands.Cog):
                     new_embed.title = f"[Playlist] {wevelink_playlist.name}"
 
                 # Push changes
-                if message.embeds[0].to_dict() != new_embed.to_dict():
-                    await message.edit(embed=new_embed)
+                try:
+                    if message.embeds[0].to_dict() != new_embed.to_dict():
+                        await message.edit(embed=new_embed)
+                except discord.errors.Forbidden:
+                    pass
 
             if not vc.is_playing():
                 track = vc.queue.get()
