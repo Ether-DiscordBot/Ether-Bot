@@ -55,15 +55,34 @@ class PlaylistCog(commands.Cog):
             if len(vc.queue) > 0:
                 return
 
-            tracks = await vc.node.get_playlist(
+            wevelink_playlist = await vc.node.get_playlist(
                 cls=wavelink.YouTubePlaylist, identifier=playlist.playlist_link
             )
-            if tracks:
+            if wevelink_playlist:
                 shuffle = emoji.id == 990260524686139432
                 if shuffle:
-                    random.shuffle(tracks.tracks)
-                for t in tracks.tracks:
+                    random.shuffle(wevelink_playlist.tracks)
+                for t in wevelink_playlist.tracks:
                     vc.queue.put(t)
+
+                new_embed = message.embeds[0].copy()
+                # Update tracks count
+                if not new_embed.fields[0].value.startswith(
+                    str(len(wevelink_playlist.tracks))
+                ):
+                    new_embed.set_field_at(
+                        0,
+                        name="Tracks",
+                        value=f"{str(len(wevelink_playlist.tracks))} tracks",
+                    )
+
+                # Update title
+                if message.embeds[0].title != f"[Playlist] {wevelink_playlist.name}":
+                    new_embed.title = f"[Playlist] {wevelink_playlist.name}"
+
+                # Push changes
+                if message.embeds[0].to_dict() != new_embed.to_dict():
+                    await message.edit(embed=new_embed)
 
             if not vc.is_playing():
                 track = vc.queue.get()
