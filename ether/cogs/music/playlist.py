@@ -73,8 +73,9 @@ class PlaylistCog(commands.Cog):
                     new_embed.set_field_at(
                         0,
                         name="Tracks",
-                        value=f"{str(len(wevelink_playlist.tracks))} tracks",
+                        value=f"{len(wevelink_playlist.tracks)} tracks",
                     )
+
 
                 # Update title
                 if message.embeds[0].title != f"[Playlist] {wevelink_playlist.name}":
