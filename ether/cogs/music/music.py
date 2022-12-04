@@ -179,13 +179,6 @@ class Music(commands.Cog, name="music"):
             )
             return vc
 
-    @music.command(name="search")
-    @commands.guild_only()
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def search(self, ctx: ApplicationContext, *, search: wavelink.YouTubeTrack):
-        """Search a song on YouTube"""
-        print(search)
-
     @music.command(name="play")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
@@ -466,26 +459,25 @@ class Music(commands.Cog, name="music"):
     @commands.is_owner()
     async def lavalink_info(self, ctx: ApplicationContext):
         """Show lavalink info"""
-        player = ctx.guild.voice_client
-        if not player:
-            return
-        node = player.node
-
-        used = humanize.naturalsize(node.stats.memory_used)
-        total = humanize.naturalsize(node.stats.memory_allocated)
-        free = humanize.naturalsize(node.stats.memory_free)
-        cpu = node.stats.cpu_cores
-
         embed = Embed(
             title=f"**WaveLink:** `{wavelink.__version__}`", color=Colors.DEFAULT
         )
 
         embed.add_field(
             name="Server",
-            value=f"Server Memory: `{used}/{total}` | `({free} free)`\n"
-            f"Server CPU: `{cpu}`\n"
-            f"Server Uptime: `{datetime.timedelta(milliseconds=node.stats.uptime)}`",
+            value=f"Server Nodes: `{len(wavelink.NodePool._nodes)}`\n"
+            f"Voice Client Connected: `{len(self.client.voice_clients)}`\n",
             inline=False,
         )
 
-        await ctx.channel.send(embed=embed)
+        for identifier, node in wavelink.NodePool._nodes.items():
+            embed.add_field(
+                name=f"Node: identifier",
+                value=f"Is Connected: `{node.is_connected()}`\n"
+                f"Node Memory: `{humanize.naturalsize(node.stats.memory_used)}/{humanize.naturalsize(node.stats.memory_allocated)}` | `({humanize.naturalsize(node.stats.memory_free)} free)`\n"
+                f"Node CPU: `{node.stats.cpu_cores}`\n"
+                f"Node Uptime: `{datetime.timedelta(milliseconds=node.stats.uptime)}`\n"
+                f"Node Players: `{len(node.players)}`\n",
+                inline=False,
+            )
+        await ctx.respond(embed=embed)
