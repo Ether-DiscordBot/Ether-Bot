@@ -12,7 +12,7 @@ from discord.ext import commands
 from ether.core.i18n import _
 
 from ether.core.db.client import Database, ReactionRole
-from ether.core.constants import Emoji
+from ether.core.constants import Emoji, Other
 from ether.core.utils import EtherEmbeds
 
 
@@ -94,6 +94,15 @@ class Reactions(commands.Cog, name="reaction"):
         r_message = await ReactionRole.from_id(payload.message_id)
         if r_message:
             await r_message.delete()
+
+    @commands.Cog.listener()
+    async def on_guild_remove(self, guild):
+        if self.client.id != Other.MAIN_CLIENT_ID:
+            return
+
+        reactions = await ReactionRole.from_guild(guild.id)
+        if reactions:
+            await reactions.delete()
 
     @reactions.command()
     @commands.has_permissions(manage_roles=True)

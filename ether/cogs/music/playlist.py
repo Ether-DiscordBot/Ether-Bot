@@ -5,6 +5,7 @@ from discord.ext import commands
 import wavelink
 
 from ether.cogs.music.music import Player
+from ether.core.constants import Other
 from ether.core.db.client import Guild, Playlist
 
 
@@ -106,6 +107,15 @@ class PlaylistCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
-        r_message = await Playlist.from_id(payload.message_id)
-        if r_message:
-            await r_message.delete()
+        p_message = await Playlist.from_id(payload.message_id)
+        if p_message:
+            await p_message.delete()
+
+    @commands.Cog.listener()
+    async def on_guild_remove(self, guild):
+        if self.client.id != Other.MAIN_CLIENT_ID:
+            return
+
+        playlists = await Playlist.from_guild(guild.id)
+        if playlists:
+            await playlists.delete()

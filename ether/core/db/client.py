@@ -325,13 +325,13 @@ class Playlist(Document):
         return await Database.Playlist.get_or_none(message_id)
 
     async def from_message_object(message: MessageModel):
-        return await ReactionRole.from_id(message.id)
+        return await Playlist.from_id(message.id)
 
     async def from_context(ctx: Context):
-        return await ReactionRole.from_id(ctx.message.id)
+        return await Playlist.from_id(ctx.message.id)
 
-    async def all():
-        return await Playlist.find_all().to_list()
+    async def from_guild(guild_id: int):
+        return await Playlist.find(Playlist.guild_id == guild_id)
 
 
 class ReactionRoleOption(BaseModel):
@@ -360,3 +360,6 @@ class ReactionRole(Document):
 
     async def from_context(ctx: Context):
         return await ReactionRole.from_id(ctx.message.id)
+
+    async def from_guild(guild_id: int):
+        return await ReactionRole.find(ReactionRole.guild_id == guild_id)
