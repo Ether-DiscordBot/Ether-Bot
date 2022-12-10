@@ -22,87 +22,15 @@
 Ether is a powerful and easy to use Discord bot written in python.
 The bot include features like **Moderation, Fun, Leveling, Music, Reddit, Reactions, Image, DnD, Steam** and more!
 
-The Bot is in developpement but you can already [invite it](https://discord.com/api/oauth2/authorize?client_id=985100792270819389&permissions=1514461785206&scope=bot%20applications.commands)!<br>
+To see all the features of Ether, go to the [top.gg](https://top.gg/bot/985100792270819389) page of the bot.
+
+The Bot is in developpement but you can already [invite it](https://discord.com/api/oauth2/authorize?client_id=985100792270819389&permissions=1514461785206&scope=bot%20applications.commands)!
 
 # Hosting
 
-You have 3 ways to host Ether:
+You can host Ether simply by using Python, a virtual environment or Docker Compose. The environment variables must be in a `.env` file or in the `.secrets.toml` and `config.toml` files
 
-1. <a href="#using-python">Using Python</a>
-2. <a href="#using-a-virtual-environment">Using a Virtual Environment</a>
-3. <a href="#using-docker-compose">Using Docker Compose</a>
-
-## Installing Ether
-
- 1. Rename `.secrets.toml.example` to `.secrets.toml` and `config.toml.example` to `config.toml` and set a value to all variables.
-
-**Skip next steps if you are using docker.**
-
- 3. If you want to use the music cog, install [Lavalink](https://github.com/freyacodes/Lavalink) and put the `Lavalink.jar` file in the lavalink folder.
-
- 4. Install all requirements
-    ```shell
-    > pip install -r requirements.txt
-    ``` 
-
-## Using Python
-
-This is not the best way to run ether but probably the fastest.
-
- 1. *(Optional)* If you have install [Lavalink](https://github.com/freyacodes/Lavalink), start the lavalink server (you must have Java 13 installed)
-    ```shell
-    > java -jar Lavalink.jar
-    ```
- 2. Run Ether
-    ```shell
-    > py -m ether
-    ```
-
-## Using a Virtual Environment
-
-**Warning:** Using a virtual environment may not work.
-
- 1. Create a virtual environment with this command
-    ```shell
-    > py -m venv etherenv
-    ```
- 2. And activate it with this command
-    * On Windows:    
-        ```bat
-        > call ./etherenv/Scripts/activate.bat
-        ```
-    * On Linux/MacOS:
-        ```shell
-        > source ./etherenv/Scripts/activate.bat
-        ```
- 3. *(Optional)* If you have install [Lavalink](https://github.com/freyacodes/Lavalink), start the lavalink server (you must have Java 13 installed)
-    ```shell
-    (etherenv)> java -jar Lavalink.jar
-    ```
- 4. Run Ether in the virtual environment with this command
-    ```shell
-    (etherenv)> py -m ether
-    ```
-
-## Using Docker Compose
-
- 1. Build the container with this command
-    ```shell
-    > docker-compose build
-    ```
- 2. And start the container with this command
-    ```shell
-    > docker-compose up
-    ```
-
-You can execute these two commands in one with this command
-```shell
-> docker-compose up --build
-```
-
-For more commands go check the [docker-compose documentation]().
-
-on Linux add `sudo` before the command.
+But be aware that Ether is not meant to be hosted by anyone, you may have to change some parts of the code.
 
 # License
 

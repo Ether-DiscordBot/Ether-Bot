@@ -3,7 +3,7 @@ from typing import List, Optional, Literal
 
 from beanie import Document, init_beanie
 from beanie.operators import AddToSet
-from discord import Guild as GuildModel
+from discord import ApplicationContext, Guild as GuildModel
 from discord import Member as MemberModel
 from discord import Message as MessageModel
 from discord import User as UserModel
@@ -173,8 +173,10 @@ class Database:
 
     class Playlist:
         @staticmethod
-        async def create(message_id: int, playlist_link: str):
-            playlist = Playlist(message_id=message_id, playlist_link=playlist_link)
+        async def create(message_id: int, guild_id: int, playlist_link: str):
+            playlist = Playlist(
+                message_id=message_id, guild_id=guild_id, playlist_link=playlist_link
+            )
 
             await playlist.insert()
             log.info(f"Creating playlist (message id: {message_id})")
@@ -182,12 +184,12 @@ class Database:
             return await Database.Playlist.get_or_none(message_id)
 
         @staticmethod
-        async def get_or_create(message_id: int):
+        async def get_or_create(message_id: int, guild_id: int):
             playlist = await Database.Playlist.get_or_none(message_id)
             if playlist:
                 return playlist
 
-            return await Database.Playlist.create(message_id)
+            return await Database.Playlist.create(message_id, guild_id)
 
         @staticmethod
         async def get_or_none(message_id: int):
@@ -196,6 +198,12 @@ class Database:
                 return playlist
 
             return None
+
+        @staticmethod
+        async def guild_limit(guild_id: int) -> bool:
+            if await Playlist.find(Playlist.guild_id == guild_id).count() >= 3:
+                return False
+            return True
 
 
 def init_database(db_uri):
@@ -303,6 +311,7 @@ class Playlist(Document):
         name = "playlists"
 
     message_id: int
+    guild_id: int = -1
     playlist_link: str
 
     async def from_id(message_id: int):
@@ -313,6 +322,9 @@ class Playlist(Document):
 
     async def from_context(ctx: Context):
         return await ReactionRole.from_id(ctx.message.id)
+
+    async def all():
+        return await Playlist.find_all().to_list()
 
 
 class ReactionRoleOption(BaseModel):

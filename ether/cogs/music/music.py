@@ -12,7 +12,7 @@ from discord import ApplicationContext, Embed, SlashCommandGroup
 from ether.core.i18n import _
 
 from ether.core.constants import Colors
-from ether.core.db.client import Database, Guild
+from ether.core.db.client import Database, Guild, Playlist
 from ether.core.logging import log
 from ether.core.utils import EtherEmbeds
 from ether.core.config import config
@@ -405,6 +405,13 @@ class Music(commands.Cog, name="music"):
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def playlist(self, ctx: ApplicationContext, playlist_link: str):
         """Setup a playlist player for a YouTube playlist"""
+
+        # Check if the guild can have a new playlist
+        if not Database.Playlist.guild_limit(ctx.guild.id):
+            return await ctx.respond(
+                emned=EtherEmbeds.error("You can't have more than 10 playlists!")
+            )
+
         if not re.match(PLAYLIST_REG, playlist_link):
             return await ctx.respond(
                 embed=EtherEmbeds.error("The url is incorrect!"),
