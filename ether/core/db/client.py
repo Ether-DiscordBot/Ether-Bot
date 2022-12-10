@@ -130,8 +130,10 @@ class Database:
     @staticmethod
     class ReactionRole:
         @staticmethod
-        async def create(message_id: int, options: List, _type: int = 0):
-            reaction = ReactionRole(message_id=message_id, options=options, type=_type)
+        async def create(message_id: int, guild_id: int, options: List, _type: int = 0):
+            reaction = ReactionRole(
+                message_id=message_id, guild_id=guild_id, options=options, type=_type
+            )
 
             await reaction.insert()
             log.info(f"Creating reaction role (message id: {message_id})")
@@ -140,13 +142,18 @@ class Database:
 
         @staticmethod
         async def get_or_create(
-            message_id: int, options: Optional[List] = None, type: int = 0
+            message_id: int,
+            guild_id: int,
+            options: Optional[List] = None,
+            type: int = 0,
         ):
             reaction = await Database.ReactionRole.get_or_none(message_id)
             if reaction:
                 return reaction
 
-            return await Database.ReactionRole.create(message_id, options, type)
+            return await Database.ReactionRole.create(
+                message_id, guild_id, options, type
+            )
 
         @staticmethod
         async def get_or_none(message_id: int):
@@ -337,6 +344,7 @@ class ReactionRole(Document):
         name = "reaction_roles"
 
     message_id: int
+    guild_id: int = -1
     options: List[ReactionRoleOption]
     _type: Literal[0, 1, 2, 3] = 0
     # 0 => normal

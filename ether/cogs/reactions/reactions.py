@@ -133,7 +133,7 @@ class Reactions(commands.Cog, name="reaction"):
                 role_id=role.id, reaction=emoji
             )
             await Database.ReactionRole.update_or_create(
-                message_id=msg.id, option=option, _type=_type
+                message_id=msg.id, guild_id=ctx.guild.id, option=option, _type=_type
             )
 
             await ctx.respond("✅ Done !", delete_after=5, ephemeral=True)
