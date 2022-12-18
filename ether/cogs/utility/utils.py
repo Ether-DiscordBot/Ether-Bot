@@ -2,8 +2,8 @@ import re
 import operator
 from random import choice, random, randint
 from typing import Optional
-
 import requests
+
 from discord import ApplicationContext, Embed, Option
 from discord.commands import SlashCommandGroup, slash_command
 from discord.ext import commands
@@ -15,6 +15,14 @@ from ether.core.constants import Emoji
 
 URBAN_PATTERN = r"\[(.*?)]"
 ops = {"+": operator.add, "-": operator.sub, "*": operator.mul, "/": operator.truediv}
+
+
+def hltb_time(time: float) -> str:
+    time = str(time).split(".")
+    time[1] = int(time[1])
+    time[1] = "" if time[1] < 34 or time[1] > 67 else "½"
+
+    return f"{''.join(time)} Hours"
 
 
 class Utils(commands.Cog, name="utils"):
@@ -186,7 +194,7 @@ class Utils(commands.Cog, name="utils"):
     async def howlongtobeat(self, ctx: ApplicationContext, game: str):
         """Get the time to beat a game"""
         results_list = await HowLongToBeat().async_search(game_name=game)
-        if results_list is not None and len(results_list) > 0:
+        if results_list and len(results_list) > 0:
             data = max(results_list, key=lambda element: element.similarity)
         else:
             return await ctx.respond(
@@ -195,20 +203,28 @@ class Utils(commands.Cog, name="utils"):
             )
 
         embed = Embed(title=data.game_name, url=data.game_web_link)
-        embed.add_field(
-            name=data.gameplay_main_label,
-            value=f"{data.gameplay_main} {data.gameplay_main_unit}",
-        )
-        embed.add_field(
-            name=data.gameplay_main_extra_label,
-            value=f"{data.gameplay_main_extra} {data.gameplay_main_extra_unit}",
-        )
-        embed.add_field(
-            name=data.gameplay_completionist_label,
-            value=f"{data.gameplay_completionist} {data.gameplay_completionist_unit}",
-        )
+        if data.main_story:
+            embed.add_field(
+                name="Main Story",
+                value=hltb_time(data.main_story),
+            )
+        if data.main_extra:
+            embed.add_field(
+                name="Main Extra",
+                value=hltb_time(data.main_extra),
+            )
+        if data.completionist:
+            embed.add_field(
+                name="Completionist",
+                value=hltb_time(data.completionist),
+            )
+        if data.all_styles:
+            embed.add_field(
+                name="All styles",
+                value=hltb_time(data.all_styles),
+            )
 
-        embed.set_thumbnail(url=f"https://howlongtobeat.com{data.game_image_url}")
+        embed.set_thumbnail(url=data.game_image_url)
         embed.set_footer(
             text="Powered by howlongtobeat.com",
             icon_url="https://pbs.twimg.com/profile_images/433503450404368384/tdnd53zT_400x400.png",
