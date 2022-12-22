@@ -20,7 +20,7 @@ class Help(commands.Cog):
         self.big_icon = ""
         self.message = None
 
-        self.owner_cogs = []
+        self.owner_cogs = ["Owner"]
         self.admin_cogs = ["Admin"]
         self.ignore_cogs = ["Help", "Event", "PlaylistCog"]
 
