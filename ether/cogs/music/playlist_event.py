@@ -1,17 +1,39 @@
 import random
 import discord
+from typing import Optional
 
 from discord.ext import commands
 import wavelink
 
-from ether.cogs.music.music import Player
+from ether.core.music import Player
 from ether.core.constants import Other
 from ether.core.db.client import Guild, Playlist
 
 
-class PlaylistCog(commands.Cog):
+class PlaylistEvent(commands.Cog):
     def __init__(self, client) -> None:
         self.client = client
+
+    async def connect_with_payload(self, payload) -> Optional[Player]:
+        if not payload.member.voice:
+            return None
+        if not payload.member.guild.voice_client:
+            db_guild = await Guild.from_id(payload.member.guild.id)
+
+            text_channel = (
+                payload.member.guild.get_channel(db_guild.music_channel_id) or None
+            )
+            player = Player(text_channel=text_channel)
+            vc: Player = await payload.member.voice.channel.connect(cls=player)
+            vc.queue = wavelink.Queue(max_size=100)
+            vc.text_channel = text_channel
+            await payload.member.guild.change_voice_state(
+                channel=payload.member.voice.channel, self_mute=False, self_deaf=True
+            )
+        else:
+            vc: Player = payload.member.guild.voice_client
+
+        return vc
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):

@@ -1,9 +1,9 @@
 import asyncio
+from datetime import datetime
 from typing import List, Optional, Literal
 
 from beanie import Document, init_beanie
-from beanie.operators import AddToSet
-from discord import ApplicationContext, Guild as GuildModel
+from discord import Guild as GuildModel
 from discord import Member as MemberModel
 from discord import Message as MessageModel
 from discord import User as UserModel
@@ -180,9 +180,9 @@ class Database:
 
     class Playlist:
         @staticmethod
-        async def create(message_id: int, guild_id: int, playlist_link: str):
+        async def create(message_id: int, guild_id: int, playlist_id: str):
             playlist = Playlist(
-                message_id=message_id, guild_id=guild_id, playlist_link=playlist_link
+                message_id=message_id, guild_id=guild_id, playlist_id=playlist_id
             )
 
             await playlist.insert()
@@ -191,12 +191,12 @@ class Database:
             return await Database.Playlist.get_or_none(message_id)
 
         @staticmethod
-        async def get_or_create(message_id: int, guild_id: int):
+        async def get_or_create(message_id: int, guild_id: int, playlist_id: str):
             playlist = await Database.Playlist.get_or_none(message_id)
             if playlist:
                 return playlist
 
-            return await Database.Playlist.create(message_id, guild_id)
+            return await Database.Playlist.create(message_id, guild_id, playlist_id)
 
         @staticmethod
         async def get_or_none(message_id: int):
@@ -254,6 +254,12 @@ class Logs(BaseModel):
     moderation: Optional[ModerationLog] = None
 
 
+class Birthday(BaseModel):
+    enable: bool = False
+    channel_id: Optional[int] = None
+    hour: int = 9
+
+
 class Guild(Document):
     class Settings:
         name = "guilds"
@@ -263,6 +269,7 @@ class Guild(Document):
     auto_role: Optional[int] = None
     music_channel_id: Optional[int] = None
     exp_mult: float = 1.0
+    birthday: Birthday = Birthday()
 
     async def from_id(guild_id: int):
         return await Database.Guild.get_or_create(guild_id)
@@ -283,6 +290,7 @@ class GuildUser(Document):
     description: str = ""
     exp: int = 0
     levels: int = 1
+    birthday: Optional[datetime] = None
 
     async def from_id(user_id: int, guild_id: int):
         return await Database.GuildUser.get_or_create(user_id, guild_id)
@@ -319,7 +327,8 @@ class Playlist(Document):
 
     message_id: int
     guild_id: int = -1
-    playlist_link: str
+    playlist_link: Optional[str] = None  # deprecated
+    playlist_id: Optional[str] = None
 
     async def from_id(message_id: int):
         return await Database.Playlist.get_or_none(message_id)
