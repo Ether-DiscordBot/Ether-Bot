@@ -22,7 +22,7 @@ class Help(commands.Cog):
 
         self.owner_cogs = ["Owner"]
         self.admin_cogs = ["Admin"]
-        self.ignore_cogs = ["Help", "Event", "PlaylistCog"]
+        self.ignore_cogs = ["Help", "Event", "PlaylistEvent", "MusicEvent"]
 
     @commands.slash_command(name="help")
     @commands.cooldown(1, 5, commands.BucketType.user)
