@@ -3,7 +3,6 @@ import re
 from typing import Optional
 import random
 
-import discord
 import requests
 import wavelink
 import humanize
@@ -12,11 +11,11 @@ from discord import ApplicationContext, Embed, SlashCommandGroup
 from ether.core.i18n import _
 
 from ether.core.constants import Colors
-from ether.core.db.client import Database, Guild, Playlist
-from ether.core.logging import log
+from ether.core.db.client import Database
 from ether.core.utils import EtherEmbeds
 from ether.core.config import config
 from ether.core.constants import Emoji
+from ether.core.music import Player
 
 PLAYLIST_REG = re.compile(
     r"^(?:http:\/\/|https:\/\/)?(?:www\.)?youtube\.com\/playlist\?list(?:\S+)?$"
@@ -25,14 +24,6 @@ PLAYLIST_ID = re.compile(r"[&?]list=([^&]+)")
 URL_REG = re.compile(
     r"(?:https:\/\/|http:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b[-a-zA-Z0-9@:%_\+.~#?&//=]*"
 )
-
-
-class Player(wavelink.Player):
-    def __init__(self, text_channel: Optional[discord.TextChannel]):
-        super().__init__()
-        self.message: Optional[discord.Message] = None
-        self.text_channel = text_channel
-        self.queue: wavelink.Queue = wavelink.Queue(max_size=100)
 
 
 class Music(commands.Cog, name="music"):
@@ -56,82 +47,6 @@ class Music(commands.Cog, name="music"):
         )
 
     music = SlashCommandGroup("music", "Music commands!")
-
-    @commands.Cog.listener()
-    async def on_wavelink_node_ready(self, node: wavelink.Node):
-        """Event fired when a node has finished connecting."""
-        log.info(f"Node: <{node.identifier}> is ready!")
-
-    @commands.Cog.listener()
-    async def on_wavelink_track_start(self, player: Player, track: wavelink.Track):
-        """When a track starts, the bot sends a message in the channel where the command was sent.
-        The channel is taken on the object of the track and the message are saved in the player.
-        """
-        if channel := player.text_channel:
-            message: discord.Message = await channel.send(
-                embed=Embed(
-                    description=f"Now Playing **[{track.title}]({track.uri})**!",
-                    color=Colors.DEFAULT,
-                )
-            )
-            player.message = message
-
-    @commands.Cog.listener()
-    async def on_wavelink_track_end(
-        self, player: Player, track: wavelink.Track, reason
-    ):
-        """When a track ends, the bot delete the start message.
-        If it's the last track, the player is kill.
-        """
-
-        if reason not in ("FINISHED", "STOPPED", "REPLACED"):
-            if player.text_channel:
-                return await player.text_channel.send(
-                    embed=EtherEmbeds.error(f"Track finished for reason `{reason}`")
-                )
-
-            log.warn(f"Track finished for reason `{reason}`")
-
-        if not player.queue.is_empty and reason != "REPLACED":
-            await player.play(player.queue.get())
-
-        if player.message:
-            await player.message.delete()
-
-    @commands.Cog.listener()
-    async def on_voice_state_update(self, member, before, after):
-        if (
-            member.bot
-            or not before.channel
-            or not member.guild.me.voice
-            or before.channel.id != member.guild.me.voice.channel.id
-        ):
-            return
-
-        if not after.channel and len(before.channel.members) <= 1:
-            vc: Player = member.guild.voice_client
-            await vc.disconnect()
-
-    async def connect_with_payload(self, payload) -> Optional[Player]:
-        if not payload.member.voice:
-            return None
-        if not payload.member.guild.voice_client:
-            db_guild = await Guild.from_id(payload.member.guild.id)
-
-            text_channel = (
-                payload.member.guild.get_channel(db_guild.music_channel_id) or None
-            )
-            player = Player(text_channel=text_channel)
-            vc: Player = await payload.member.voice.channel.connect(cls=player)
-            vc.queue = wavelink.Queue(max_size=100)
-            vc.text_channel = text_channel
-            await payload.member.guild.change_voice_state(
-                channel=payload.member.voice.channel, self_mute=False, self_deaf=True
-            )
-        else:
-            vc: Player = payload.member.guild.voice_client
-
-        return vc
 
     @music.command(name="join")
     @commands.guild_only()
@@ -419,10 +334,10 @@ class Music(commands.Cog, name="music"):
                 delete_after=5,
             )
 
-        id = re.search(PLAYLIST_ID, playlist_link).groups()[0]
+        playlist_id = re.search(PLAYLIST_ID, playlist_link).groups()[0]
 
         r = requests.get(
-            f"https://www.googleapis.com/youtube/v3/playlists?part=snippet&part=contentDetails&id={id}&key={self.youtube_api_key}"
+            f"https://www.googleapis.com/youtube/v3/playlists?part=snippet&part=contentDetails&id={playlist_id}&key={self.youtube_api_key}"
         )
         if not r.ok:
             ctx.respond(
@@ -450,7 +365,7 @@ class Music(commands.Cog, name="music"):
         embed.set_footer(text=f"Created by {data['channelTitle']}")
 
         message = await ctx.send(embed=embed)
-        await Database.Playlist.create(message.id, playlist_link)
+        await Database.Playlist.create(message.id, playlist_id)
 
         await message.add_reaction("<:back:990260521355862036>")
         await message.add_reaction("<:play:990260523692064798>")

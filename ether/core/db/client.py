@@ -1,9 +1,9 @@
 import asyncio
+import datetime
 from typing import List, Optional, Literal
 
-from beanie import Document, init_beanie
-from beanie.operators import AddToSet
-from discord import ApplicationContext, Guild as GuildModel
+from beanie import Document, TimeSeriesConfig, init_beanie
+from discord import Guild as GuildModel
 from discord import Member as MemberModel
 from discord import Message as MessageModel
 from discord import User as UserModel
@@ -130,8 +130,10 @@ class Database:
     @staticmethod
     class ReactionRole:
         @staticmethod
-        async def create(message_id: int, options: List, _type: int = 0):
-            reaction = ReactionRole(message_id=message_id, options=options, type=_type)
+        async def create(message_id: int, guild_id: int, options: List, _type: int = 0):
+            reaction = ReactionRole(
+                message_id=message_id, guild_id=guild_id, options=options, type=_type
+            )
 
             await reaction.insert()
             log.info(f"Creating reaction role (message id: {message_id})")
@@ -140,13 +142,18 @@ class Database:
 
         @staticmethod
         async def get_or_create(
-            message_id: int, options: Optional[List] = None, type: int = 0
+            message_id: int,
+            guild_id: int,
+            options: Optional[List] = None,
+            type: int = 0,
         ):
             reaction = await Database.ReactionRole.get_or_none(message_id)
             if reaction:
                 return reaction
 
-            return await Database.ReactionRole.create(message_id, options, type)
+            return await Database.ReactionRole.create(
+                message_id, guild_id, options, type
+            )
 
         @staticmethod
         async def get_or_none(message_id: int):
@@ -173,9 +180,9 @@ class Database:
 
     class Playlist:
         @staticmethod
-        async def create(message_id: int, guild_id: int, playlist_link: str):
+        async def create(message_id: int, guild_id: int, playlist_id: str):
             playlist = Playlist(
-                message_id=message_id, guild_id=guild_id, playlist_link=playlist_link
+                message_id=message_id, guild_id=guild_id, playlist_id=playlist_id
             )
 
             await playlist.insert()
@@ -184,12 +191,12 @@ class Database:
             return await Database.Playlist.get_or_none(message_id)
 
         @staticmethod
-        async def get_or_create(message_id: int, guild_id: int):
+        async def get_or_create(message_id: int, guild_id: int, playlist_id: str):
             playlist = await Database.Playlist.get_or_none(message_id)
             if playlist:
                 return playlist
 
-            return await Database.Playlist.create(message_id, guild_id)
+            return await Database.Playlist.create(message_id, guild_id, playlist_id)
 
         @staticmethod
         async def get_or_none(message_id: int):
@@ -247,6 +254,12 @@ class Logs(BaseModel):
     moderation: Optional[ModerationLog] = None
 
 
+class Birthday(BaseModel):
+    enable: bool = False
+    channel_id: Optional[int] = None
+    hour: int = 9
+
+
 class Guild(Document):
     class Settings:
         name = "guilds"
@@ -256,6 +269,7 @@ class Guild(Document):
     auto_role: Optional[int] = None
     music_channel_id: Optional[int] = None
     exp_mult: float = 1.0
+    birthday: Birthday = Birthday()
 
     async def from_id(guild_id: int):
         return await Database.Guild.get_or_create(guild_id)
@@ -267,6 +281,17 @@ class Guild(Document):
         return await Guild.from_id(ctx.guild.id)
 
 
+class Date(BaseModel):
+    day: int
+    month: int
+    year: Optional[int] = None
+
+    def __str__(self):
+        dt = datetime.date(year=self.year or 1900, month=self.month, day=self.day)
+
+        return dt.strftime("%d %B %Y") if self.year else dt.strftime("%d %B")
+
+
 class GuildUser(Document):
     class Settings:
         name = "guild_users"
@@ -276,6 +301,7 @@ class GuildUser(Document):
     description: str = ""
     exp: int = 0
     levels: int = 1
+    birthday: Optional[Date] = None
 
     async def from_id(user_id: int, guild_id: int):
         return await Database.GuildUser.get_or_create(user_id, guild_id)
@@ -312,19 +338,20 @@ class Playlist(Document):
 
     message_id: int
     guild_id: int = -1
-    playlist_link: str
+    playlist_link: Optional[str] = None  # deprecated
+    playlist_id: Optional[str] = None
 
     async def from_id(message_id: int):
         return await Database.Playlist.get_or_none(message_id)
 
     async def from_message_object(message: MessageModel):
-        return await ReactionRole.from_id(message.id)
+        return await Playlist.from_id(message.id)
 
     async def from_context(ctx: Context):
-        return await ReactionRole.from_id(ctx.message.id)
+        return await Playlist.from_id(ctx.message.id)
 
-    async def all():
-        return await Playlist.find_all().to_list()
+    async def from_guild(guild_id: int):
+        return await Playlist.find(Playlist.guild_id == guild_id)
 
 
 class ReactionRoleOption(BaseModel):
@@ -337,6 +364,7 @@ class ReactionRole(Document):
         name = "reaction_roles"
 
     message_id: int
+    guild_id: int = -1
     options: List[ReactionRoleOption]
     _type: Literal[0, 1, 2, 3] = 0
     # 0 => normal
@@ -352,3 +380,6 @@ class ReactionRole(Document):
 
     async def from_context(ctx: Context):
         return await ReactionRole.from_id(ctx.message.id)
+
+    async def from_guild(guild_id: int):
+        return await ReactionRole.find(ReactionRole.guild_id == guild_id)
