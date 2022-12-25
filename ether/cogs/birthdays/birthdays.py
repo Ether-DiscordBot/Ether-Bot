@@ -77,6 +77,8 @@ class Birthday(commands.Cog):
     birthday = SlashCommandGroup("birthday", "Birthdays commands!")
 
     @birthday.command(name="remember")
+    @commands.has_permissions(manage_guild=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def remember(
         self,
         ctx: ApplicationContext,
@@ -118,6 +120,8 @@ class Birthday(commands.Cog):
         )
 
     @birthday.command(name="forget")
+    @commands.has_permissions(manage_guild=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def forget(self, ctx: ApplicationContext, user: Member):
         """Forget a birthday"""
         db_user = await GuildUser.from_id(user.id)
@@ -130,6 +134,7 @@ class Birthday(commands.Cog):
         )
 
     @birthday.command(name="show")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def show(self, ctx: ApplicationContext, user: Member):
         """Show a user's birthday"""
         db_user: GuildUser = await GuildUser.from_id(user.id, ctx.guild.id)
@@ -146,6 +151,7 @@ class Birthday(commands.Cog):
         )
 
     @birthday.command(name="list")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def list(self, ctx: ApplicationContext):
         """List the 10 upcoming birthdays"""
         users = await GuildUser.find(
@@ -169,6 +175,8 @@ class Birthday(commands.Cog):
     )
 
     @config.command(name="enable")
+    @commands.has_permissions(manage_guild=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def config_enable(self, ctx: ApplicationContext, enable: bool):
         """Enable or disable the birthday system"""
 
@@ -184,6 +192,8 @@ class Birthday(commands.Cog):
         )
 
     @config.command(name="channel")
+    @commands.has_permissions(manage_guild=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def config_channel(
         self, ctx: ApplicationContext, channel: Optional[TextChannel] = None
     ):
@@ -198,6 +208,8 @@ class Birthday(commands.Cog):
         )
 
     @config.command(name="time")
+    @commands.has_permissions(manage_guild=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def config_time(
         self,
         ctx: ApplicationContext,
