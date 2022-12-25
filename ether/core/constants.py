@@ -49,6 +49,7 @@ class Emoji:
     REDDIT = "<:reddit:1029143948838567986>"
     STEAM = "<:steam:1029143934213042186>"
     UTILITY = "<:utility:1029146204891795457>"
+    BIRTHDAY = ""
 
 
 class Other:

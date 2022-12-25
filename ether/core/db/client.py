@@ -1,8 +1,8 @@
 import asyncio
-from datetime import datetime
+import datetime
 from typing import List, Optional, Literal
 
-from beanie import Document, init_beanie
+from beanie import Document, TimeSeriesConfig, init_beanie
 from discord import Guild as GuildModel
 from discord import Member as MemberModel
 from discord import Message as MessageModel
@@ -281,6 +281,17 @@ class Guild(Document):
         return await Guild.from_id(ctx.guild.id)
 
 
+class Date(BaseModel):
+    day: int
+    month: int
+    year: Optional[int] = None
+
+    def __str__(self):
+        dt = datetime.date(year=self.year or 1900, month=self.month, day=self.day)
+
+        return dt.strftime("%d %B %Y") if self.year else dt.strftime("%d %B")
+
+
 class GuildUser(Document):
     class Settings:
         name = "guild_users"
@@ -290,7 +301,7 @@ class GuildUser(Document):
     description: str = ""
     exp: int = 0
     levels: int = 1
-    birthday: Optional[datetime] = None
+    birthday: Optional[Date] = None
 
     async def from_id(user_id: int, guild_id: int):
         return await Database.GuildUser.get_or_create(user_id, guild_id)
