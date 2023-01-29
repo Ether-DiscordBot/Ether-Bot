@@ -134,7 +134,7 @@ class Fun(commands.Cog, name="fun"):
 
         user = ctx.author if not user else user
 
-        seed(user.id / 268)
+        seed(user.id / 1782)
         gaymeter = randint(0, 100)
 
         if user == ctx.author:
