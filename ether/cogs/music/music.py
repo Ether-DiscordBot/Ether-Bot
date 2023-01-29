@@ -234,7 +234,7 @@ class Music(commands.Cog, name="music"):
         """Skip the current song"""
         player = self.client.lavalink.player_manager.get(ctx.guild.id)
 
-        if not len(player):
+        if not len(player.queue):
             return
 
         await player.skip()

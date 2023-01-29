@@ -1,7 +1,8 @@
 import discord
 
 from discord.ext import commands
-import wavelink
+import lavalink
+from lavalink import NodeConnectedEvent, TrackStartEvent, TrackEndEvent
 
 from ether.core.music import Player
 from ether.core.constants import Colors
@@ -13,13 +14,13 @@ class MusicEvent(commands.Cog):
     def __init__(self, client) -> None:
         self.client = client
 
-    @commands.Cog.listener()
-    async def on_wavelink_node_ready(self, node: wavelink.Node):
+    @lavalink.listener(NodeConnectedEvent)
+    async def on_node_connnected(self, node: lavalink.Node):
         """Event fired when a node has finished connecting."""
         log.info(f"Node: <{node.identifier}> is ready!")
 
-    @commands.Cog.listener()
-    async def on_wavelink_track_start(self, player: Player, track: wavelink.Track):
+    @lavalink.listener(TrackStartEvent)
+    async def on_wavelink_track_start(self, player, track):
         """When a track starts, the bot sends a message in the channel where the command was sent.
         The channel is taken on the object of the track and the message are saved in the player.
         """
@@ -32,19 +33,23 @@ class MusicEvent(commands.Cog):
             )
             player.message = message
 
-    @commands.Cog.listener()
-    async def on_wavelink_track_end(
-        self, player: Player, track: wavelink.Track, reason
-    ):
+    @lavalink.listener(TrackEndEvent)
+    async def on_wavelink_track_end(self, player, track, reason):
         """When a track ends, the bot delete the start message.
         If it's the last track, the player is kill.
         """
 
+        print(reason)
+
         if reason not in ("FINISHED", "STOPPED", "REPLACED"):
-            if player.text_channel:
-                return await player.text_channel.send(
-                    embed=EtherEmbeds.error(f"Track finished for reason `{reason}`")
+            if player.channel_id:
+                channel = self.client.get_guild(player.guild_id).get_channel(
+                    player.channel_id
                 )
+                if channel:
+                    return await channel.send(
+                        embed=EtherEmbeds.error(f"Track finished for reason `{reason}`")
+                    )
 
             log.warn(f"Track finished for reason `{reason}`")
 
@@ -66,5 +71,5 @@ class MusicEvent(commands.Cog):
             and (before.channel.id == member.guild.me.voice.channel.id)
             and len(before.channel.members) <= 1
         ):
-            vc: Player = member.guild.voice_client
-            return await vc.disconnect()
+            player = self.client.lavalink.player_manager.get(member.guild.id)
+            return await player.stop()
