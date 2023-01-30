@@ -132,7 +132,7 @@ class Fun(commands.Cog, name="fun"):
     async def howgay(self, ctx: ApplicationContext, user: Optional[Member] = None):
         """The bot guesses how gay your are"""
 
-        user = ctx.author if not user else user
+        user = user or ctx.author
 
         seed(user.id / 1782)
         gaymeter = randint(0, 100)
@@ -148,7 +148,7 @@ class Fun(commands.Cog, name="fun"):
     ):
         """The bot tells you how attractive you are"""
 
-        user = ctx.author if not user else user
+        user = user or ctx.author
 
         seed(user.id / 294)
         attractivemeter = randint(0, 100)
@@ -162,7 +162,7 @@ class Fun(commands.Cog, name="fun"):
     async def howhot(self, ctx: ApplicationContext, user: Optional[Member] = None):
         """The bot guesses how hot you are"""
 
-        user = ctx.author if not user else user
+        user = user or ctx.author
 
         seed(user.id / 15)
         hotmeter = randint(0, 100)
@@ -178,7 +178,7 @@ class Fun(commands.Cog, name="fun"):
     ):
         """The bot guesses how hot you are"""
 
-        user2 = ctx.author if not user2 else user2
+        user2 = user2 or ctx.author
 
         seed((user1.id + user2.id) / 144)
         lovecalc = randint(0, 100)
