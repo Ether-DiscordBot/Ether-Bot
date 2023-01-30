@@ -171,6 +171,32 @@ class Fun(commands.Cog, name="fun"):
             return await ctx.respond(f"You are `{hotmeter}%` hot!")
         await ctx.respond(f"{user.mention} is `{hotmeter}%` hot!")
 
+    @fun.command(name="lovecalc")
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def howhot(
+        self, ctx: ApplicationContext, user1: Member, user2: Optional[Member] = None
+    ):
+        """The bot guesses how hot you are"""
+
+        user2 = ctx.author if not user2 else user2
+
+        seed((user1.id + user2.id) / 144)
+        lovecalc = randint(0, 100)
+
+        love_emoji = (
+            "❤️‍🔥"
+            if lovecalc >= 75
+            else "❤️"
+            if lovecalc >= 50
+            else "❤️‍🩹"
+            if lovecalc >= 25
+            else "💔"
+        )
+
+        await ctx.respond(
+            f"{user1.mention} and {user2.mention} are compatible at `{lovecalc}%` {love_emoji} !"
+        )
+
     @fun.command(name="horoscope")
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def horoscope(
