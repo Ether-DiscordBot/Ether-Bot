@@ -68,14 +68,18 @@ class Music(commands.Cog, name="music"):
 
         return guild_check
 
-    async def ensure_voice(self, ctx):
+    async def ensure_voice(self, ctx: ApplicationContext):
         """This check ensures that the bot and command author are in the same voicechannel."""
         player = self.client.lavalink.player_manager.create(ctx.guild.id)
 
         should_connect = ctx.command.name in ("play", "join")
 
         if not ctx.author.voice or not ctx.author.voice.channel:
-            raise commands.CommandInvokeError("Join a voicechannel first.")
+            await ctx.respond(
+                embed=EtherEmbeds.error("Join a voicechannel first."),
+                ephemeral=True,
+                delete_after=5,
+            )
 
         v_client = ctx.voice_client
         if not v_client:
@@ -85,15 +89,21 @@ class Music(commands.Cog, name="music"):
             permissions = ctx.author.voice.channel.permissions_for(ctx.me)
 
             if not permissions.connect or not permissions.speak:
-                raise commands.CommandInvokeError(
-                    "I need the `CONNECT` and `SPEAK` permissions."
+                await ctx.respond(
+                    embed=EtherEmbeds.error(
+                        "I need the `CONNECT` and `SPEAK` permissions."
+                    )
                 )
 
             player.store("channel", ctx.channel.id)
             await ctx.author.voice.channel.connect(cls=LavalinkVoiceClient)
         else:
             if v_client.channel.id != ctx.author.voice.channel.id:
-                raise commands.CommandInvokeError("You need to be in my voicechannel.")
+                await ctx.respond(
+                    embed=EtherEmbeds.error("You need to be in my voicechannel."),
+                    ephemeral=True,
+                    delete_after=5,
+                )
 
     async def track_hook(self, event):
         if isinstance(event, lavalink.events.QueueEndEvent):
