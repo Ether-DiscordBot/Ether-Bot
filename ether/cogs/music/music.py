@@ -1,10 +1,9 @@
 import datetime
 import re
-from typing import Optional
-import random
 
 import requests
 import lavalink
+from lavalink import LoadType
 import humanize
 from discord.ext import commands
 from discord import ApplicationContext, Embed, SlashCommandGroup
@@ -15,7 +14,6 @@ from ether.core.db.client import Database
 from ether.core.utils import EtherEmbeds
 from ether.core.config import config
 from ether.core.constants import Emoji
-from ether.core.music import Player
 from ether.core.voice_client import LavalinkVoiceClient
 
 PLAYLIST_REG = re.compile(
@@ -106,7 +104,7 @@ class Music(commands.Cog, name="music"):
     @music.command(name="join")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def join(self, ctx: ApplicationContext) -> Optional[Player]:
+    async def join(self, ctx: ApplicationContext):
         """Connect the bot to your voice channel"""
 
         self.client.lavalink.player_manager.get(ctx.guild.id)
@@ -150,25 +148,25 @@ class Music(commands.Cog, name="music"):
         if not URL_REG.match(query):
             query = f"ytsearch:{query}"
 
-        results = await player.node.get_tracks(query)
+        result = await player.node.get_tracks(query)
 
-        if not results or not results.tracks:
+        if not tracks or not tracks.tracks:
             return await ctx.respond(embed=EtherEmbeds.error("Nothing found!"))
 
-        if results.load_type == "PLAYLIST_LOADED":
-            tracks = results.tracks
+        if result.load_type == LoadType.PLAYLIST:
+            tracks = result.tracks
 
             for track in tracks:
                 player.add(requester=ctx.author.id, track=track)
 
                 await ctx.respond(
                     embed=Embed(
-                        description=f"{results.playlist_info.name} - {len(tracks)} tracks",
+                        description=f"{result.playlist_info.name} - {len(tracks)} tracks",
                         color=Colors.DEFAULT,
                     )
                 )
         else:
-            track = results.tracks[0]
+            track = result.tracks[0]
             player.add(requester=ctx.author.id, track=track)
 
             await ctx.respond(

@@ -4,7 +4,6 @@ from discord.ext import commands
 import lavalink
 from lavalink import NodeConnectedEvent, TrackStartEvent, TrackEndEvent
 
-from ether.core.music import Player
 from ether.core.constants import Colors
 from ether.core.logging import log
 from ether.core.utils import EtherEmbeds
@@ -38,8 +37,6 @@ class MusicEvent(commands.Cog):
         """When a track ends, the bot delete the start message.
         If it's the last track, the player is kill.
         """
-
-        print(reason)
 
         if reason not in ("FINISHED", "STOPPED", "REPLACED"):
             if player.channel_id:
