@@ -150,7 +150,7 @@ class Music(commands.Cog, name="music"):
 
         result = await player.node.get_tracks(query)
 
-        if not tracks or not tracks.tracks:
+        if not result or not result.tracks:
             return await ctx.respond(embed=EtherEmbeds.error("Nothing found!"))
 
         if result.load_type == LoadType.PLAYLIST:
