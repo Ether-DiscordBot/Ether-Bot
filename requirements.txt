@@ -1,5 +1,5 @@
 py-cord[voice]==2.3.2
-wavelink==1.3.4
+lavalink==4.0.6
 humanize==4.4.0
 asyncpraw==7.6.1
 pymongo==4.3.2
