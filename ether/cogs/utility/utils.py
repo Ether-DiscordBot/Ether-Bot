@@ -99,7 +99,7 @@ class Utils(commands.Cog, name="utils"):
         list = [i for i in items if i]
         return await ctx.respond(choice(list))
 
-    @utils.command(name="roll")
+    @commands.slash_command(name="roll")
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def roll(
         self,
@@ -108,24 +108,28 @@ class Utils(commands.Cog, name="utils"):
     ):
         """Roll a dice"""
 
-        def eval_binary_expr(op1, oper, op2):
-            op1, op2 = int(op1), int(op2)
-            return ops[oper](op1, op2)
+        def eval_binary_expr(r):
+            expr = [*re.findall(r"(?:\d+)|(?:[\+\-\*\/])", r)]
+
+            while len(expr) > 1:
+                if len(expr) >= 3:
+                    op1, oper, op2, *expr = expr
+                else:
+                    raise ValueError("Invalid expression")
+
+                expr = [ops[oper](int(op1), int(op2))] + expr
+
+            return expr[0]
 
         def _roll(match):
             a, b = match.group(1).split("d")
-            return str(randint(int(a), int(a) * int(b)))
+            return str(sum([randint(1, int(b)) for _ in range(int(a))]))
 
         try:
-            results = [r.lstrip() for r in re.sub("(\d+d\d+)", _roll, dice).split(",")]
-            result = [
-                eval_binary_expr(*re.findall(r"(?:\d+)|(?:[\+\-\*\/])", r))
-                if not r.isdigit()
-                else r
-                for r in results
-            ]
+            details = [r.lstrip() for r in re.sub("(\d+d\d+)", _roll, dice).split(",")]
+            result = [eval_binary_expr(r) if not r.isdigit() else r for r in details]
 
-        except Exception:
+        except ValueError:
             return await ctx.respond(
                 embed=EtherEmbeds.error(
                     _("An error occured, please check the syntax of your dices.")
@@ -134,12 +138,20 @@ class Utils(commands.Cog, name="utils"):
                 delete_after=5,
             )
 
+        most_larger_dice_str = len(max(dice.split(","), key=len))
+        most_details_dice_str = len(max(details, key=len))
+        most_larger_result_str = len(max([str(r) for r in result], key=len))
+
         result = "\n".join(
-            f"║ {str(t).lstrip().ljust(10)}║ {str(r).lstrip().ljust(5)}║"
-            for t, r in zip(dice.split(","), result)
+            f"║ {str(t).lstrip().ljust(max(10, most_larger_dice_str))} ║ {str(d).lstrip().ljust(max(7, most_details_dice_str))} ║ {str(r).lstrip().ljust(max(4, most_larger_result_str))} ║"
+            for t, d, r in zip(dice.split(","), details, result)
         )
+
         await ctx.respond(
-            f"```\n╔═══════════╦══════╗\n║ Dice      ║ Sum  ║\n╟───────────╫──────╢\n{result}\n╚═══════════╩══════╝```"
+            f"```\n╔══════{'═' * max(6, most_larger_dice_str-4)}╦═════════{'═' * max(0, most_details_dice_str-7)}╦═════{'═' * max(1, most_larger_result_str-5)}╗"
+            f"\n║ Dice {' ' * max(6, most_larger_dice_str-4)}║ Details {' ' * max(0, most_details_dice_str-7)}║ Sum {' ' * max(1, most_larger_result_str-5)}║"
+            f"\n╟──────{'─' * max(6, most_larger_dice_str-4)}╫─────────{'─' * max(0, most_details_dice_str-7)}╫─────{'─' * max(1, most_larger_result_str-5)}╢\n{result}"
+            f"\n╚══════{'═' * max(6, most_larger_dice_str-4)}╩═════════{'═' * max(0, most_details_dice_str-7)}╩═════{'═' * max(1, most_larger_result_str-5)}╝```"
         )
 
     @utils.command(name="urban")
