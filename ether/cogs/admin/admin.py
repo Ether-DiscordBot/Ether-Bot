@@ -144,6 +144,7 @@ class Admin(commands.Cog, name="admin"):
 
     @admin.command(name="ban")
     @commands.has_permissions(ban_members=True)
+    @commands.bot_has_permissions(ban_members=True)
     async def ban(self, ctx: ApplicationContext, member: User, reason: str = None):
         """Ban a member"""
         guild = await Database.Guild.get_or_none(ctx.guild_id)
@@ -174,6 +175,7 @@ class Admin(commands.Cog, name="admin"):
 
     @admin.command(name="kick")
     @commands.has_permissions(kick_members=True)
+    @commands.bot_has_permissions(kick_members=True)
     async def kick(self, ctx: ApplicationContext, member: Member, reason=None):
         """Kick a member"""
         guild = await Database.Guild.get_or_none(ctx.guild_id)
@@ -206,6 +208,7 @@ class Admin(commands.Cog, name="admin"):
 
     @admin.command(name="clear")
     @commands.has_permissions(manage_messages=True)
+    @commands.bot_has_permissions(manage_messages=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def clear(self, ctx: ApplicationContext, amount: int):
         """Clear a specific amount of messages"""
@@ -216,6 +219,7 @@ class Admin(commands.Cog, name="admin"):
 
     @admin.command(name="slowmode")
     @commands.has_permissions(manage_channels=True)
+    @commands.bot_has_permissions(manage_channels=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def slowmode(self, ctx: ApplicationContext, cooldown: int):
         """Set the slowmode of the channel"""
