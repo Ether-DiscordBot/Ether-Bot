@@ -1,5 +1,6 @@
 import asyncio
 import os
+import threading
 
 import discord
 import nest_asyncio
@@ -10,6 +11,7 @@ nest_asyncio.apply()
 from ether.core.cog_manager import CogManager
 from ether.core.config import config
 from ether.core.db import init_database
+from ether.api.server import start as start_server
 
 init_database(config.database.mongodb.get("uri"))
 
@@ -45,13 +47,23 @@ class Client(commands.Bot):
     async def load_extensions(self):
         await CogManager.load_cogs(self)
 
+    def booba(self):
+        return self.user.name
+
 
 def main():
     bot = Client()
 
+    server_thread = threading.Thread(
+        target=start_server, kwargs={"port": config.server.get("port"), "bot": bot}
+    )
+    server_thread.start()
+
     asyncio.run(bot.load_extensions())
+
     bot.run(config.bot.get("token"))
 
 
 if __name__ == "__main__":
+
     main()

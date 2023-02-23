@@ -25,6 +25,7 @@ config.validators.register(
         "api.youtube.key",
         must_exist=None,
     ),
+    Validator("server.port", must_exist=None, default=5000),
 )
 
 config.validators.validate()
