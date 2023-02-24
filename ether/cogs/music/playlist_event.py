@@ -74,7 +74,13 @@ class PlaylistEvent(commands.Cog):
             if len(player.queue) > 0:
                 return
 
-            load_playlist = await player.node.get_tracks(query=playlist.playlist_link)
+            playlist_link = (
+                playlist_link
+                if playlist.playlist_link
+                else f"https://www.youtube.com/playlist?list={playlist.playlist_id}"
+            )
+
+            load_playlist = await player.node.get_tracks(query=playlist_link)
             if load_playlist:
                 shuffle = emoji.id == 990260524686139432
                 if shuffle:

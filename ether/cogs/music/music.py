@@ -335,8 +335,10 @@ class Music(commands.Cog, name="music"):
 
         playlist_id = re.search(PLAYLIST_ID, playlist_link).groups()[0]
 
+        key = config.api.youtube.get("key")
+
         r = requests.get(
-            f"https://www.googleapis.com/youtube/v3/playlists?part=snippet&part=contentDetails&id={playlist_id}&key={self.youtube_api_key}"
+            f"https://www.googleapis.com/youtube/v3/playlists?part=snippet&part=contentDetails&id={playlist_id}&key={key}"
         )
         if not r.ok:
             ctx.respond(
@@ -364,7 +366,7 @@ class Music(commands.Cog, name="music"):
         embed.set_footer(text=f"Created by {data['channelTitle']}")
 
         message = await ctx.send(embed=embed)
-        await Database.Playlist.create(message.id, playlist_id)
+        await Database.Playlist.create(message.id, ctx.guild.id, playlist_id)
 
         await message.add_reaction("<:back:990260521355862036>")
         await message.add_reaction("<:play:990260523692064798>")
