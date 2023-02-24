@@ -58,6 +58,10 @@ class Music(commands.Cog, name="music"):
 
     async def cog_before_invoke(self, ctx):
         """Command before-invoke handler."""
+        execeptions = "playlist"
+        if ctx.command.name in execeptions:
+            return
+
         guild_check = ctx.guild is not None
         #  This is essentially the same as `@commands.guild_only()`
         #  except it saves us repeating ourselves (and also a few lines).
@@ -317,9 +321,9 @@ class Music(commands.Cog, name="music"):
         """Setup a playlist player for a YouTube playlist"""
 
         # Check if the guild can have a new playlist
-        if not Database.Playlist.guild_limit(ctx.guild.id):
+        if not await Database.Playlist.guild_limit(ctx.guild.id):
             return await ctx.respond(
-                emned=EtherEmbeds.error("You can't have more than 10 playlists!")
+                embed=EtherEmbeds.error("You can't have more than 10 playlists!")
             )
 
         if not re.match(PLAYLIST_REG, playlist_link):
