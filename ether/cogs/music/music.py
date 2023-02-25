@@ -58,7 +58,7 @@ class Music(commands.Cog, name="music"):
 
     async def cog_before_invoke(self, ctx):
         """Command before-invoke handler."""
-        execeptions = "playlist"
+        execeptions = ("playlist", "lavalinkinfo")
         if ctx.command.name in execeptions:
             return
 
@@ -88,7 +88,11 @@ class Music(commands.Cog, name="music"):
         v_client = ctx.voice_client
         if not v_client:
             if not should_connect:
-                raise commands.CommandInvokeError("Not connected.")
+                await ctx.respond(
+                    embed=EtherEmbeds.error("Humm... There is no music."),
+                    ephemeral=True,
+                    delete_after=5,
+                )
 
             permissions = ctx.author.voice.channel.permissions_for(ctx.me)
 
