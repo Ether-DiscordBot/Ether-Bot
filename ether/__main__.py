@@ -1,6 +1,7 @@
 import asyncio
 import os
-import threading
+import sys
+import signal
 
 import discord
 import nest_asyncio
@@ -11,9 +12,11 @@ nest_asyncio.apply()
 from ether.core.cog_manager import CogManager
 from ether.core.config import config
 from ether.core.db import init_database
-from ether.api.server import start as start_server
+from ether.api.server import ServerThread
 
 init_database(config.database.mongodb.get("uri"))
+
+threads = []
 
 
 #
@@ -51,19 +54,27 @@ class Client(commands.Bot):
         return self.user.name
 
 
+def signal_handler(sig, frame):
+    # Exit the program
+    print("\033[35mProcess killed by user\033[0m")
+    for thread in threads:
+        thread.kill()
+    sys.exit(0)
+
+
 def main():
+    signal.signal(signal.SIGINT, signal_handler)
+
+    global bot
     bot = Client()
 
-    server_thread = threading.Thread(
-        target=start_server, kwargs={"port": config.server.get("port"), "bot": bot}
-    )
+    server_thread = ServerThread(port=config.server.get("port"), bot=bot)
+    threads.append(server_thread)
     server_thread.start()
 
     asyncio.run(bot.load_extensions())
-
     bot.run(config.bot.get("token"))
 
 
 if __name__ == "__main__":
-
     main()
