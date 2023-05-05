@@ -208,7 +208,7 @@ class Database:
 
         @staticmethod
         async def guild_limit(guild_id: int) -> bool:
-            if await Playlist.find(Playlist.guild_id == guild_id).count() >= 3:
+            if await Playlist.find(Playlist.guild_id == guild_id).count() >= 10:
                 return False
             return True
 

@@ -68,6 +68,7 @@ class PlaylistEvent(commands.Cog):
             )
 
             load_playlist = await player.fetch_tracks(playlist_link)
+            
             if load_playlist:
                 shuffle = emoji.id == 990260524686139432
                 if shuffle:

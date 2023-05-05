@@ -53,6 +53,10 @@ class Music(commands.Cog, name="music"):
 
     async def cog_before_invoke(self, ctx):
         """Command before-invoke handler."""
+        execeptions = ("playlist", "lavalinkinfo")
+        if ctx.command.name in execeptions:
+            return
+
         guild_check = ctx.guild is not None
 
         if guild_check:
@@ -76,7 +80,11 @@ class Music(commands.Cog, name="music"):
 
         if not player:
             if not should_connect:
-                raise commands.CommandInvokeError("Not connected.")
+                await ctx.respond(
+                    embed=EtherEmbeds.error("Humm... There is no music."),
+                    ephemeral=True,
+                    delete_after=5,
+                )
 
             permissions = ctx.author.voice.channel.permissions_for(ctx.me)
 
@@ -312,9 +320,9 @@ class Music(commands.Cog, name="music"):
         """Setup a playlist player for a YouTube playlist"""
 
         # Check if the guild can have a new playlist
-        if not Database.Playlist.guild_limit(ctx.guild.id):
+        if not await Database.Playlist.guild_limit(ctx.guild.id):
             return await ctx.respond(
-                emned=EtherEmbeds.error("You can't have more than 10 playlists!")
+                embed=EtherEmbeds.error("You can't have more than 10 playlists!")
             )
 
         if not re.match(PLAYLIST_REG, playlist_link):
@@ -326,8 +334,10 @@ class Music(commands.Cog, name="music"):
 
         playlist_id = re.search(PLAYLIST_ID, playlist_link).groups()[0]
 
+        key = config.api.youtube.get("key")
+
         r = requests.get(
-            f"https://www.googleapis.com/youtube/v3/playlists?part=snippet&part=contentDetails&id={playlist_id}&key={self.youtube_api_key}"
+            f"https://www.googleapis.com/youtube/v3/playlists?part=snippet&part=contentDetails&id={playlist_id}&key={key}"
         )
         if not r.ok:
             ctx.respond(
@@ -355,6 +365,7 @@ class Music(commands.Cog, name="music"):
         embed.set_footer(text=f"Created by {data['channelTitle']}")
 
         message = await ctx.send(embed=embed)
+        
         await Database.Playlist.create(message.id, message.guild.id, playlist_id)
 
         await message.add_reaction("<:back:990260521355862036>")
