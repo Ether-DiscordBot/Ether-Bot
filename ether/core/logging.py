@@ -1,8 +1,9 @@
 import logging
 
 
-class Formatter(logging.Formatter):
+class EtherFormatter(logging.Formatter):
 
+    blue = "\x1b[34;20m"
     grey = "\x1b[38;20m"
     yellow = "\x1b[33;20m"
     red = "\x1b[31;20m"
@@ -13,8 +14,8 @@ class Formatter(logging.Formatter):
         "%(asctime)s %(levelname)-8s [%(filename)20s:%(lineno)-4s] %(message)s"
     )
     FORMATS = {
-        logging.DEBUG: grey + format_string + reset,
-        logging.INFO: grey + format_string + reset,
+        logging.DEBUG: blue + format_string + reset,
+        logging.INFO: blue + format_string + reset,
         logging.WARNING: yellow + format_string + reset,
         logging.ERROR: red + format_string + reset,
         logging.CRITICAL: bold_red + format_string + reset,
@@ -26,14 +27,13 @@ class Formatter(logging.Formatter):
         return formatter.format(record)
 
 
-log = logging.getLogger("ether_log")
+log = logging.getLogger("ether")
 log.setLevel(logging.DEBUG)
 
-formatter = Formatter()
-
 stream = logging.StreamHandler()
-stream.setFormatter(formatter)
+stream.setFormatter(EtherFormatter())
 log.addHandler(stream)
+
 
 file = logging.FileHandler("logs.log")
 

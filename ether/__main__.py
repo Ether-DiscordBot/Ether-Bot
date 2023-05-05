@@ -4,6 +4,7 @@ import sys
 import signal
 
 import discord
+import mafic
 import nest_asyncio
 from discord.ext import commands
 
@@ -42,6 +43,8 @@ class Client(commands.Bot):
             intents=intents,
         )
 
+        self.pool = mafic.NodePool(self)
+
     async def set_activity(self):
         await self.change_presence(
             activity=discord.Game(name=f"/help | On {len(self.guilds)} servers")
@@ -49,9 +52,6 @@ class Client(commands.Bot):
 
     async def load_extensions(self):
         await CogManager.load_cogs(self)
-
-    def booba(self):
-        return self.user.name
 
 
 def signal_handler(sig, frame):
