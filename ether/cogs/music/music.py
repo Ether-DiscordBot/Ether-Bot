@@ -96,13 +96,12 @@ class Music(commands.Cog, name="music"):
 
             player: EtherPlayer = ctx.guild.voice_client
             setattr(player, "channel", ctx.channel.id)
-        else:
-            if player.channel.id != ctx.author.voice.channel.id:
-                await ctx.respond(
-                    embed=EtherEmbeds.error("You need to be in my voicechannel."),
-                    ephemeral=True,
-                    delete_after=5,
-                )
+        elif player.channel.id != ctx.author.voice.channel.id:
+            await ctx.respond(
+                embed=EtherEmbeds.error("You need to be in my voicechannel."),
+                ephemeral=True,
+                delete_after=5,
+            )
 
     @music.command(name="join")
     @commands.guild_only()
@@ -352,7 +351,7 @@ class Music(commands.Cog, name="music"):
         embed.set_footer(text=f"Created by {data['channelTitle']}")
 
         message = await ctx.send(embed=embed)
-        
+
         await Database.Playlist.create(message.id, message.guild.id, playlist_id)
 
         await message.add_reaction("<:back:990260521355862036>")

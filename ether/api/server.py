@@ -26,10 +26,7 @@ class ServerThread(threading.Thread):
             headers={"Authorization": f"Bearer {access_token}"},
         )
 
-        if not r.ok:
-            return False
-
-        return r.json()
+        return r.json() if r.ok else False
 
     @app.route("/api/music/ensure", methods=["GET"])
     def ensure(self):
@@ -42,10 +39,13 @@ class ServerThread(threading.Thread):
 
         # Identify the user
         user_result = self.login(access_token)
-        if not user_result:
-            return make_response(jsonify({"error": "Could not identify the user"}), 401)
-
-        return make_response(jsonify({"ensure": True}), 200)
+        return (
+            make_response(jsonify({"ensure": True}), 200)
+            if user_result
+            else make_response(
+                jsonify({"error": "Could not identify the user"}), 401
+            )
+        )
 
     @app.route("/api/music/play", methods=["POST"])
     def play(self):
