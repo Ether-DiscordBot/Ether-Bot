@@ -68,7 +68,7 @@ class PlaylistEvent(commands.Cog):
             )
 
             load_playlist = await player.fetch_tracks(playlist_link)
-            
+
             if load_playlist:
                 shuffle = emoji.id == 990260524686139432
                 if shuffle:
@@ -86,7 +86,7 @@ class PlaylistEvent(commands.Cog):
                     new_embed.set_field_at(
                         0,
                         name="Tracks",
-                        value=f"{str(len(load_playlist.tracks))} tracks",
+                        value=f"{len(load_playlist.tracks)} tracks",
                     )
 
                 # Update title

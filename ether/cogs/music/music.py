@@ -39,15 +39,6 @@ class Music(commands.Cog, name="music"):
     async def connect_nodes(self):
 
         return
-        await self.client.pool.create_node(
-            host=config.lavalink.get("host"),
-            port=config.lavalink.get("port"),
-            label="MAIN",
-            password=config.lavalink.get("password"),
-            # secure=config.lavalink.get("https"),
-        )
-
-        log.info("Lavalink is up and running!")
 
     music = SlashCommandGroup("music", "Music commands!")
 
@@ -109,13 +100,12 @@ class Music(commands.Cog, name="music"):
 
             player: EtherPlayer = ctx.guild.voice_client
             setattr(player, "channel", ctx.channel.id)
-        else:
-            if player.channel.id != ctx.author.voice.channel.id:
-                await ctx.respond(
-                    embed=EtherEmbeds.error("You need to be in my voicechannel."),
-                    ephemeral=True,
-                    delete_after=5,
-                )
+        elif player.channel.id != ctx.author.voice.channel.id:
+            await ctx.respond(
+                embed=EtherEmbeds.error("You need to be in my voicechannel."),
+                ephemeral=True,
+                delete_after=5,
+            )
 
     @music.command(name="join")
     @commands.guild_only()
