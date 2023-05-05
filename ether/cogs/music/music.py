@@ -1,20 +1,23 @@
 import datetime
+from logging import DEBUG, getLogger
 import re
 
 import requests
 import lavalink
+import mafic
 from lavalink import LoadType
 import humanize
 from discord.ext import commands
-from discord import ApplicationContext, Embed, SlashCommandGroup
-from ether.core.i18n import _
+from discord import ApplicationContext, Embed, Member, SlashCommandGroup
 
+from ether.core.logging import log
+from ether.core.i18n import _
 from ether.core.constants import Colors
 from ether.core.db.client import Database
 from ether.core.utils import EtherEmbeds
 from ether.core.config import config
 from ether.core.constants import Emoji
-from ether.core.voice_client import LavalinkVoiceClient
+from ether.core.voice_client import EtherPlayer
 
 PLAYLIST_REG = re.compile(
     r"^(?:http:\/\/|https:\/\/)?(?:www\.)?youtube\.com\/playlist\?list(?:\S+)?$"
@@ -24,37 +27,16 @@ URL_REG = re.compile(
     r"(?:https:\/\/|http:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b[-a-zA-Z0-9@:%_\+.~#?&//=]*"
 )
 
+getLogger("mafic").setLevel(DEBUG)
+
 
 class Music(commands.Cog, name="music"):
     def __init__(self, client):
         self.client = client
         self.help_icon = Emoji.MUSIC
-
-        client.loop.create_task(self.connect_nodes())
-
-    async def connect_nodes(self):
-        await self.client.wait_until_ready()
-
-        if not hasattr(
-            self.client, "lavalink"
-        ):  # This ensures the client isn't overwritten during cog reloads.
-            self.client.lavalink = lavalink.Client(self.client.user.id)
-            self.client.lavalink.add_node(
-                config.lavalink.get("host"),
-                config.lavalink.get("port"),
-                config.lavalink.get("pass"),
-                "eu",
-                "default-node",
-                ssl=config.lavalink.get("https"),
-            )
-
-        lavalink.add_event_hook(self.track_hook)
+        self.youtube_api_key = config.api.youtube.get("key")
 
     music = SlashCommandGroup("music", "Music commands!")
-
-    def cog_unload(self):
-        """Cog unload handler. This removes any event hooks that were registered."""
-        self.client.lavalink._event_hooks.clear()
 
     async def cog_before_invoke(self, ctx):
         """Command before-invoke handler."""
@@ -63,30 +45,27 @@ class Music(commands.Cog, name="music"):
             return
 
         guild_check = ctx.guild is not None
-        #  This is essentially the same as `@commands.guild_only()`
-        #  except it saves us repeating ourselves (and also a few lines).
 
         if guild_check:
             await self.ensure_voice(ctx)
-            #  Ensure that the bot and command author share a mutual voicechannel.
 
         return guild_check
 
     async def ensure_voice(self, ctx: ApplicationContext):
         """This check ensures that the bot and command author are in the same voicechannel."""
-        player = self.client.lavalink.player_manager.create(ctx.guild.id)
+        player: EtherPlayer = ctx.guild.voice_client
 
+        exceptions = ctx.command.name in ("playlist")
         should_connect = ctx.command.name in ("play", "join")
 
-        if not ctx.author.voice or not ctx.author.voice.channel:
+        if not exceptions and not ctx.author.voice or not ctx.author.voice.channel:
             await ctx.respond(
                 embed=EtherEmbeds.error("Join a voicechannel first."),
                 ephemeral=True,
                 delete_after=5,
             )
 
-        v_client = ctx.voice_client
-        if not v_client:
+        if not player:
             if not should_connect:
                 await ctx.respond(
                     embed=EtherEmbeds.error("Humm... There is no music."),
@@ -103,21 +82,26 @@ class Music(commands.Cog, name="music"):
                     )
                 )
 
-            player.store("channel", ctx.channel.id)
-            await ctx.author.voice.channel.connect(cls=LavalinkVoiceClient)
-        else:
-            if v_client.channel.id != ctx.author.voice.channel.id:
-                await ctx.respond(
-                    embed=EtherEmbeds.error("You need to be in my voicechannel."),
+            # Join
+            if not isinstance(ctx.user, Member):
+                return
+
+            if not ctx.user.voice or not ctx.user.voice.channel:
+                return await ctx.respond(
+                    embed=EtherEmbeds.error("You need to be in a voicechannel."),
                     ephemeral=True,
-                    delete_after=5,
                 )
 
-    async def track_hook(self, event):
-        if isinstance(event, lavalink.events.QueueEndEvent):
-            guild_id = event.player.guild_id
-            guild = self.client.get_guild(guild_id)
-            await guild.voice_client.disconnect(force=True)
+            await ctx.user.voice.channel.connect(cls=EtherPlayer)
+
+            player: EtherPlayer = ctx.guild.voice_client
+            setattr(player, "channel", ctx.channel.id)
+        elif player.channel.id != ctx.author.voice.channel.id:
+            await ctx.respond(
+                embed=EtherEmbeds.error("You need to be in my voicechannel."),
+                ephemeral=True,
+                delete_after=5,
+            )
 
     @music.command(name="join")
     @commands.guild_only()
@@ -125,10 +109,8 @@ class Music(commands.Cog, name="music"):
     async def join(self, ctx: ApplicationContext):
         """Connect the bot to your voice channel"""
 
-        self.client.lavalink.player_manager.get(ctx.guild.id)
-
         await ctx.respond(
-            embed=Embed(description=f"`{ctx.author.voice.channel}` joined")
+            embed=Embed(description=f"`{ctx.author.voice.channel.mention}` joined")
         )
 
     @music.command(name="leave")
@@ -137,7 +119,7 @@ class Music(commands.Cog, name="music"):
     async def leave(self, ctx: ApplicationContext):
         """Disconnect the bot from your voice channel"""
 
-        player = self.client.lavalink.player_manager.get(ctx.guild.id)
+        player: EtherPlayer = ctx.guild.voice_client
 
         if not ctx.voice_client:
             return await ctx.send(embed=EtherEmbeds.error("Not connected."))
@@ -160,49 +142,48 @@ class Music(commands.Cog, name="music"):
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def play(self, ctx: ApplicationContext, *, query: str):
-        """Play a song from YouTube"""
-        player = self.client.lavalink.player_manager.get(ctx.guild.id)
+        """Play a song from YouTube
 
-        if not URL_REG.match(query):
-            query = f"ytsearch:{query}"
+        query:
+            The song to search or play
+        """
 
-        result = await player.node.get_tracks(query)
+        player: EtherPlayer = ctx.guild.voice_client
 
-        if not result or not result.tracks:
+        tracks = await player.fetch_tracks(query)
+
+        if not tracks:
             return await ctx.respond(embed=EtherEmbeds.error("Nothing found!"))
 
-        if result.load_type == LoadType.PLAYLIST:
-            tracks = result.tracks
-
-            for track in tracks:
-                player.add(requester=ctx.author.id, track=track)
-
-                await ctx.respond(
-                    embed=Embed(
-                        description=f"{result.playlist_info.name} - {len(tracks)} tracks",
-                        color=Colors.DEFAULT,
-                    )
-                )
-        else:
-            track = result.tracks[0]
-            player.add(requester=ctx.author.id, track=track)
+        if isinstance(tracks, mafic.Playlist):
+            tracks = tracks.tracks
+            if len(tracks) > 1:
+                player.queue.extend(tracks[1:])
 
             await ctx.respond(
                 embed=Embed(
-                    description=f"Track added to queue: **[{track.title}]({track.uri})**",
+                    description=f"{tracks.name} - {len(tracks)} tracks",
+                    color=Colors.DEFAULT,
+                )
+            )
+        else:
+            await ctx.respond(
+                embed=Embed(
+                    description=f"Track added to queue: **[{tracks[0].title}]({tracks[0].uri})**",
                     color=Colors.DEFAULT,
                 )
             )
 
-        if not player.is_playing:
-            await player.play()
+        track = tracks[0]
+
+        await player.play(track)
 
     @music.command(name="stop")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def stop(self, ctx: ApplicationContext):
         """Stop the current song"""
-        player = self.client.lavalink.player_manager.get(ctx.guild.id)
+        player: EtherPlayer = ctx.guild.voice_client
 
         player.queue.clear()
         await player.stop()
@@ -214,7 +195,7 @@ class Music(commands.Cog, name="music"):
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def pause(self, ctx: ApplicationContext):
         """Pause the current song"""
-        player = self.client.lavalink.player_manager.get(ctx.guild.id)
+        player: EtherPlayer = ctx.guild.voice_client
 
         if not player.is_playing:
             await ctx.respond(
@@ -232,7 +213,7 @@ class Music(commands.Cog, name="music"):
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def resume(self, ctx: ApplicationContext):
         """Resume the current song"""
-        player = self.client.lavalink.player_manager.get(ctx.guild.id)
+        player: EtherPlayer = ctx.guild.voice_client
 
         if not player.paused:
             await ctx.respond(
@@ -248,7 +229,7 @@ class Music(commands.Cog, name="music"):
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def skip(self, ctx: ApplicationContext):
         """Skip the current song"""
-        player = self.client.lavalink.player_manager.get(ctx.guild.id)
+        player: EtherPlayer = ctx.guild.voice_client
 
         if not len(player.queue):
             return
@@ -259,9 +240,9 @@ class Music(commands.Cog, name="music"):
     @music.command(name="shuffle")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def _shuffle(self, ctx: ApplicationContext):
+    async def shuffle(self, ctx: ApplicationContext):
         """Shuffle the queue"""
-        player = self.client.lavalink.player_manager.get(ctx.guild.id)
+        player: EtherPlayer = ctx.guild.voice_client
 
         player.set_shuffle(True)
 
@@ -278,7 +259,7 @@ class Music(commands.Cog, name="music"):
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def queue(self, ctx: ApplicationContext):
         """Show the current queue"""
-        player = self.client.lavalink.player_manager.get(ctx.guild.id)
+        player: EtherPlayer = ctx.guild.voice_client
 
         if not player.queue:
             return await ctx.respond(
@@ -370,7 +351,8 @@ class Music(commands.Cog, name="music"):
         embed.set_footer(text=f"Created by {data['channelTitle']}")
 
         message = await ctx.send(embed=embed)
-        await Database.Playlist.create(message.id, ctx.guild.id, playlist_id)
+
+        await Database.Playlist.create(message.id, message.guild.id, playlist_id)
 
         await message.add_reaction("<:back:990260521355862036>")
         await message.add_reaction("<:play:990260523692064798>")
@@ -386,9 +368,7 @@ class Music(commands.Cog, name="music"):
     @commands.is_owner()
     async def lavalink_info(self, ctx: ApplicationContext):
         """Show lavalink info"""
-        embed = Embed(
-            title=f"**WaveLink:** `{lavalink.__version__}`", color=Colors.DEFAULT
-        )
+        embed = Embed(title=f"**Mafic:** `{mafic.__version__}`", color=Colors.DEFAULT)
 
         embed.add_field(
             name="Server",
