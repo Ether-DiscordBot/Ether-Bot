@@ -36,19 +36,6 @@ class Music(commands.Cog, name="music"):
         self.help_icon = Emoji.MUSIC
         self.youtube_api_key = config.api.youtube.get("key")
 
-    async def connect_nodes(self):
-
-        return
-        await self.client.pool.create_node(
-            host=config.lavalink.get("host"),
-            port=config.lavalink.get("port"),
-            label="MAIN",
-            password=config.lavalink.get("password"),
-            # secure=config.lavalink.get("https"),
-        )
-
-        log.info("Lavalink is up and running!")
-
     music = SlashCommandGroup("music", "Music commands!")
 
     async def cog_before_invoke(self, ctx):
