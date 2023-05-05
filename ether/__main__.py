@@ -1,7 +1,10 @@
 import asyncio
 import os
+import sys
+import signal
 
 import discord
+import mafic
 import nest_asyncio
 from discord.ext import commands
 
@@ -10,8 +13,11 @@ nest_asyncio.apply()
 from ether.core.cog_manager import CogManager
 from ether.core.config import config
 from ether.core.db import init_database
+from ether.api.server import ServerThread
 
 init_database(config.database.mongodb.get("uri"))
+
+threads = []
 
 
 #
@@ -37,6 +43,8 @@ class Client(commands.Bot):
             intents=intents,
         )
 
+        self.pool = mafic.NodePool(self)
+
     async def set_activity(self):
         await self.change_presence(
             activity=discord.Game(name=f"/help | On {len(self.guilds)} servers")
@@ -46,8 +54,23 @@ class Client(commands.Bot):
         await CogManager.load_cogs(self)
 
 
+def signal_handler(sig, frame):
+    # Exit the program
+    print("\033[35mProcess killed by user\033[0m")
+    for thread in threads:
+        thread.kill()
+    sys.exit(0)
+
+
 def main():
+    signal.signal(signal.SIGINT, signal_handler)
+
+    global bot
     bot = Client()
+
+    server_thread = ServerThread(port=config.server.get("port"), bot=bot)
+    threads.append(server_thread)
+    server_thread.start()
 
     asyncio.run(bot.load_extensions())
     bot.run(config.bot.get("token"))

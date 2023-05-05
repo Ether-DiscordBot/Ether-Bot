@@ -15,6 +15,7 @@ from ether.core.config import config
 class Event(commands.Cog):
     def __init__(self, client) -> None:
         self.client = client
+        self.lavalink_ready_ran = False
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -28,11 +29,20 @@ class Event(commands.Cog):
 
         log.info(f"Is in container: \t{in_container}")
 
-        log.info("Global slash commands: {0}".format(config.bot.get("global")))
+        log.info(f"Global slash commands: {config.bot.get('global')}")
 
         r = lavalink_request(timeout=20.0, in_container=in_container)
         if r != 0:
             await self.client.remove_cog("cogs.music")
+        elif not self.lavalink_ready_ran:
+            await self.client.pool.create_node(
+                host=config.lavalink.get("host"),
+                port=config.lavalink.get("port"),
+                label="MAIN",
+                password=config.lavalink.get("pass"),
+                secure=config.lavalink.get("https"),
+            )
+            self.lavalink_ready_ran = True
 
         init_i18n(self.client)
 
