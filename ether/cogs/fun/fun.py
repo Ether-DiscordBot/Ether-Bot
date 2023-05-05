@@ -197,6 +197,20 @@ class Fun(commands.Cog, name="fun"):
             f"{user1.mention} and {user2.mention} are compatible at `{lovecalc}%` {love_emoji} !"
         )
 
+    @fun.command(name="useless_facts")
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def useless_facts(self, ctx: ApplicationContext):
+        r = request("GET", "https://uselessfacts.jsph.pl/random.json?language=en")
+        if not r.ok:
+            return await ctx.respond(
+                embed=EtherEmbeds.error(
+                    "Sorry, I could not fetch any facts.", delete_after=5
+                )
+            )
+
+        embed = Embed(title="Useless facts", description=r.json()["text"])
+        await ctx.respond(embed=embed)
+
     @fun.command(name="horoscope")
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def horoscope(
