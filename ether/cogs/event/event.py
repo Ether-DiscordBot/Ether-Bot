@@ -44,6 +44,8 @@ class Event(commands.Cog):
             )
             self.lavalink_ready_ran = True
 
+            log.info("Lavalink node created")
+
         init_i18n(self.client)
 
     @commands.Cog.listener()
