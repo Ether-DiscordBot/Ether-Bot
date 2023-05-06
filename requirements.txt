@@ -7,7 +7,7 @@ pymongo==4.3.3
 requests==2.30.0
 twine==4.0.2
 urllib3==2.0.2
-virtualenv==20.30.0
+virtualenv==20.23.0
 python-dotenv==1.0.0
 dnspython==2.3.0
 # pillow-simd==9.0.0.post1 # Pillow-SIMD installation doesn't work on windows, use pillow instead
