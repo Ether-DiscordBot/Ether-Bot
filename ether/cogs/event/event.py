@@ -31,7 +31,11 @@ class Event(commands.Cog):
 
         log.info(f"Global slash commands: {config.bot.get('global')}")
 
-        r = lavalink_request(timeout=20.0, in_container=in_container)
+        if config.lavalink.get("https"):
+            r = lavalink_request(timeout=20.0, in_container=in_container)
+        else:
+            r = 0
+
         if r != 0:
             await self.client.remove_cog("cogs.music")
         elif not self.lavalink_ready_ran:
@@ -46,7 +50,7 @@ class Event(commands.Cog):
 
             log.info("Lavalink node created")
             log.info(f"\tNode {node.label}: {node.host}:{node.port}")
-            if not node.session:
+            if not hasattr(node, "session"):
                 log.warn(f"Node ({node.label}) session is empty")
 
         init_i18n(self.client)
