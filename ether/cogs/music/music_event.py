@@ -1,42 +1,45 @@
 import discord
 
 from discord.ext import commands
-import lavalink
-from lavalink import NodeConnectedEvent, TrackStartEvent, TrackEndEvent
+import mafic
 
 from ether.core.constants import Colors
 from ether.core.logging import log
 from ether.core.utils import EtherEmbeds
+from ether.core.voice_client import EtherPlayer
 
 
 class MusicEvent(commands.Cog):
     def __init__(self, client) -> None:
         self.client = client
 
-    @lavalink.listener(NodeConnectedEvent)
-    async def on_node_connnected(self, node: lavalink.Node):
-        """Event fired when a node has finished connecting."""
-        log.info(f"Node: <{node.identifier}> is ready!")
-
-    @lavalink.listener(TrackStartEvent)
-    async def on_wavelink_track_start(self, player, track):
+    @commands.Cog.listener()
+    async def on_track_start(self, event: mafic.TrackStartEvent[EtherPlayer]):
         """When a track starts, the bot sends a message in the channel where the command was sent.
         The channel is taken on the object of the track and the message are saved in the player.
         """
-        if channel := player.text_channel:
+        if channel := event.player.channel:
+            track = event.track
+            channel = self.client.get_channel(channel)
+            if not channel:
+                return
+
             message: discord.Message = await channel.send(
                 embed=discord.Embed(
                     description=f"Now Playing **[{track.title}]({track.uri})**!",
                     color=Colors.DEFAULT,
                 )
             )
-            player.message = message
+            setattr(event.player, "message", message)
 
-    @lavalink.listener(TrackEndEvent)
-    async def on_wavelink_track_end(self, player, track, reason):
+    @commands.Cog.listener()
+    async def on_track_end(self, event: mafic.TrackEndEvent[EtherPlayer]):
         """When a track ends, the bot delete the start message.
         If it's the last track, the player is kill.
         """
+
+        reason = event.reason
+        player = event.player
 
         if reason not in ("FINISHED", "STOPPED", "REPLACED"):
             if player.channel_id:
@@ -50,8 +53,8 @@ class MusicEvent(commands.Cog):
 
             log.warn(f"Track finished for reason `{reason}`")
 
-        if not player.queue.is_empty and reason != "REPLACED":
-            await player.play(player.queue.get())
+        if player.queue:
+            await player.play(player.queue.pop(0))
 
         if player.message:
             await player.message.delete()

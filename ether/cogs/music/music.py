@@ -1,16 +1,12 @@
 import datetime
-from logging import DEBUG, getLogger
 import re
 
 import requests
-import lavalink
 import mafic
-from lavalink import LoadType
 import humanize
 from discord.ext import commands
 from discord import ApplicationContext, Embed, Member, SlashCommandGroup
 
-from ether.core.logging import log
 from ether.core.i18n import _
 from ether.core.constants import Colors
 from ether.core.db.client import Database
@@ -26,8 +22,6 @@ PLAYLIST_ID = re.compile(r"[&?]list=([^&]+)")
 URL_REG = re.compile(
     r"(?:https:\/\/|http:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b[-a-zA-Z0-9@:%_\+.~#?&//=]*"
 )
-
-getLogger("mafic").setLevel(DEBUG)
 
 
 class Music(commands.Cog, name="music"):
@@ -372,12 +366,12 @@ class Music(commands.Cog, name="music"):
 
         embed.add_field(
             name="Server",
-            value=f"Server Nodes: `{len(lavalink.NodeManager.nodes)}`\n"
+            value=f"Server Nodes: `{len(self.client.NodePool.nodes)}`\n"
             f"Voice Client Connected: `{len(self.client.voice_clients)}`\n",
             inline=False,
         )
 
-        for node in lavalink.NodePool.nodes:
+        for node in self.client.NodePool.nodes:
             embed.add_field(
                 name=f"Node: {node.name}",
                 value=f"Node Memory: `{humanize.naturalsize(node.stats.memory_used)}/{humanize.naturalsize(node.stats.memory_allocated)}` | `({humanize.naturalsize(node.stats.memory_free)} free)`\n"
