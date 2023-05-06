@@ -56,7 +56,7 @@ class MusicEvent(commands.Cog):
         if player.queue:
             await player.play(player.queue.pop(0))
 
-        if player.message:
+        if hasattr(player, "message"):
             await player.message.delete()
 
     @commands.Cog.listener()
@@ -71,5 +71,5 @@ class MusicEvent(commands.Cog):
             and (before.channel.id == member.guild.me.voice.channel.id)
             and len(before.channel.members) <= 1
         ):
-            player = self.client.lavalink.player_manager.get(member.guild.id)
+            player: EtherPlayer = member.guild.voice_client
             return await player.stop()
