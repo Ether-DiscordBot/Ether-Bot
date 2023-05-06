@@ -35,7 +35,7 @@ class Event(commands.Cog):
         if r != 0:
             await self.client.remove_cog("cogs.music")
         elif not self.lavalink_ready_ran:
-            await self.client.pool.create_node(
+            node = await self.client.pool.create_node(
                 host=config.lavalink.get("host"),
                 port=config.lavalink.get("port"),
                 label="MAIN",
@@ -45,6 +45,9 @@ class Event(commands.Cog):
             self.lavalink_ready_ran = True
 
             log.info("Lavalink node created")
+            log.info(f"\tNode {node.label}: {node.host}:{node.port}")
+            if not node.session:
+                log.warn(f"Node ({node.label}) session is empty")
 
         init_i18n(self.client)
 
