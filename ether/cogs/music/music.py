@@ -104,7 +104,7 @@ class Music(commands.Cog, name="music"):
         """Connect the bot to your voice channel"""
 
         await ctx.respond(
-            embed=Embed(description=f"`{ctx.author.voice.channel.mention}` joined")
+            embed=Embed(description=f"{ctx.author.voice.channel.mention} joined")
         )
 
     @music.command(name="leave")
