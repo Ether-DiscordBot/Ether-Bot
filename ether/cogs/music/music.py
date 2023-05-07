@@ -150,13 +150,13 @@ class Music(commands.Cog, name="music"):
             return await ctx.respond(embed=EtherEmbeds.error("Nothing found!"))
 
         if isinstance(tracks, mafic.Playlist):
-            tracks = tracks.tracks
-            if len(tracks) > 1:
-                player.queue.extend(tracks[1:])
+            track_list = tracks.tracks
+            if len(track_list) > 1:
+                player.queue.extend(track_list[1:])
 
             await ctx.respond(
                 embed=Embed(
-                    description=f"{tracks.name} - {len(tracks)} tracks",
+                    description=f"{tracks.name} - {len(track_list)} tracks",
                     color=Colors.DEFAULT,
                 )
             )
