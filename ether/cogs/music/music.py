@@ -168,7 +168,7 @@ class Music(commands.Cog, name="music"):
                 )
             )
 
-        track = tracks[0]
+        track = tracks.tracks[0]
 
         await player.play(track)
 
