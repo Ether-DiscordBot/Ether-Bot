@@ -1,4 +1,5 @@
 import datetime
+from random import shuffle
 import re
 
 import requests
@@ -89,7 +90,7 @@ class Music(commands.Cog, name="music"):
             await ctx.user.voice.channel.connect(cls=EtherPlayer)
 
             player: EtherPlayer = ctx.guild.voice_client
-            setattr(player, "channel", ctx.channel.id)
+            setattr(player, "text_channel", ctx.channel.id)
         elif player.channel.id != ctx.author.voice.channel.id:
             await ctx.respond(
                 embed=EtherEmbeds.error("You need to be in my voicechannel."),
@@ -160,6 +161,8 @@ class Music(commands.Cog, name="music"):
                     color=Colors.DEFAULT,
                 )
             )
+
+            track = tracks.tracks[0]
         else:
             await ctx.respond(
                 embed=Embed(
@@ -168,7 +171,7 @@ class Music(commands.Cog, name="music"):
                 )
             )
 
-        track = tracks.tracks[0]
+            track = tracks[0]
 
         await player.play(track)
 
@@ -226,10 +229,10 @@ class Music(commands.Cog, name="music"):
         player: EtherPlayer = ctx.guild.voice_client
 
         if not len(player.queue):
-            return
-
-        await player.skip()
-        return await ctx.respond(embed=Embed(description="⏭️ Skip"), delete_after=5)
+            await player.stop()
+        else:
+            await player.play(player.queue.pop(0))
+        return await ctx.respond(embed=Embed(description="⏭️ Skiped"), delete_after=5)
 
     @music.command(name="shuffle")
     @commands.guild_only()
@@ -238,7 +241,7 @@ class Music(commands.Cog, name="music"):
         """Shuffle the queue"""
         player: EtherPlayer = ctx.guild.voice_client
 
-        player.set_shuffle(True)
+        player.queue = shuffle(player.queue)
 
         await ctx.respond(
             embed=Embed(

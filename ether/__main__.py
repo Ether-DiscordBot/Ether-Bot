@@ -57,6 +57,7 @@ class Client(commands.Bot):
 def signal_handler(sig, frame):
     # Exit the program
     print("\033[35mProcess killed by user\033[0m")
+    # Close the bot
     for thread in threads:
         thread.kill()
     sys.exit(0)

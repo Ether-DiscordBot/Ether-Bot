@@ -18,9 +18,10 @@ class MusicEvent(commands.Cog):
         """When a track starts, the bot sends a message in the channel where the command was sent.
         The channel is taken on the object of the track and the message are saved in the player.
         """
-        if channel := event.player.channel:
+        player: EtherPlayer = event.player
+        if hasattr(player, "text_channel"):
             track = event.track
-            channel = self.client.get_channel(channel)
+            channel = self.client.get_channel(player.text_channel)
             if not channel:
                 return
 
@@ -53,7 +54,7 @@ class MusicEvent(commands.Cog):
 
             log.warn(f"Track finished for reason `{reason}`")
 
-        if player.queue:
+        if player.queue and not reason == "REPLACED":
             await player.play(player.queue.pop(0))
 
         if hasattr(player, "message"):
