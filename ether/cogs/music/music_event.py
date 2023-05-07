@@ -66,7 +66,9 @@ class MusicEvent(commands.Cog):
             and after.channel
             and len(after.channel.members) <= 1
         ) or (  # Check is nobody is in the channel
-            not member.bot
+            before
+            and before.channel
+            and not member.bot
             and member.guild.me.voice
             and (before.channel.id == member.guild.me.voice.channel.id)
             and len(before.channel.members) <= 1
