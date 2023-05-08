@@ -1,3 +1,4 @@
+import datetime
 import re
 import operator
 from random import choice, random, randint
@@ -241,5 +242,36 @@ class Utils(commands.Cog, name="utils"):
             text="Powered by howlongtobeat.com",
             icon_url="https://pbs.twimg.com/profile_images/433503450404368384/tdnd53zT_400x400.png",
         )
+
+        await ctx.respond(embed=embed)
+
+    @utils.command(name="rocket_launches")
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def rocket_launches(self, ctx: ApplicationContext):
+        """Get the next rocket launches"""
+        r = requests.get("https://fdo.rocketlaunch.live/json/launches/next/5")
+        res = r.json()
+
+        embed = Embed(title="Next rocket launches")
+        embed.set_footer(
+            text="Powered by rocketlaunch.live",
+            icon_url="https://rocketlaunch.live/favicon16.png",
+        )
+
+        for launch in res["result"]:
+            index = res["result"].index(launch) + 1
+
+            field_value = "\n".join(
+                [
+                    launch["launch_description"],
+                    f"**Pad:** {launch['pad']['name']} at **{launch['pad']['location']['name']}**",
+                ]
+            )
+
+            embed.add_field(
+                name=f"[{index}] **{launch['name']}**",
+                value=field_value,
+                inline=False,
+            )
 
         await ctx.respond(embed=embed)
