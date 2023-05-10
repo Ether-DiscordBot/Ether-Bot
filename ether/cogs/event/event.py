@@ -136,4 +136,8 @@ class Event(commands.Cog):
         if isinstance(error, ignored):
             return
 
+        guild = self.client.get_guild(config.bot.get("debug_guild"))
+        if guild != None:
+            await guild.channels.find(name="bot-logs").send(f"Error: {error}")
+
         raise error
