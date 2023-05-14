@@ -10,6 +10,7 @@ from ether.core.lavalink_status import lavalink_request
 from ether.core.logging import log
 from ether.core.i18n import init_i18n
 from ether.core.config import config
+from ether.core.utils import EtherEmbeds
 
 
 class Event(commands.Cog):
@@ -136,8 +137,22 @@ class Event(commands.Cog):
         if isinstance(error, ignored):
             return
 
+        if isinstance(error, commands.MissingPermissions):
+            try:
+                perms = "`, `".join(error.missing_permissons)
+                await ctx.send(
+                    embed=EtherEmbeds.error(
+                        f"**Missing Permissions:** `{perms}`",
+                    )
+                )
+
+                return
+            except commands.MissingPermissions:
+                pass
+
         guild = self.client.get_guild(config.bot.get("debug_guild"))
         if guild != None:
             await guild.channels.find(name="bot-logs").send(f"Error: {error}")
 
+        log.error(f"Error on command {ctx.command}: {error}")
         raise error
