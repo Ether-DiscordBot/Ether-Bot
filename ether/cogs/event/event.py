@@ -105,9 +105,10 @@ class Event(commands.Cog):
                     return
                 if not ctx.channel.permissions_for(ctx.guild.me).send_messages:
                     return
-                await ctx.channel.send(
-                    f"Congratulation <@{ctx.author.id}>, you just pass to level {new_level}!"
-                )
+                if guild.logs and guild.logs.join and guild.logs.join.enabled:
+                    await ctx.channel.send(
+                        f"Congratulation <@{ctx.author.id}>, you just pass to level {new_level}!"
+                    )
 
     @commands.Cog.listener()
     async def on_application_command(self, ctx):
