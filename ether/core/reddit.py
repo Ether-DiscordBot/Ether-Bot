@@ -38,17 +38,21 @@ class RedditPostCacher:
         Tuple[str, List[str]]
             A tuple of subreddit name and list of post URLs
         """
-        await subreddit.load()
-        posts = [post async for post in subreddit.hot(limit=50)]
-        allowed_extensions = (".gif", ".png", ".jpg", ".jpeg")
-        posts = list(
-            filter(
-                lambda i: any(i.url.endswith(e) for e in allowed_extensions),
-                posts,
+        try:
+            await subreddit.load()
+            posts = [post async for post in subreddit.hot(limit=50)]
+            allowed_extensions = (".gif", ".png", ".jpg", ".jpeg")
+            posts = list(
+                filter(
+                    lambda i: any(i.url.endswith(e) for e in allowed_extensions),
+                    posts,
+                )
             )
-        )
-        posts = [post.id for post in posts]
-        return (subreddit.display_name, posts)
+            posts = [post.id for post in posts]
+            return (subreddit.display_name, posts)
+        except exceptions.Forbidden as e:
+            log.error(f"Reddit API Forbidden: {e}")
+            return (subreddit.display_name, [])
 
     @tasks.loop(minutes=30)
     async def cache_posts(self) -> None:
