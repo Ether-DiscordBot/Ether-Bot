@@ -68,9 +68,13 @@ class Music(commands.Cog, name="music"):
                     delete_after=5,
                 )
 
-            permissions = ctx.author.voice.channel.permissions_for(ctx.me)
+            permissions = (
+                ctx.author.voice.channel.permissions_for(ctx.me)
+                if ctx.author.voice
+                else None
+            )
 
-            if not permissions.connect or not permissions.speak:
+            if permissions and (not permissions.connect or not permissions.speak):
                 await ctx.respond(
                     embed=EtherEmbeds.error(
                         "I need the `CONNECT` and `SPEAK` permissions."
@@ -91,7 +95,7 @@ class Music(commands.Cog, name="music"):
 
             player: EtherPlayer = ctx.guild.voice_client
             setattr(player, "text_channel", ctx.channel.id)
-        elif player.channel.id != ctx.author.voice.channel.id:
+        elif not ctx.author.voice or (player.channel.id != ctx.author.voice.channel.id):
             await ctx.respond(
                 embed=EtherEmbeds.error("You need to be in my voicechannel."),
                 ephemeral=True,
@@ -121,7 +125,7 @@ class Music(commands.Cog, name="music"):
 
         if not ctx.author.voice or (
             player.is_connected
-            and ctx.author.voice.channel.id != int(player.channel_id)
+            and ctx.author.voice.channel.id != int(player.channel.id)
         ):
 
             return await ctx.send("You're not in my voicechannel!")
