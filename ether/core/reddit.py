@@ -6,6 +6,7 @@ from typing import List, Tuple
 
 import aiofiles
 from asyncpraw import Reddit
+from asyncprawcore import exceptions
 from asyncpraw.models import Submission, Subreddit
 from discord.ext import tasks
 from ether.core.logging import log
@@ -55,13 +56,16 @@ class RedditPostCacher:
             await self.reddit.subreddit(subreddit) for subreddit in self.subreddit_names
         ]
         tasks = tuple(self.cache_subreddit(subreddit) for subreddit in subreddits)
-        all_sub_content = await asyncio.gather(*tasks)
-        data_to_dump = dict(all_sub_content)
+        try:
+            all_sub_content = await asyncio.gather(*tasks)
+            data_to_dump = dict(all_sub_content)
 
-        async with aiofiles.open(self.file_path, mode="wb+") as f:
-            await f.write(pickle.dumps(data_to_dump))
+            async with aiofiles.open(self.file_path, mode="wb+") as f:
+                await f.write(pickle.dumps(data_to_dump))
 
-        log.info(f"Posts from {len(subreddits)} subreddits has been cached.")
+            log.info(f"Posts from {len(subreddits)} subreddits has been cached.")
+        except exceptions.Forbidden as e:
+            log.error(f"Reddit API Forbidden: {e}")
 
     async def get_random_post(self, subreddit: str) -> Submission:
         """Fetches a post from the internal cache
