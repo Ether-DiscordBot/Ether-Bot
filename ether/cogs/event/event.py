@@ -82,6 +82,11 @@ class Event(commands.Cog):
 
         if guild.logs and guild.logs.leave and guild.logs.leave.enabled:
             channel = member.guild.get_channel(guild.logs.leave.channel_id)
+            if not (
+                channel.permissions_for(member.guild.me).attach_files
+                or channel.permissions_for(member.guild.me).send_messages
+            ):
+                return
             await channel.send(
                 guild.logs.leave.message.format(user=member, guild=member.guild)
             )
