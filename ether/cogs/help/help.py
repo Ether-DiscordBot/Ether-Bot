@@ -33,8 +33,8 @@ class Help(commands.Cog):
         for ext in set(self.client.cogs.values()):
             if ext.qualified_name in self.ignore_cogs:
                 continue
-            # if ext.qualified_name in self.owner_cogs and not await ctx.author.guild_permissions.administrator:
-            #     continue
+            if ext.qualified_name in self.owner_cogs and not await ctx.bot.is_owner():
+                continue
             if (
                 ext.qualified_name in self.admin_cogs
                 and not await ctx.author.guild_permissions.administrator

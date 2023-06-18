@@ -3,8 +3,8 @@ import random
 
 from discord import ApplicationContext, Embed, File, HTTPException, errors
 from discord.ext import commands
-from ether.cogs.event.welcomecard import WelcomeCard
 
+from ether.cogs.event.welcomecard import WelcomeCard
 from ether.core.db.client import Database, Guild, GuildUser
 from ether.core.lavalink_status import lavalink_request
 from ether.core.logging import log
@@ -62,16 +62,14 @@ class Event(commands.Cog):
 
         if guild.logs and guild.logs.join and guild.logs.join.enabled:
             channel = member.guild.get_channel(guild.logs.join.channel_id)
-            if not (
-                channel.permissions_for(member.guild.me).attach_files
-                or channel.permissions_for(member.guild.me).send_messages
-            ):
-                return
             if guild.logs.join.image:
                 card = WelcomeCard.create_card(member, member.guild)
-                return await channel.send(
-                    file=File(fp=card, filename=f"welcome_{member.name}.png")
-                )
+                try:
+                    return await channel.send(
+                        file=File(fp=card, filename=f"welcome_{member.name}.png")
+                    )
+                except commands.MissingPermissions:
+                    return
             await channel.send(
                 guild.logs.join.message.format(user=member, guild=member.guild)
             )
@@ -82,14 +80,12 @@ class Event(commands.Cog):
 
         if guild.logs and guild.logs.leave and guild.logs.leave.enabled:
             channel = member.guild.get_channel(guild.logs.leave.channel_id)
-            if not (
-                channel.permissions_for(member.guild.me).attach_files
-                or channel.permissions_for(member.guild.me).send_messages
-            ):
+            try:
+                await channel.send(
+                    guild.logs.leave.message.format(user=member, guild=member.guild)
+                )
+            except commands.MissingPermissions:
                 return
-            await channel.send(
-                guild.logs.leave.message.format(user=member, guild=member.guild)
-            )
 
     @commands.Cog.listener()
     async def on_guild_join(self, _guild):
