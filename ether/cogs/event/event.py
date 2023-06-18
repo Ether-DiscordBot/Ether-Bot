@@ -132,7 +132,7 @@ class Event(commands.Cog):
         log.info(f"Removed cog: {extension}")
 
     @commands.Cog.listener()
-    async def on_command_error(self, ctx: ApplicationContext, error):
+    async def on_application_command_error(self, ctx: ApplicationContext, error):
         ignored = (
             commands.NoPrivateMessage,
             commands.DisabledCommand,
@@ -144,13 +144,15 @@ class Event(commands.Cog):
         )
         error = getattr(error, "original", error)
 
+        print(error.__class__.__name__)
+
         if isinstance(error, ignored):
             return
 
         if isinstance(error, commands.MissingPermissions):
             try:
                 perms = "`, `".join(error.missing_permissons)
-                await ctx.send(
+                await ctx.respond(
                     embed=EtherEmbeds.error(
                         f"**Missing Permissions:** `{perms}`",
                     )
@@ -159,6 +161,15 @@ class Event(commands.Cog):
                 return
             except commands.MissingPermissions:
                 pass
+
+        if isinstance(error, commands.errors.CommandOnCooldown):
+            await ctx.respond(
+                embed=EtherEmbeds.error(
+                    f"**Command cooldown:** {error.retry_after:.2f}s",
+                )
+            )
+
+            return
 
         guild = self.client.get_guild(config.bot.get("debug_guild"))
         if guild != None:
