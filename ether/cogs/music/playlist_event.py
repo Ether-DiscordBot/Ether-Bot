@@ -118,7 +118,7 @@ class PlaylistEvent(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
-        if self.client.id != Other.MAIN_CLIENT_ID:
+        if self.client.user.id != Other.MAIN_CLIENT_ID:
             return
 
         playlists = await Playlist.from_guild(guild.id)
