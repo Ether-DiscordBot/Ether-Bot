@@ -62,6 +62,11 @@ class Event(commands.Cog):
 
         if guild.logs and guild.logs.join and guild.logs.join.enabled:
             channel = member.guild.get_channel(guild.logs.join.channel_id)
+            if not (
+                channel.permissions_for(member.guild.me).attach_files
+                or channel.permissions_for(member.guild.me).send_messages
+            ):
+                return
             if guild.logs.join.image:
                 card = WelcomeCard.create_card(member, member.guild)
                 return await channel.send(
