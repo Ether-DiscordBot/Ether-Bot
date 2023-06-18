@@ -50,7 +50,7 @@ class RedditPostCacher:
             )
             posts = [post.id for post in posts]
             return (subreddit.display_name, posts)
-        except exceptions.Forbidden as e:
+        except (exceptions.Forbidden, exceptions.ResponseException) as e:
             log.error(f"Reddit API Forbidden: {e}")
             return (subreddit.display_name, [])
 
@@ -68,7 +68,7 @@ class RedditPostCacher:
                 await f.write(pickle.dumps(data_to_dump))
 
             log.info(f"Posts from {len(subreddits)} subreddits has been cached.")
-        except exceptions.Forbidden as e:
+        except (exceptions.Forbidden, exceptions.ResponseException) as e:
             log.error(f"Reddit API Forbidden: {e}")
 
     async def get_random_post(self, subreddit: str) -> Submission:
