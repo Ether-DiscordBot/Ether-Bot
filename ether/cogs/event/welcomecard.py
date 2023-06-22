@@ -8,58 +8,42 @@ import requests
 
 class WelcomeCard:
     BASE_FONT = ImageFont.truetype(
-        os.path.abspath("ether/assets/fonts/Inter-Medium.ttf"), 32
-    )
-    DISC_FONT = ImageFont.truetype(
-        os.path.abspath("ether/assets/fonts/Inter-Medium.ttf"), 24
+        os.path.abspath("ether/assets/fonts/Inter-Medium.ttf"), 16
     )
     WELCOME_FONT = ImageFont.truetype(
-        os.path.abspath("ether/assets/fonts/Inter-Bold.ttf"), 48
+        os.path.abspath("ether/assets/fonts/Inter-Bold.ttf"), 24
     )
-    MASK = Image.open("ether/assets/mask.png", "r").convert("L").resize((200, 200))
+    MASK = Image.open("ether/assets/mask.png", "r").convert("L").resize((100, 100))
 
     @classmethod
     def create_card(cls, user, guild):
-        img = Image.new("RGBA", (920, 500), (231, 228, 220))
+        img = Image.new("RGBA", (400, 200), (231, 228, 220))
 
         # Profile Picture
         r = requests.get(user.display_avatar.with_size(256).url)
         pp = Image.open(io.BytesIO(r.content))
-        pp = pp.resize((200, 200))
+        pp = pp.resize((100, 100))
 
-        img.paste(pp, (380, 83), cls.MASK)
+        img.paste(pp, (150, 25), cls.MASK)
 
         draw = ImageDraw.Draw(img)
 
         # Welcome Text
         draw.text(
-            xy=(460, 300),
+            xy=(200, 140),
             text="Welcome!",
             fill=(64, 64, 64),
             font=cls.WELCOME_FONT,
             anchor="ma",
         )
 
-        name_size = (
-            cls.BASE_FONT.getsize(user.name[:20])[0]
-            + cls.DISC_FONT.getsize(f"#{user.discriminator}")[0]
-        ) / 2
-
-        # Pseudo
         # Name
         draw.text(
-            xy=(460 - name_size, 380),
-            text=f"{user.name[:20]}",
+            xy=(200, 170),
+            text=f"{user.display_name[:20]}",
             fill=(64, 64, 64),
             font=cls.BASE_FONT,
-        )
-
-        # Discriminator
-        draw.text(
-            xy=(460 - name_size + cls.BASE_FONT.getsize(user.name[:20])[0], 388),
-            text=f"#{user.discriminator}",
-            fill=(125, 125, 125),
-            font=cls.DISC_FONT,
+            anchor="ma",
         )
 
         # Convert to Base64

@@ -1,8 +1,7 @@
 import discord
 
 from discord.ext import commands
-import lavalink
-from lavalink import NodeConnectedEvent, TrackStartEvent, TrackEndEvent
+import mafic
 
 from ether.core.constants import Colors
 from ether.core.logging import log
@@ -42,6 +41,9 @@ class MusicEvent(commands.Cog):
         player: EtherPlayer = event.player
         reason = event.reason
 
+        reason = event.reason
+        player = event.player
+
         if reason not in ("FINISHED", "STOPPED", "REPLACED"):
             if channel := player.text_channel:
                 try:
@@ -53,8 +55,8 @@ class MusicEvent(commands.Cog):
 
             log.warn(f"Track finished for reason `{reason}`")
 
-        if not player.queue.is_empty and reason != "REPLACED":
-            await player.play(player.queue.get())
+        if player.queue and not reason == "REPLACED":
+            await player.play(player.queue.pop(0))
 
         if hasattr(player, "message"):
             await player.message.delete()
@@ -66,10 +68,12 @@ class MusicEvent(commands.Cog):
             and after.channel
             and len(after.channel.members) <= 1
         ) or (  # Check is nobody is in the channel
-            not member.bot
+            before
+            and before.channel
+            and not member.bot
             and member.guild.me.voice
             and (before.channel.id == member.guild.me.voice.channel.id)
             and len(before.channel.members) <= 1
         ):
-            player = self.client.lavalink.player_manager.get(member.guild.id)
+            player: EtherPlayer = member.guild.voice_client
             return await player.stop()

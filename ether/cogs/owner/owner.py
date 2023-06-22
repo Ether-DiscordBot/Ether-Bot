@@ -1,6 +1,9 @@
 import os
+
 from discord import SlashCommandGroup, File
 from discord.ext import commands
+
+from ether.cogs.event.welcomecard import WelcomeCard
 
 
 class Owner(commands.Cog):
@@ -8,6 +11,9 @@ class Owner(commands.Cog):
 
     def __init__(self, client):
         self.client = client
+
+        self.help_icon = ""
+        self.big_icon = ""
 
     owner = SlashCommandGroup(name="owner", description="Owner commands")
 
@@ -31,3 +37,18 @@ class Owner(commands.Cog):
         with open(Owner.LOGS_FILE_PATH, "w") as f:
             f.write("")
         await ctx.respond("Logs cleared", ephemeral=True)
+
+    @owner.command(name="test_welcome_card")
+    @commands.is_owner()
+    async def test_welcome_card(self, ctx):
+        card = WelcomeCard.create_card(ctx.author, ctx.author.guild)
+        try:
+            await ctx.channel.send(
+                file=File(fp=card, filename=f"welcome_{ctx.author.name}.png")
+            )
+        except commands.MissingPermissions:
+            return await ctx.respond(
+                "I don't have permission to send images in this channel",
+                ephemeral=True,
+            )
+        return await ctx.respond("Done!", ephemeral=True)

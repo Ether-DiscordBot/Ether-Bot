@@ -1,10 +1,12 @@
+import datetime
 import re
 import operator
 from random import choice, random, randint
 from typing import Optional
 import requests
 
-from discord import ApplicationContext, Embed, Option
+import pytz
+from discord import ApplicationContext, Embed, Option, OptionChoice
 from discord.commands import SlashCommandGroup, slash_command
 from discord.ext import commands
 from howlongtobeatpy import HowLongToBeat
@@ -241,5 +243,71 @@ class Utils(commands.Cog, name="utils"):
             text="Powered by howlongtobeat.com",
             icon_url="https://pbs.twimg.com/profile_images/433503450404368384/tdnd53zT_400x400.png",
         )
+
+        await ctx.respond(embed=embed)
+
+    @utils.command(name="rocket_launches")
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def rocket_launches(
+        self,
+        ctx: ApplicationContext,
+        timezone: Option(
+            str,
+            name="timezone",
+            description="Pick your timezone",
+            default="UTC",
+            choices=[
+                OptionChoice(name="UTC-7", value="ETC/GMT-7"),
+                OptionChoice(name="UTC-6", value="ETC/GMT-6"),
+                OptionChoice(name="UTC-5", value="ETC/GMT-5"),
+                OptionChoice(name="UTC-4", value="ETC/GMT-4"),
+                OptionChoice(name="UTC-3", value="ETC/GMT-3"),
+                OptionChoice(name="UTC", value="ETC/UTC"),
+                OptionChoice(name="UTC+1", value="ETC/GMT+1"),
+                OptionChoice(name="UTC+2", value="ETC/GMT+2"),
+                OptionChoice(name="UTC+3", value="ETC/GMT+3"),
+                OptionChoice(name="UTC+4", value="ETC/GMT+4"),
+                OptionChoice(name="UTC+5", value="ETC/GMT+5"),
+                OptionChoice(name="UTC+8", value="ETC/GMT+8"),
+                OptionChoice(name="UTC+9", value="ETC/GMT+9"),
+                OptionChoice(name="UTC+10", value="ETC/GMT+10"),
+                OptionChoice(name="UTC+12", value="ETC/GMT+12"),
+            ],
+        ),
+    ):
+        """Get the next rocket launches"""
+        timezone = pytz.timezone(timezone)
+
+        r = requests.get("https://fdo.rocketlaunch.live/json/launches/next/5")
+        res = r.json()
+
+        embed = Embed(
+            title="🚀 Next 5 rocket launches",
+            description="*(date format: dd/mm/YYYY, HH:MM)*",
+        )
+        embed.set_footer(
+            text="Powered by rocketlaunch.live",
+            icon_url="https://rocketlaunch.live/favicon16.png",
+        )
+
+        for launch in res["result"]:
+            date = datetime.datetime.fromtimestamp(
+                int(launch["sort_date"]), tz=timezone
+            ).strftime("%d/%m/%Y, %H:%M")
+            index = res["result"].index(launch) + 1
+
+            field_value = "\n".join(
+                [
+                    launch["quicktext"].split("- https")[0],
+                    f"*📆 {date}*",
+                    f"*📍 at {launch['pad']['location']['name']}*",
+                ]
+            )
+
+            embed.add_field(
+                name=f"[{index}] **{launch['name']}**",
+                value=field_value,
+                inline=False,
+            )
 
         await ctx.respond(embed=embed)

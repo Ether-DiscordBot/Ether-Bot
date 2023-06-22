@@ -3,8 +3,8 @@ import random
 
 from discord import ApplicationContext, Embed, File, HTTPException, errors
 from discord.ext import commands
-from ether.cogs.event.welcomecard import WelcomeCard
 
+from ether.cogs.event.welcomecard import WelcomeCard
 from ether.core.db.client import Database, Guild, GuildUser
 from ether.core.lavalink_status import lavalink_request
 from ether.core.logging import log
@@ -32,11 +32,15 @@ class Event(commands.Cog):
 
         log.info(f"Global slash commands: {config.bot.get('global')}")
 
-        r = lavalink_request(timeout=20.0, in_container=in_container)
+        if config.lavalink.get("https"):
+            r = lavalink_request(timeout=20.0, in_container=in_container)
+        else:
+            r = 0
+
         if r != 0:
             await self.client.remove_cog("cogs.music")
         elif not self.lavalink_ready_ran:
-            await self.client.pool.create_node(
+            node = await self.client.pool.create_node(
                 host=config.lavalink.get("host"),
                 port=config.lavalink.get("port"),
                 label="MAIN",
@@ -44,6 +48,11 @@ class Event(commands.Cog):
                 secure=config.lavalink.get("https"),
             )
             self.lavalink_ready_ran = True
+
+            log.info("Lavalink node created")
+            log.info(f"\tNode {node.label}: {node.host}:{node.port}")
+            if not hasattr(node, "session"):
+                log.warn(f"Node ({node.label}) session is empty")
 
         init_i18n(self.client)
 
@@ -55,9 +64,12 @@ class Event(commands.Cog):
             channel = member.guild.get_channel(guild.logs.join.channel_id)
             if guild.logs.join.image:
                 card = WelcomeCard.create_card(member, member.guild)
-                return await channel.send(
-                    file=File(fp=card, filename=f"welcome_{member.name}.png")
-                )
+                try:
+                    return await channel.send(
+                        file=File(fp=card, filename=f"welcome_{member.name}.png")
+                    )
+                except commands.MissingPermissions:
+                    return
             await channel.send(
                 guild.logs.join.message.format(user=member, guild=member.guild)
             )
@@ -68,9 +80,12 @@ class Event(commands.Cog):
 
         if guild.logs and guild.logs.leave and guild.logs.leave.enabled:
             channel = member.guild.get_channel(guild.logs.leave.channel_id)
-            await channel.send(
-                guild.logs.leave.message.format(user=member, guild=member.guild)
-            )
+            try:
+                await channel.send(
+                    guild.logs.leave.message.format(user=member, guild=member.guild)
+                )
+            except commands.MissingPermissions:
+                return
 
     @commands.Cog.listener()
     async def on_guild_join(self, _guild):
@@ -92,7 +107,11 @@ class Event(commands.Cog):
                 new_level = await Database.GuildUser.add_exp(
                     ctx.author.id, ctx.guild.id, 4 * guild.exp_mult
                 )
-                if new_level:
+                if not new_level:
+                    return
+                if not ctx.channel.permissions_for(ctx.guild.me).send_messages:
+                    return
+                if guild.logs and guild.logs.join and guild.logs.join.enabled:
                     await ctx.channel.send(
                         f"Congratulation <@{ctx.author.id}>, you just pass to level {new_level}!"
                     )
@@ -129,6 +148,8 @@ class Event(commands.Cog):
         )
         error = getattr(error, "original", error)
 
+        print(error.__class__.__name__)
+
         if isinstance(error, ignored):
             return
 
@@ -139,5 +160,6 @@ class Event(commands.Cog):
                 ),
                 ephemeral=True,
             )
+
 
         raise error

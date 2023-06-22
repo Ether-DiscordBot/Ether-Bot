@@ -1,5 +1,5 @@
 import datetime
-from logging import DEBUG, getLogger
+from random import shuffle
 import re
 
 import requests
@@ -8,7 +8,6 @@ import humanize
 from discord.ext import commands
 from discord import ApplicationContext, Embed, Member, SlashCommandGroup
 
-from ether.core.logging import log
 from ether.core.i18n import _
 from ether.core.constants import Colors
 from ether.core.db.client import Database
@@ -24,8 +23,6 @@ PLAYLIST_ID = re.compile(r"[&?]list=([^&]+)")
 URL_REG = re.compile(
     r"(?:https:\/\/|http:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b[-a-zA-Z0-9@:%_\+.~#?&//=]*"
 )
-
-getLogger("mafic").setLevel(DEBUG)
 
 
 class Music(commands.Cog, name="music"):
@@ -71,9 +68,13 @@ class Music(commands.Cog, name="music"):
                     delete_after=5,
                 )
 
-            permissions = ctx.author.voice.channel.permissions_for(ctx.me)
+            permissions = (
+                ctx.author.voice.channel.permissions_for(ctx.me)
+                if ctx.author.voice
+                else None
+            )
 
-            if not permissions.connect or not permissions.speak:
+            if permissions and (not permissions.connect or not permissions.speak):
                 await ctx.respond(
                     embed=EtherEmbeds.error(
                         "I need the `CONNECT` and `SPEAK` permissions."
@@ -93,8 +94,9 @@ class Music(commands.Cog, name="music"):
             await ctx.user.voice.channel.connect(cls=EtherPlayer)
 
             player: EtherPlayer = ctx.guild.voice_client
+              
             setattr(player, "text_channel", ctx.channel)
-        elif player.channel.id != ctx.author.voice.channel.id:
+        elif not ctx.author.voice or (player.channel.id != ctx.author.voice.channel.id):
             await ctx.respond(
                 embed=EtherEmbeds.error("You need to be in my voicechannel."),
                 ephemeral=True,
@@ -163,6 +165,8 @@ class Music(commands.Cog, name="music"):
                     color=Colors.DEFAULT,
                 )
             )
+
+            track = tracks.tracks[0]
         else:
             track = tracks[0]
 
@@ -176,7 +180,6 @@ class Music(commands.Cog, name="music"):
 
         if not player.current:
             track = player.queue.get()
-
             await player.play(track)
 
     @music.command(name="stop")
@@ -248,7 +251,7 @@ class Music(commands.Cog, name="music"):
         """Shuffle the queue"""
         player: EtherPlayer = ctx.guild.voice_client
 
-        player.set_shuffle(True)
+        player.queue = shuffle(player.queue)
 
         await ctx.respond(
             embed=Embed(
@@ -378,12 +381,12 @@ class Music(commands.Cog, name="music"):
 
         embed.add_field(
             name="Server",
-            value=f"Server Nodes: `{len(lavalink.NodeManager.nodes)}`\n"
+            value=f"Server Nodes: `{len(self.client.NodePool.nodes)}`\n"
             f"Voice Client Connected: `{len(self.client.voice_clients)}`\n",
             inline=False,
         )
 
-        for node in lavalink.NodePool.nodes:
+        for node in self.client.NodePool.nodes:
             embed.add_field(
                 name=f"Node: {node.name}",
                 value=f"Node Memory: `{humanize.naturalsize(node.stats.memory_used)}/{humanize.naturalsize(node.stats.memory_allocated)}` | `({humanize.naturalsize(node.stats.memory_free)} free)`\n"
