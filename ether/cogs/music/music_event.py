@@ -14,7 +14,7 @@ class MusicEvent(commands.Cog):
         self.client = client
 
     @commands.Cog.listener()
-    async def on_track_start(self, event: TrackStartEvent):
+    async def on_track_start(self, event: mafic.TrackStartEvent):
         """When a track starts, the bot sends a message in the channel where the command was sent.
         The channel is taken on the object of the track and the message are saved in the player.
         """
@@ -34,7 +34,7 @@ class MusicEvent(commands.Cog):
                 return
 
     @commands.Cog.listener()
-    async def on_track_end(self, event: TrackEndEvent):
+    async def on_track_end(self, event: mafic.TrackEndEvent):
         """When a track ends, the bot delete the start message.
         If it's the last track, the player is kill.
         """
