@@ -50,7 +50,7 @@ class Music(commands.Cog, name="music"):
         """This check ensures that the bot and command author are in the same voicechannel."""
         player: EtherPlayer = ctx.guild.voice_client
 
-        exceptions = ctx.command.name in ("playlist")
+        exceptions = ctx.command.name in ("playlist", "queue", "lavalinkinfo")
         should_connect = ctx.command.name in ("play", "join")
 
         if not exceptions and not ctx.author.voice or not ctx.author.voice.channel:
@@ -94,7 +94,8 @@ class Music(commands.Cog, name="music"):
             await ctx.user.voice.channel.connect(cls=EtherPlayer)
 
             player: EtherPlayer = ctx.guild.voice_client
-            setattr(player, "text_channel", ctx.channel.id)
+              
+            setattr(player, "text_channel", ctx.channel)
         elif not ctx.author.voice or (player.channel.id != ctx.author.voice.channel.id):
             await ctx.respond(
                 embed=EtherEmbeds.error("You need to be in my voicechannel."),
@@ -109,7 +110,7 @@ class Music(commands.Cog, name="music"):
         """Connect the bot to your voice channel"""
 
         await ctx.respond(
-            embed=Embed(description=f"{ctx.author.voice.channel.mention} joined")
+            embed=Embed(description=f"`{ctx.author.voice.channel}` joined")
         )
 
     @music.command(name="leave")
@@ -155,29 +156,31 @@ class Music(commands.Cog, name="music"):
             return await ctx.respond(embed=EtherEmbeds.error("Nothing found!"))
 
         if isinstance(tracks, mafic.Playlist):
-            track_list = tracks.tracks
-            if len(track_list) > 1:
-                player.queue.extend(track_list[1:])
+            playlist_tracks = tracks.tracks
+            player.queue.extend(playlist_tracks)
 
             await ctx.respond(
                 embed=Embed(
-                    description=f"{tracks.name} - {len(track_list)} tracks",
+                    description=f"**[{tracks.name}]({query})** - {len(playlist_tracks)} tracks",
                     color=Colors.DEFAULT,
                 )
             )
 
             track = tracks.tracks[0]
         else:
+            track = tracks[0]
+
+            player.queue.append(track)
             await ctx.respond(
                 embed=Embed(
-                    description=f"Track added to queue: **[{tracks[0].title}]({tracks[0].uri})**",
+                    description=f"Track added to queue: **[{track.title}]({track.uri})**",
                     color=Colors.DEFAULT,
                 )
             )
 
-            track = tracks[0]
-
-        await player.play(track)
+        if not player.current:
+            track = player.queue.get()
+            await player.play(track)
 
     @music.command(name="stop")
     @commands.guild_only()
@@ -233,10 +236,13 @@ class Music(commands.Cog, name="music"):
         player: EtherPlayer = ctx.guild.voice_client
 
         if not len(player.queue):
-            await player.stop()
-        else:
-            await player.play(player.queue.pop(0))
-        return await ctx.respond(embed=Embed(description="⏭️ Skiped"), delete_after=5)
+            return await ctx.respond(
+                embed=EtherEmbeds.error(description="There's nothing to skip"),
+                delete_after=5,
+            )
+
+        await player.play(player.queue.get())
+        return await ctx.respond(embed=Embed(description="⏭️ Skip"), delete_after=5)
 
     @music.command(name="shuffle")
     @commands.guild_only()
@@ -264,18 +270,20 @@ class Music(commands.Cog, name="music"):
 
         if not player.queue:
             return await ctx.respond(
-                embed=EtherEmbeds.error("Sorry, an error has occurred!"), ephemeral=True
+                embed=EtherEmbeds.error("There are no tracks in the queue!"),
+                ephemeral=True,
             )
 
         queue = player.queue.copy()
 
-        first_track = player.current
         embed = Embed(title=":notes: Queue:")
-        embed.add_field(
-            name="Now Playing:",
-            value=f'`1.` [{first_track.title}]({first_track.uri[:30]}) | `{"🔴 Stream" if first_track.is_stream() else datetime.timedelta(seconds=first_track.length)}`',
-            inline=False,
-        )
+        if player.current:
+            first_track = player.current
+            embed.add_field(
+                name="Now Playing:",
+                value=f'`1.` [{first_track.title}]({first_track.uri}) | `{"🔴 Stream" if first_track.stream else datetime.timedelta(milliseconds=first_track.length)}`',
+                inline=False,
+            )
 
         next_track_label = []
         for _ in range(10):
@@ -287,7 +295,7 @@ class Music(commands.Cog, name="music"):
                 title = f"{title[:32]} ..."
             next_track_label.append(
                 f"`{player.queue.index(track) + 2}.` [{title}]({track.uri}) | "
-                f"`{'🔴 Stream' if track.is_stream() else datetime.timedelta(seconds=track.length)}`"
+                f"`{'🔴 Stream' if track.stream else datetime.timedelta(milliseconds=track.length)}`"
             )
 
         if next_track_label:
@@ -295,9 +303,7 @@ class Music(commands.Cog, name="music"):
                 name="Next 10 Tracks:", value="\n".join(next_track_label), inline=False
             )
 
-        await ctx.respond(embed=embed)
-
-        return
+        return await ctx.respond(embed=embed)
 
     @music.command(name="playlist")
     @commands.guild_only()
@@ -369,6 +375,8 @@ class Music(commands.Cog, name="music"):
     @commands.is_owner()
     async def lavalink_info(self, ctx: ApplicationContext):
         """Show lavalink info"""
+        return  # FIXME: lavalink_info is not working
+        lavalink = None
         embed = Embed(title=f"**Mafic:** `{mafic.__version__}`", color=Colors.DEFAULT)
 
         embed.add_field(

@@ -14,43 +14,44 @@ class MusicEvent(commands.Cog):
         self.client = client
 
     @commands.Cog.listener()
-    async def on_track_start(self, event: mafic.TrackStartEvent[EtherPlayer]):
+    async def on_track_start(self, event: TrackStartEvent):
         """When a track starts, the bot sends a message in the channel where the command was sent.
         The channel is taken on the object of the track and the message are saved in the player.
         """
         player: EtherPlayer = event.player
-        if hasattr(player, "text_channel"):
-            track = event.track
-            channel = self.client.get_channel(player.text_channel)
-            if not channel:
+        track = event.track
+
+        if channel := player.text_channel:
+            try:
+                message: discord.Message = await channel.send(
+                    embed=discord.Embed(
+                        description=f"Now Playing **[{track.title}]({track.uri})**!",
+                        color=Colors.DEFAULT,
+                    )
+                )
+                setattr(player, "message", message)
+            except discord.errors.Forbidden:
                 return
 
-            message: discord.Message = await channel.send(
-                embed=discord.Embed(
-                    description=f"Now Playing **[{track.title}]({track.uri})**!",
-                    color=Colors.DEFAULT,
-                )
-            )
-            setattr(event.player, "message", message)
-
     @commands.Cog.listener()
-    async def on_track_end(self, event: mafic.TrackEndEvent[EtherPlayer]):
+    async def on_track_end(self, event: TrackEndEvent):
         """When a track ends, the bot delete the start message.
         If it's the last track, the player is kill.
         """
+        player: EtherPlayer = event.player
+        reason = event.reason
 
         reason = event.reason
         player = event.player
 
         if reason not in ("FINISHED", "STOPPED", "REPLACED"):
-            if player.channel_id:
-                channel = self.client.get_guild(player.guild_id).get_channel(
-                    player.channel_id
-                )
-                if channel:
+            if channel := player.text_channel:
+                try:
                     return await channel.send(
                         embed=EtherEmbeds.error(f"Track finished for reason `{reason}`")
                     )
+                except discord.errors.Forbidden:
+                    return
 
             log.warn(f"Track finished for reason `{reason}`")
 

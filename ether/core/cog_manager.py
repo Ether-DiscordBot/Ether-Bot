@@ -44,6 +44,8 @@ class CogManager:
 
         paths = await CogManager.paths()
 
+        ignoring_cogs = "reddit"
+
         init_file = "__init__.py"
 
         for path in paths:
@@ -52,6 +54,11 @@ class CogManager:
             for file in listdir:
                 if file == init_file:
                     name = f".{os.path.basename(path)}"
+                    if name[1:] in ignoring_cogs:
+                        log.info(
+                            f"[{paths.index(path) + 1}/{len(paths)}] Cog {package}{name} ignored"
+                        )
+                        continue
                     package = "ether.cogs"
                     mod = importlib.import_module(name, package=package)
                     try:

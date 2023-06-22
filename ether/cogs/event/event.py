@@ -100,7 +100,7 @@ class Event(commands.Cog):
         if ctx.author.bot:
             return
 
-        if Database.client != None:
+        if Database.client != None and ctx.guild:
             guild = await Guild.from_guild_object(ctx.guild)
             await GuildUser.from_member_object(ctx.author)
             if random.randint(1, 100) <= 33:
@@ -118,6 +118,10 @@ class Event(commands.Cog):
 
     @commands.Cog.listener()
     async def on_application_command(self, ctx):
+        # Check if have permission to send messages
+        if not ctx.channel.permissions_for(ctx.guild.me).send_messages:
+            return
+
         if random.randint(1, 100) <= 5:
             await ctx.channel.send(
                 embed=Embed(
@@ -149,31 +153,13 @@ class Event(commands.Cog):
         if isinstance(error, ignored):
             return
 
-        if isinstance(error, commands.MissingPermissions):
-            try:
-                perms = "`, `".join(error.missing_permissons)
-                await ctx.respond(
-                    embed=EtherEmbeds.error(
-                        f"**Missing Permissions:** `{perms}`",
-                    )
-                )
-
-                return
-            except commands.MissingPermissions:
-                pass
-
         if isinstance(error, commands.errors.CommandOnCooldown):
-            await ctx.respond(
+            return await ctx.respond(
                 embed=EtherEmbeds.error(
-                    f"**Command cooldown:** {error.retry_after:.2f}s",
-                )
+                    f"This command is on cooldown, please retry in `{error.retry_after:.2f}s`."
+                ),
+                ephemeral=True,
             )
 
-            return
 
-        guild = self.client.get_guild(config.bot.get("debug_guild"))
-        if guild != None:
-            await guild.channels.find(name="bot-logs").send(f"Error: {error}")
-
-        log.error(f"Error on command {ctx.command}: {error}")
         raise error
