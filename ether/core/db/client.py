@@ -350,8 +350,8 @@ class Playlist(Document):
     async def from_context(ctx: Context):
         return await Playlist.from_id(ctx.message.id)
 
-    async def from_guild(guild_id: int):
-        return await Playlist.find(Playlist.guild_id == guild_id)
+    def from_guild(guild_id: int):
+        return Playlist.find(Playlist.guild_id == guild_id)
 
 
 class ReactionRoleOption(BaseModel):
@@ -381,5 +381,5 @@ class ReactionRole(Document):
     async def from_context(ctx: Context):
         return await ReactionRole.from_id(ctx.message.id)
 
-    async def from_guild(guild_id: int):
-        return await ReactionRole.find(ReactionRole.guild_id == guild_id)
+    def from_guild(guild_id: int):
+        return ReactionRole.find(ReactionRole.guild_id == guild_id)
