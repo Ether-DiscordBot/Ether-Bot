@@ -84,7 +84,7 @@ class Event(commands.Cog):
         if ctx.author.bot:
             return
 
-        if Database.client != None:
+        if Database.client != None and ctx.guild:
             guild = await Guild.from_guild_object(ctx.guild)
             await GuildUser.from_member_object(ctx.author)
             if random.randint(1, 100) <= 33:
