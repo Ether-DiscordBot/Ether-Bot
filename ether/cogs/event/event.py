@@ -10,6 +10,7 @@ from ether.core.lavalink_status import lavalink_request
 from ether.core.logging import log
 from ether.core.i18n import init_i18n
 from ether.core.config import config
+from ether.core.utils import EtherEmbeds
 
 
 class Event(commands.Cog):
@@ -112,7 +113,7 @@ class Event(commands.Cog):
         log.info(f"Removed cog: {extension}")
 
     @commands.Cog.listener()
-    async def on_command_error(self, ctx: ApplicationContext, error):
+    async def on_application_command_error(self, ctx: ApplicationContext, error):
         ignored = (
             commands.NoPrivateMessage,
             commands.DisabledCommand,
@@ -126,5 +127,13 @@ class Event(commands.Cog):
 
         if isinstance(error, ignored):
             return
+
+        if isinstance(error, commands.errors.CommandOnCooldown):
+            return await ctx.respond(
+                embed=EtherEmbeds.error(
+                    f"This command is on cooldown, please retry in `{error.retry_after:.2f}s`."
+                ),
+                ephemeral=True,
+            )
 
         raise error
