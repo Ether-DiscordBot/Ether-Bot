@@ -99,6 +99,10 @@ class Event(commands.Cog):
 
     @commands.Cog.listener()
     async def on_application_command(self, ctx):
+        # Check if have permission to send messages
+        if not ctx.channel.permissions_for(ctx.guild.me).send_messages:
+            return
+
         if random.randint(1, 100) <= 5:
             await ctx.channel.send(
                 embed=Embed(
