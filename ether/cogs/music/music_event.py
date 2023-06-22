@@ -55,7 +55,7 @@ class MusicEvent(commands.Cog):
 
             log.warn(f"Track finished for reason `{reason}`")
 
-        if player.queue and not reason == "REPLACED":
+        if player.queue and reason != "REPLACED":
             await player.play(player.queue.pop(0))
 
         if hasattr(player, "message"):

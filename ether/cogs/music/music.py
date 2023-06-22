@@ -376,23 +376,3 @@ class Music(commands.Cog, name="music"):
     async def lavalink_info(self, ctx: ApplicationContext):
         """Show lavalink info"""
         return  # FIXME: lavalink_info is not working
-        lavalink = None
-        embed = Embed(title=f"**Mafic:** `{mafic.__version__}`", color=Colors.DEFAULT)
-
-        embed.add_field(
-            name="Server",
-            value=f"Server Nodes: `{len(self.client.NodePool.nodes)}`\n"
-            f"Voice Client Connected: `{len(self.client.voice_clients)}`\n",
-            inline=False,
-        )
-
-        for node in self.client.NodePool.nodes:
-            embed.add_field(
-                name=f"Node: {node.name}",
-                value=f"Node Memory: `{humanize.naturalsize(node.stats.memory_used)}/{humanize.naturalsize(node.stats.memory_allocated)}` | `({humanize.naturalsize(node.stats.memory_free)} free)`\n"
-                f"Node CPU: `{node.stats.cpu_cores}`\n"
-                f"Node Uptime: `{datetime.timedelta(milliseconds=node.stats.uptime)}`\n"
-                f"Node Players: `{len(node.players)}`\n",
-                inline=False,
-            )
-        await ctx.respond(embed=embed)

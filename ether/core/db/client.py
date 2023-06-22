@@ -32,18 +32,12 @@ class Database:
         @staticmethod
         async def get_or_create(user_id: int):
             user = await Database.User.get_or_none(user_id)
-            if user:
-                return user
-
-            return await Database.User.create(user_id)
+            return user if user else await Database.User.create(user_id)
 
         @staticmethod
         async def get_or_none(user_id: int):
             user = await User.find_one(User.id == user_id)
-            if user:
-                return user
-
-            return None
+            return user if user else None
 
     class Guild:
         @staticmethod
@@ -58,18 +52,12 @@ class Database:
         @staticmethod
         async def get_or_create(guild_id: int):
             guild = await Database.Guild.get_or_none(guild_id)
-            if guild:
-                return guild
-
-            return await Database.Guild.create(guild_id)
+            return guild if guild else await Database.Guild.create(guild_id)
 
         @staticmethod
         async def get_or_none(guild_id: int):
             guild = await Guild.find_one(Guild.id == guild_id)
-            if guild:
-                return guild
-
-            return None
+            return guild if guild else None
 
     class GuildUser:
         @staticmethod
@@ -84,28 +72,19 @@ class Database:
         @staticmethod
         async def get_or_create(user_id: int, guild_id: int):
             user = await Database.GuildUser.get_or_none(user_id, guild_id)
-            if user:
-                return user
-
-            return await Database.GuildUser.create(user_id, guild_id)
+            return user if user else await Database.GuildUser.create(user_id, guild_id)
 
         @staticmethod
         async def get_or_none(user_id: int, guild_id: int):
             user = await GuildUser.find_one(
                 GuildUser.user_id == user_id, GuildUser.guild_id == guild_id
             )
-            if user:
-                return user
-
-            return None
+            return user if user else None
 
         @staticmethod
         async def get_all(guild_id: int, max: int = 100):
             users = await GuildUser.find(GuildUser.guild_id == guild_id).to_list(max)
-            if users:
-                return users
-
-            return None
+            return users if users else None
 
         @staticmethod
         async def add_exp(user_id, guild_id, amount):
@@ -160,10 +139,7 @@ class Database:
             reaction = await ReactionRole.find_one(
                 ReactionRole.message_id == message_id
             )
-            if reaction:
-                return reaction
-
-            return None
+            return reaction if reaction else None
 
         @staticmethod
         async def update_or_create(message_id: int, option, _type: int = 0):
@@ -201,16 +177,11 @@ class Database:
         @staticmethod
         async def get_or_none(message_id: int):
             playlist = await Playlist.find_one(Playlist.message_id == message_id)
-            if playlist:
-                return playlist
-
-            return None
+            return playlist if playlist else None
 
         @staticmethod
         async def guild_limit(guild_id: int) -> bool:
-            if await Playlist.find(Playlist.guild_id == guild_id).count() >= 10:
-                return False
-            return True
+            return not await Playlist.find(Playlist.guild_id == guild_id).count() >= 10
 
 
 def init_database(db_uri):
@@ -271,14 +242,14 @@ class Guild(Document):
     exp_mult: float = 1.0
     birthday: Birthday = Birthday()
 
-    async def from_id(guild_id: int):
-        return await Database.Guild.get_or_create(guild_id)
+    async def from_id(self):
+        return await Database.Guild.get_or_create(self)
 
-    async def from_guild_object(guild: GuildModel):
-        return await Guild.from_id(guild.id)
+    async def from_guild_object(self):
+        return await Guild.from_id(self.id)
 
-    async def from_context(ctx: Context):
-        return await Guild.from_id(ctx.guild.id)
+    async def from_context(self):
+        return await Guild.from_id(self.guild.id)
 
 
 class Date(BaseModel):
@@ -303,14 +274,14 @@ class GuildUser(Document):
     levels: int = 1
     birthday: Optional[Date] = None
 
-    async def from_id(user_id: int, guild_id: int):
-        return await Database.GuildUser.get_or_create(user_id, guild_id)
+    async def from_id(self, guild_id: int):
+        return await Database.GuildUser.get_or_create(self, guild_id)
 
-    async def from_member_object(member: MemberModel):
-        return await GuildUser.from_id(member.id, member.guild.id)
+    async def from_member_object(self):
+        return await GuildUser.from_id(self.id, self.guild.id)
 
-    async def from_context(ctx: Context):
-        return await GuildUser.from_id(ctx.author.id, ctx.guild.id)
+    async def from_context(self):
+        return await GuildUser.from_id(self.author.id, self.guild.id)
 
 
 class User(Document):
@@ -322,14 +293,14 @@ class User(Document):
     card_color: int = 0xA5D799
     background: int = 0
 
-    async def from_id(user_id: int):
-        return await Database.User.get_or_create(user_id)
+    async def from_id(self):
+        return await Database.User.get_or_create(self)
 
-    async def from_user_object(user: UserModel):
-        return await User.from_id(user.id)
+    async def from_user_object(self):
+        return await User.from_id(self.id)
 
-    async def from_context(ctx: Context):
-        return await User.from_id(ctx.author.id)
+    async def from_context(self):
+        return await User.from_id(self.author.id)
 
 
 class Playlist(Document):
@@ -341,17 +312,17 @@ class Playlist(Document):
     playlist_link: Optional[str] = None  # deprecated
     playlist_id: Optional[str] = None
 
-    async def from_id(message_id: int):
-        return await Database.Playlist.get_or_none(message_id)
+    async def from_id(self):
+        return await Database.Playlist.get_or_none(self)
 
-    async def from_message_object(message: MessageModel):
-        return await Playlist.from_id(message.id)
+    async def from_message_object(self):
+        return await Playlist.from_id(self.id)
 
-    async def from_context(ctx: Context):
-        return await Playlist.from_id(ctx.message.id)
+    async def from_context(self):
+        return await Playlist.from_id(self.message.id)
 
-    def from_guild(guild_id: int):
-        return Playlist.find(Playlist.guild_id == guild_id)
+    def from_guild(self):
+        return Playlist.find(Playlist.guild_id == self)
 
 
 class ReactionRoleOption(BaseModel):
@@ -372,14 +343,14 @@ class ReactionRole(Document):
     # 2 => verify
     # 3 => drop
 
-    async def from_id(message_id: int):
-        return await Database.ReactionRole.get_or_none(message_id)
+    async def from_id(self):
+        return await Database.ReactionRole.get_or_none(self)
 
-    async def from_message_object(message: MessageModel):
-        return await ReactionRole.from_id(message.id)
+    async def from_message_object(self):
+        return await ReactionRole.from_id(self.id)
 
-    async def from_context(ctx: Context):
-        return await ReactionRole.from_id(ctx.message.id)
+    async def from_context(self):
+        return await ReactionRole.from_id(self.message.id)
 
-    def from_guild(guild_id: int):
-        return ReactionRole.find(ReactionRole.guild_id == guild_id)
+    def from_guild(self):
+        return ReactionRole.find(ReactionRole.guild_id == self)
