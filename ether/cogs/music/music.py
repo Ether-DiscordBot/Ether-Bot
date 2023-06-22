@@ -3,9 +3,7 @@ from logging import DEBUG, getLogger
 import re
 
 import requests
-import lavalink
 import mafic
-from lavalink import LoadType
 import humanize
 from discord.ext import commands
 from discord import ApplicationContext, Embed, Member, SlashCommandGroup
@@ -373,6 +371,8 @@ class Music(commands.Cog, name="music"):
     @commands.is_owner()
     async def lavalink_info(self, ctx: ApplicationContext):
         """Show lavalink info"""
+        return  # FIXME: lavalink_info is not working
+        lavalink = None
         embed = Embed(title=f"**Mafic:** `{mafic.__version__}`", color=Colors.DEFAULT)
 
         embed.add_field(
