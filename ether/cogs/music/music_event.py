@@ -39,9 +39,9 @@ class MusicEvent(commands.Cog):
         """
 
         if reason not in ("FINISHED", "STOPPED", "REPLACED"):
-            if player.channel_id:
+            if player.text_channel:
                 channel = self.client.get_guild(player.guild_id).get_channel(
-                    player.channel_id
+                    player.text_channel
                 )
                 if channel:
                     return await channel.send(

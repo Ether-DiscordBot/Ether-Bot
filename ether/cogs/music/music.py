@@ -95,7 +95,7 @@ class Music(commands.Cog, name="music"):
             await ctx.user.voice.channel.connect(cls=EtherPlayer)
 
             player: EtherPlayer = ctx.guild.voice_client
-            setattr(player, "channel", ctx.channel.id)
+            setattr(player, "text_channel", ctx.channel.id)
         elif player.channel.id != ctx.author.voice.channel.id:
             await ctx.respond(
                 embed=EtherEmbeds.error("You need to be in my voicechannel."),
@@ -126,7 +126,7 @@ class Music(commands.Cog, name="music"):
 
         if not ctx.author.voice or (
             player.is_connected
-            and ctx.author.voice.channel.id != int(player.channel_id)
+            and ctx.author.voice.channel.id != int(player.channel.id)
         ):
 
             return await ctx.send("You're not in my voicechannel!")
@@ -174,9 +174,10 @@ class Music(commands.Cog, name="music"):
                 )
             )
 
-        track = tracks[0]
+        if not player.current:
+            track = tracks[0]
 
-        await player.play(track)
+            await player.play(track)
 
     @music.command(name="stop")
     @commands.guild_only()
@@ -232,7 +233,10 @@ class Music(commands.Cog, name="music"):
         player: EtherPlayer = ctx.guild.voice_client
 
         if not len(player.queue):
-            return
+            return await ctx.respond(
+                embed=EtherEmbeds.error(description="There's nothing to skip"),
+                delete_after=5,
+            )
 
         await player.skip()
         return await ctx.respond(embed=Embed(description="⏭️ Skip"), delete_after=5)
@@ -263,7 +267,8 @@ class Music(commands.Cog, name="music"):
 
         if not player.queue:
             return await ctx.respond(
-                embed=EtherEmbeds.error("Sorry, an error has occurred!"), ephemeral=True
+                embed=EtherEmbeds.error("There are no tracks in the queue!"),
+                ephemeral=True,
             )
 
         queue = player.queue.copy()
