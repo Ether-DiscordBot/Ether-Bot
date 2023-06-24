@@ -88,14 +88,6 @@ class Event(commands.Cog):
                 return
 
     @commands.Cog.listener()
-    async def on_guild_join(self, _guild):
-        await self.client.set_activity()
-
-    @commands.Cog.listener()
-    async def on_guild_remove(self, _guild):
-        await self.client.set_activity()
-
-    @commands.Cog.listener()
     async def on_message(self, ctx):
         if ctx.author.bot:
             return
@@ -160,6 +152,5 @@ class Event(commands.Cog):
                 ),
                 ephemeral=True,
             )
-
 
         raise error

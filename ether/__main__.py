@@ -46,9 +46,7 @@ class Client(commands.Bot):
         self.pool = mafic.NodePool(self)
 
     async def set_activity(self):
-        await self.change_presence(
-            activity=discord.Game(name=f"/help | On {len(self.guilds)} servers")
-        )
+        await self.change_presence(activity=discord.Game(name=f"/help"))
 
     async def load_extensions(self):
         await CogManager.load_cogs(self)

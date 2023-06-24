@@ -1,6 +1,6 @@
 import os
 
-from discord import SlashCommandGroup, File
+from discord import Embed, SlashCommandGroup, File
 from discord.ext import commands
 
 from ether.cogs.event.welcomecard import WelcomeCard
@@ -52,3 +52,12 @@ class Owner(commands.Cog):
                 ephemeral=True,
             )
         return await ctx.respond("Done!", ephemeral=True)
+
+    @owner.command(name="server_count")
+    @commands.is_owner()
+    async def server_count(self, ctx):
+        """Get the server count"""
+        return await ctx.respond(
+            embed=Embed(description=f"Server count: `{len(self.client.guilds)}`"),
+            epehemeral=True,
+        )
