@@ -54,12 +54,12 @@ class CogManager:
             for file in listdir:
                 if file == init_file:
                     name = f".{os.path.basename(path)}"
+                    package = "ether.cogs"
                     if name[1:] in ignoring_cogs:
                         log.info(
                             f"[{paths.index(path) + 1}/{len(paths)}] Cog {package}{name} ignored"
                         )
                         continue
-                    package = "ether.cogs"
                     mod = importlib.import_module(name, package=package)
                     try:
                         mod.setup(self)

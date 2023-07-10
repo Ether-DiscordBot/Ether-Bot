@@ -21,6 +21,8 @@ class Links:
 
     SUPPORT_SERVER_URL = "https://discord.gg/PzE35PWXmE"
 
+    VINYL_GIF_URL = "https://media1.giphy.com/media/ZHa75MzN09LtS7ruKD/giphy.gif"
+
 
 # EMOJIS
 class Emoji:
@@ -35,6 +37,7 @@ class Emoji:
     PLAY = "<:play:990260523692064798>"
     NEXT = "<:next:990260522999941130>"
     SHUFFLE = "<:shuffle:990260524686139432>"
+    VINYL = "<a:vinyl:1128026008080101502>"
 
     # CATEGORIES
     ADMIN = "<:admin:1029143944241619004>"

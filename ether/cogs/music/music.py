@@ -6,7 +6,7 @@ import requests
 import mafic
 import humanize
 from discord.ext import commands
-from discord import ApplicationContext, Embed, Member, SlashCommandGroup
+from discord import ApplicationContext, Embed, Member, SlashCommandGroup, VoiceProtocol
 
 from ether.core.i18n import _
 from ether.core.constants import Colors
@@ -30,6 +30,8 @@ class Music(commands.Cog, name="music"):
         self.client = client
         self.help_icon = Emoji.MUSIC
         self.youtube_api_key = config.api.youtube.get("key")
+
+        self.tape_in = open("ether/assets/sfx/tape_in.mp3", "rb").read()
 
     music = SlashCommandGroup("music", "Music commands!")
 
@@ -94,7 +96,7 @@ class Music(commands.Cog, name="music"):
             await ctx.user.voice.channel.connect(cls=EtherPlayer)
 
             player: EtherPlayer = ctx.guild.voice_client
-              
+
             setattr(player, "text_channel", ctx.channel)
         elif not ctx.author.voice or (player.channel.id != ctx.author.voice.channel.id):
             await ctx.respond(
@@ -169,6 +171,12 @@ class Music(commands.Cog, name="music"):
             track = tracks.tracks[0]
         else:
             track = tracks[0]
+
+            if not hasattr(player, "queue"):
+                await player.disconnect()
+                return await ctx.respond(
+                    embed=EtherEmbeds.error("Please retry."), ephemeral=True
+                )
 
             player.queue.append(track)
             await ctx.respond(

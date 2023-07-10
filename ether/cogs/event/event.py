@@ -140,8 +140,6 @@ class Event(commands.Cog):
         )
         error = getattr(error, "original", error)
 
-        print(error.__class__.__name__)
-
         if isinstance(error, ignored):
             return
 
