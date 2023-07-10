@@ -78,6 +78,8 @@ class MusicEvent(commands.Cog):
 
         if player.queue and not reason == "REPLACED":
             await player.play(player.queue.pop(0))
+        elif not player.queue:
+            await player.disconnect()
 
         if hasattr(player, "message"):
             await player.message.delete()
@@ -85,6 +87,9 @@ class MusicEvent(commands.Cog):
     @commands.Cog.listener()
     async def on_node_stats(self, node: mafic.Node):
         for player in node.players:
+            if player.current is None:
+                await player.disconnect()
+
             if not hasattr(player, "message"):
                 continue
             message: discord.Message = player.message
