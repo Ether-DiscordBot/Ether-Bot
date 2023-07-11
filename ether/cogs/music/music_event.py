@@ -99,12 +99,24 @@ class MusicEvent(commands.Cog):
             embed = message.embeds[0]
 
             length = format_td(datetime.timedelta(milliseconds=player.current.length))
+
             min_max_pos = max(min(player.position, player.current.length), 0)
             position = format_td(datetime.timedelta(milliseconds=min_max_pos))
+            pointer_pos = int((min_max_pos / player.current.length) * 30)
 
-            pointer_pos = int((player.position / player.current.length) * 30)
+            range_pos = max(
+                min(player.position + 60000, player.current.length), min_max_pos
+            )
+            range_pointer_pos = int((range_pos / player.current.length) * 30)
 
-            description = f"`{position}` {'─' * (pointer_pos-1)}█{'─' * (30-pointer_pos)} `{length}`"
+            range = ["─"] * 30
+            range[pointer_pos:range_pointer_pos] = "░" * (
+                range_pointer_pos - pointer_pos
+            )
+            range[pointer_pos] = "█"
+            range = "".join(range)
+
+            description = f"`{position}` {range} `{length}`"
             embed.description = description
             message = await message.edit(embed=embed)
             setattr(player, "message", message)

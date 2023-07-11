@@ -59,5 +59,5 @@ class Owner(commands.Cog):
         """Get the server count"""
         return await ctx.respond(
             embed=Embed(description=f"Server count: `{len(self.client.guilds)}`"),
-            epehemeral=True,
+            ephemeral=True,
         )
