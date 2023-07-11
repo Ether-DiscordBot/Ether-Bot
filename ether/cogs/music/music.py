@@ -6,7 +6,14 @@ import requests
 import mafic
 import humanize
 from discord.ext import commands
-from discord import ApplicationContext, Embed, Member, SlashCommandGroup, VoiceProtocol
+from discord import (
+    ApplicationContext,
+    Embed,
+    Member,
+    SlashCommandGroup,
+    VoiceProtocol,
+    slash_command,
+)
 
 from ether.core.i18n import _
 from ether.core.constants import Colors
@@ -140,11 +147,22 @@ class Music(commands.Cog, name="music"):
             embed=Embed(description=f"`{ctx.author.voice.channel}` leave")
         )
 
+    @commands.slash_command(name="play")
+    @commands.guild_only()
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def _play(self, ctx: ApplicationContext, *, query: str):
+        """Play a song from YouTube
+
+        query:
+            The song to search or play
+        """
+        await ctx.invoke(self.play, query=query)
+
     @music.command(name="play")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def play(self, ctx: ApplicationContext, *, query: str):
-        """Play a song from YouTube
+        """Play a song from YouTube (the same as /play)
 
         query:
             The song to search or play
