@@ -39,10 +39,20 @@ class MusicEvent(commands.Cog):
             try:
                 td = datetime.timedelta(milliseconds=track.length)
                 length = format_td(td)
+
+                range_pointer_pos = int((60000 / player.current.length) * 30)
+
+                range = ["─"] * 30
+                range[:range_pointer_pos] = "░" * range_pointer_pos
+                range[0] = "█"
+                range = "".join(range)
+
+                description = f"`00:00` {range} `{length}`"
+
                 embed = discord.Embed(
                     title=track.title,
                     url=track.uri,
-                    description=f"`00:00` █───────────────────────────── `{length}`",
+                    description=description,
                 )
                 embed.set_thumbnail(
                     url=f"http://i.ytimg.com/vi/{track.identifier}/mqdefault.jpg"

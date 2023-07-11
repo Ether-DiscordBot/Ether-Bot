@@ -6,14 +6,7 @@ import requests
 import mafic
 import humanize
 from discord.ext import commands
-from discord import (
-    ApplicationContext,
-    Embed,
-    Member,
-    SlashCommandGroup,
-    VoiceProtocol,
-    slash_command,
-)
+from discord import ApplicationContext, Embed, Member, SlashCommandGroup
 
 from ether.core.i18n import _
 from ether.core.constants import Colors
@@ -63,7 +56,7 @@ class Music(commands.Cog, name="music"):
         should_connect = ctx.command.name in ("play", "join")
 
         if not exceptions and not ctx.author.voice or not ctx.author.voice.channel:
-            await ctx.respond(
+            return await ctx.respond(
                 embed=EtherEmbeds.error("Join a voicechannel first."),
                 ephemeral=True,
                 delete_after=5,
@@ -94,12 +87,6 @@ class Music(commands.Cog, name="music"):
             if not isinstance(ctx.user, Member):
                 return
 
-            if not ctx.user.voice or not ctx.user.voice.channel:
-                return await ctx.respond(
-                    embed=EtherEmbeds.error("You need to be in a voicechannel."),
-                    ephemeral=True,
-                )
-
             await ctx.user.voice.channel.connect(cls=EtherPlayer)
 
             player: EtherPlayer = ctx.guild.voice_client
@@ -129,6 +116,8 @@ class Music(commands.Cog, name="music"):
         """Disconnect the bot from your voice channel"""
 
         player: EtherPlayer = ctx.guild.voice_client
+        if not player:
+            return
 
         if not ctx.voice_client:
             return await ctx.send(embed=EtherEmbeds.error("Not connected."))
@@ -169,6 +158,8 @@ class Music(commands.Cog, name="music"):
         """
 
         player: EtherPlayer = ctx.guild.voice_client
+        if not player:
+            return
 
         tracks = await player.fetch_tracks(query)
 
@@ -214,6 +205,8 @@ class Music(commands.Cog, name="music"):
     async def stop(self, ctx: ApplicationContext):
         """Stop the current song"""
         player: EtherPlayer = ctx.guild.voice_client
+        if not player:
+            return
 
         player.queue.clear()
         await player.stop()
@@ -226,6 +219,8 @@ class Music(commands.Cog, name="music"):
     async def pause(self, ctx: ApplicationContext):
         """Pause the current song"""
         player: EtherPlayer = ctx.guild.voice_client
+        if not player:
+            return
 
         if not player.is_playing:
             await ctx.respond(
@@ -244,6 +239,8 @@ class Music(commands.Cog, name="music"):
     async def resume(self, ctx: ApplicationContext):
         """Resume the current song"""
         player: EtherPlayer = ctx.guild.voice_client
+        if not player:
+            return
 
         if not player.paused:
             await ctx.respond(
@@ -260,6 +257,8 @@ class Music(commands.Cog, name="music"):
     async def skip(self, ctx: ApplicationContext):
         """Skip the current song"""
         player: EtherPlayer = ctx.guild.voice_client
+        if not player:
+            return
 
         if not len(player.queue):
             return await ctx.respond(
@@ -276,6 +275,8 @@ class Music(commands.Cog, name="music"):
     async def shuffle(self, ctx: ApplicationContext):
         """Shuffle the queue"""
         player: EtherPlayer = ctx.guild.voice_client
+        if not player:
+            return
 
         player.queue = shuffle(player.queue)
 
