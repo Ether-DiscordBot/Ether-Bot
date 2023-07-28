@@ -35,12 +35,16 @@ class MusicEvent(commands.Cog):
         player: EtherPlayer = event.player
         track: mafic.Track = event.track
 
+        if hasattr(player, "message"):
+            await player.message.delete()
+            delattr(player, "message")
+
         if channel := player.text_channel:
             try:
                 td = datetime.timedelta(milliseconds=track.length)
                 length = format_td(td)
 
-                range_pointer_pos = int((60000 / player.current.length) * 30)
+                range_pointer_pos = min(int((60000 / player.current.length) * 30), 30)
 
                 range = ["─"] * 30
                 range[:range_pointer_pos] = "░" * range_pointer_pos
@@ -93,6 +97,7 @@ class MusicEvent(commands.Cog):
 
         if hasattr(player, "message"):
             await player.message.delete()
+            delattr(player, "message")
 
     @commands.Cog.listener()
     async def on_node_stats(self, node: mafic.Node):
@@ -117,19 +122,19 @@ class MusicEvent(commands.Cog):
             range_pos = max(
                 min(player.position + 60000, player.current.length), min_max_pos
             )
-            range_pointer_pos = int((range_pos / player.current.length) * 30)
+            range_pointer_pos = min(int((range_pos / player.current.length) * 30), 30)
 
             range = ["─"] * 30
             range[pointer_pos:range_pointer_pos] = "░" * (
                 range_pointer_pos - pointer_pos
             )
             range[pointer_pos] = "█"
-            range = "".join(range)
+            range = "".join(range[:30])
 
             description = f"`{position}` {range} `{length}`"
             embed.description = description
-            message = await message.edit(embed=embed)
-            setattr(player, "message", message)
+            edited_message = await message.edit(embed=embed)
+            setattr(player, "message", edited_message)
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
