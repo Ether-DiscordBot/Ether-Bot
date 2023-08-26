@@ -111,17 +111,18 @@ class Event(commands.Cog):
     @commands.Cog.listener()
     async def on_application_command(self, ctx):
         # Check if have permission to send messages
-        if not ctx.channel.permissions_for(ctx.guild.me).send_messages:
-            return
 
         if random.randint(1, 100) <= 5:
-            await ctx.channel.send(
-                embed=Embed(
-                    title="Support us!",
-                    description="Ether is a free and open source bot, if you like it, please vote for the bot on [Top.gg](https://top.gg/bot/985100792270819389) and consider supporting us on [Ko-fi](https://ko-fi.com/holycrusader)!",
-                    color=0x2F3136,
-                )
+            embed = Embed(
+                title="Support us!",
+                description="Ether is a free and open source bot, if you like it, please vote for the bot on [Top.gg](https://top.gg/bot/985100792270819389) and consider supporting us on [Ko-fi](https://ko-fi.com/holycrusader)!",
+                color=0x2F3136,
             )
+
+            if not ctx.channel.can_send():
+                return
+
+            await ctx.respond(embed=embed, ephemeral=True)
 
     @commands.Cog.listener()
     async def remove_cog(self, ctx: ApplicationContext, extension):

@@ -295,13 +295,13 @@ class Music(commands.Cog, name="music"):
         """Show the current queue"""
         player: EtherPlayer = ctx.guild.voice_client
 
-        if not player.queue:
+        if not player.current:
             return await ctx.respond(
-                embed=EtherEmbeds.error("There are no tracks in the queue!"),
+                embed=EtherEmbeds.error(
+                    "There are no tracks in the queue or currently playing!"
+                ),
                 ephemeral=True,
             )
-
-        queue = player.queue.copy()
 
         embed = Embed(title=":notes: Queue:")
         if player.current:
@@ -311,6 +311,8 @@ class Music(commands.Cog, name="music"):
                 value=f'`1.` [{first_track.title}]({first_track.uri}) | `{"🔴 Stream" if first_track.stream else datetime.timedelta(milliseconds=first_track.length)}`',
                 inline=False,
             )
+
+        queue = player.queue.copy()
 
         next_track_label = []
         for _ in range(10):
