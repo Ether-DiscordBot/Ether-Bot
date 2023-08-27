@@ -13,7 +13,6 @@
    </a>
    <a href="https://www.youtube.com/watch?v=sXotP-9LcDY">
       <img src="https://img.shields.io/badge/0_%25-optimized-red?style=for-the-badge
-
 " alt="0% optimized">
    </a>
    <br>
@@ -49,15 +48,14 @@ You can also support the development and hosting of the bot by making a small do
 
 # Features
 
-First, look at this gorgeous music player!
+First, look at this gorgeous music player!<br>
 <img src="./docs/assets/music_player.png">
 
 And now, let me talk about **Playlists**, the coolest feature of Ether!<br>
 You can setup a playlist on your server using the `/music playlist <playlist link>` command. <br>
 And react later to the bot message at any time to play the playlist in one click.
 
-And It's how this look:
-
+And It's how this look: <br>
 <img src="./docs/assets/playlist.png">
 
 <details>
