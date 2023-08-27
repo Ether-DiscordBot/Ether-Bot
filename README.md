@@ -4,16 +4,13 @@
 
 <div align="center">
    <a href="https://python.org">
-      <img src="https://img.shields.io/badge/made_with-python-blue?style=for-the-badge
-" alt="made with python">
+      <img src="https://img.shields.io/badge/made_with-python-blue?style=for-the-badge" alt="made with python">
    </a>
    <a>
-      <img src="https://img.shields.io/badge/build_with-love-red?style=for-the-badge
-" alt="build with love">
+      <img src="https://img.shields.io/badge/build_with-love-red?style=for-the-badge" alt="build with love">
    </a>
    <a href="https://www.youtube.com/watch?v=sXotP-9LcDY">
-      <img src="https://img.shields.io/badge/0_%25-optimized-red?style=for-the-badge
-" alt="0% optimized">
+      <img src="https://img.shields.io/badge/0_%25-optimized-red?style=for-the-badge" alt="0% optimized">
    </a>
    <br>
    <a>
