@@ -96,7 +96,10 @@ class MusicEvent(commands.Cog):
             await player.disconnect()
 
         if hasattr(player, "message"):
-            await player.message.delete()
+            try:
+                await player.message.delete()
+            except discord.errors.NotFound:
+                pass
             delattr(player, "message")
 
     @commands.Cog.listener()

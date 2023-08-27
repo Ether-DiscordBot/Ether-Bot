@@ -186,7 +186,7 @@ class Database:
             )
 
             await playlist.insert()
-            log.info(f"Creating playlist (message id: {message_id})")
+            log.info(f"Playlist created: (id: {playlist_id}, guild id: {guild_id})")
 
             return await Database.Playlist.get_or_none(message_id)
 

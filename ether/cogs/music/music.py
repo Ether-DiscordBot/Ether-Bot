@@ -15,6 +15,7 @@ from ether.core.utils import EtherEmbeds
 from ether.core.config import config
 from ether.core.constants import Emoji
 from ether.core.voice_client import EtherPlayer
+from ether.core.logging import log
 
 PLAYLIST_REG = re.compile(
     r"^(?:http:\/\/|https:\/\/)?(?:www\.)?youtube\.com\/playlist\?list(?:\S+)?$"
@@ -340,6 +341,13 @@ class Music(commands.Cog, name="music"):
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def playlist(self, ctx: ApplicationContext, playlist_link: str):
         """Setup a playlist player for a YouTube playlist"""
+
+        if not ctx.channel.permissions_for(self.user).send_messages:
+            return await ctx.respond(
+                embed=EtherEmbeds.error("Please allow me to send messages!"),
+                ephemeral=True,
+                delete_after=5,
+            )
 
         # Check if the guild can have a new playlist
         if not await Database.Playlist.guild_limit(ctx.guild.id):
