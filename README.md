@@ -1,25 +1,20 @@
 <div align="center">
-   <br>
-      <a href="https://github.com/Ether-DiscordBot/">
-         <img src="https://i.imgur.com/OCnNAsO.png" alt="Ether - Bot">
-      </a>
-      <br>
-      <h1>Ether Bot</h1>
-      <br>
+   <h1>Ether Bot</h1>
 </div>
 
 <div align="center">
    <a href="https://python.org">
-      <img src="https://forthebadge.com/images/badges/made-with-python.svg" alt="made with python">
+      <img src="https://img.shields.io/badge/made_with-python-blue?style=for-the-badge
+" alt="made with python">
    </a>
    <a>
-      <img src="https://forthebadge.com/images/badges/built-with-love.svg" alt="build with love">
-   </a>
-   <a href="https://www.youtube.com/watch?v=nCqucxRNSNI&">
-      <img src="https://forthebadge.com/images/badges/for-you.svg" alt="for you babes">
+      <img src="https://img.shields.io/badge/build_with-love-red?style=for-the-badge
+" alt="build with love">
    </a>
    <a href="https://www.youtube.com/watch?v=sXotP-9LcDY">
-      <img src="https://forthebadge.com/images/badges/0-percent-optimized.svg" alt="0% optimized">
+      <img src="https://img.shields.io/badge/0_%25-optimized-red?style=for-the-badge
+
+" alt="0% optimized">
    </a>
    <br>
    <a>
@@ -48,19 +43,31 @@ You can contribute to the development of the bot by suggesting ideas or reportin
 You can also support the development and hosting of the bot by making a small donation on the platform of your choice:
 <div>
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Y8Y7DH7YN) [![patreon](https://user-images.githubusercontent.com/67459553/206045259-8ef56c71-ea94-4bb2-ab7d-9720ce62e49e.png)](https://www.patreon.com/bePatron?u=81310310)
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Y8Y7DH7YN) <br>
+[![patreon](https://user-images.githubusercontent.com/67459553/206045259-8ef56c71-ea94-4bb2-ab7d-9720ce62e49e.png)](https://www.patreon.com/bePatron?u=81310310)
 </div>
 
 # Features
 
-The unique feature that Ether brings is the playlist.<br>
-Create a playlist on your server using the `/music playlist <playlist link>` command. <br>
-React to this message at any time to play the playlist.
+First, look at this gorgeous music player!
+<img src="./docs/assets/music_player.png">
+
+And now, let me talk about **Playlists**, the coolest feature of Ether!<br>
+You can setup a playlist on your server using the `/music playlist <playlist link>` command. <br>
+And react later to the bot message at any time to play the playlist in one click.
+
+And It's how this look:
+
+<img src="./docs/assets/playlist.png">
 
 <details>
-   <summary>Click here to see the demo</summary>
+   <summary>Click here to a demo</summary>
    <img src="./docs/assets/playlist_demo.gif">
 </details>
+
+Ether has many other non-music feature such as **birthday reminder**, **memes maker**, **DnD helper**, **admin stuff**, **quiet level system** and a tone of other things to play with.
+
+If you have any ideas you want the bot to have, feel free to join the [support server](https://discord.gg/YTWUCufwjY) and publish your request or post your idea on [GitHub](https://github.com/Ether-DiscordBot/Ether-Bot/discussions).
 
 # Hosting
 
