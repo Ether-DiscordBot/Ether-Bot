@@ -90,17 +90,17 @@ class MusicEvent(commands.Cog):
 
             log.warn(f"Track finished for reason `{reason}`")
 
-        if player.queue and not reason == "REPLACED":
-            await player.play(player.queue.pop(0))
-        elif not player.queue:
-            await player.disconnect()
-
         if hasattr(player, "message"):
             try:
                 await player.message.delete()
             except discord.errors.NotFound:
                 pass
             delattr(player, "message")
+
+        if player.queue and not reason == "REPLACED":
+            await player.play(player.queue.pop(0))
+        elif not player.queue:
+            await player.disconnect()
 
     @commands.Cog.listener()
     async def on_node_stats(self, node: mafic.Node):
