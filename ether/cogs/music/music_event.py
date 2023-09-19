@@ -36,8 +36,11 @@ class MusicEvent(commands.Cog):
         track: mafic.Track = event.track
 
         if hasattr(player, "message"):
-            await player.message.delete()
-            delattr(player, "message")
+            try:
+                await player.message.delete()
+                delattr(player, "message")
+            except discord.errors.NotFound:
+                pass
 
         if channel := player.text_channel:
             try:

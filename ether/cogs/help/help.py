@@ -1,5 +1,5 @@
 import discord
-from discord import Embed
+from discord import Embed, ApplicationContext, ComponentType, SelectOption
 from discord.ext import commands, pages
 from ether.core.i18n import _
 
@@ -26,14 +26,16 @@ class Help(commands.Cog):
 
     @commands.slash_command(name="help")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def help(self, ctx):
+    async def help(self, ctx: ApplicationContext):
         """Help command"""
-        extensions, desc_array, options = [], [], []
+        extensions, desc_array, options, commands = [], [], [], []
 
         for ext in set(self.client.cogs.values()):
             if ext.qualified_name in self.ignore_cogs:
                 continue
-            if ext.qualified_name in self.owner_cogs and not await ctx.bot.is_owner():
+            if ext.qualified_name in self.owner_cogs and not await ctx.bot.is_owner(
+                ctx.author
+            ):
                 continue
             if (
                 ext.qualified_name in self.admin_cogs
@@ -47,7 +49,10 @@ class Help(commands.Cog):
             cog = self.client.get_cog(ext)
             desc_array.append(f"{cog.help_icon} **{cog.qualified_name}**")
             options.append(
-                discord.SelectOption(label=cog.qualified_name, emoji=cog.help_icon)
+                discord.SelectOption(
+                    label=cog.qualified_name,
+                    emoji=cog.help_icon if cog.help_icon else None,
+                )
             )
 
         embed = Embed(
@@ -74,9 +79,13 @@ class Help(commands.Cog):
             )
 
         options.append(discord.SelectOption(label="Stop", emoji="🛑"))
-        menu = discord.ui.Select(options=options, placeholder="Choose a category...")
+        menu = discord.ui.Select(
+            select_type=discord.ComponentType.string_select,
+            options=options,
+            placeholder="Choose a category...",
+        )
         menu.callback = self.callback
-        view = discord.ui.View(menu, timeout=180.0, disable_on_timeout=True)
+        view = discord.ui.View(menu)
 
         return await ctx.respond(embed=embed, view=view)
 
@@ -120,7 +129,6 @@ class Help(commands.Cog):
 
         if paginator:
             return await interaction.response.edit_message(embed=paginator)
-            # await paginator.edit(interaction.message)
         return await interaction.response.edit_message(
             embed=Embed(description="Interaction closed."), delete_after=5
         )

@@ -162,7 +162,14 @@ class Music(commands.Cog, name="music"):
         if not player:
             return
 
-        tracks = await player.fetch_tracks(query)
+        try:
+            tracks = await player.fetch_tracks(query)
+        except mafic.errors.TrackLoadException:
+            return await ctx.respond(
+                embed=EtherEmbeds.error(
+                    "Sorry, I can't play this track (can be copyight or blocked)"
+                )
+            )
 
         if not tracks:
             return await ctx.respond(embed=EtherEmbeds.error("Nothing found!"))

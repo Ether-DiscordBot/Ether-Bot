@@ -31,7 +31,7 @@ def date_time_left(user):
     return (obj_date - now).days
 
 
-class Birthday(commands.Cog):
+class Birthday(commands.Cog, name="birthday"):
     def __init__(self, client: commands.Bot):
         self.client = client
         self.help_icon = Emoji.BIRTHDAY

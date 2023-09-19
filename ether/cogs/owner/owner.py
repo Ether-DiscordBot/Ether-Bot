@@ -6,7 +6,7 @@ from discord.ext import commands
 from ether.cogs.event.welcomecard import WelcomeCard
 
 
-class Owner(commands.Cog):
+class Owner(commands.Cog, name="owner"):
     LOGS_FILE_PATH = os.path.abspath("logs.log")
 
     def __init__(self, client):

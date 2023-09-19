@@ -1,6 +1,5 @@
 import socket
 import time
-import os
 
 from ether.core.config import config
 from ether.core.logging import log
