@@ -8,6 +8,9 @@ import mafic
 import nest_asyncio
 from discord.ext import commands
 
+from ether.core.lavalink_status import lavalink_request
+from ether.core.logging import log
+
 nest_asyncio.apply()
 
 from ether.core.cog_manager import CogManager
@@ -23,13 +26,14 @@ threads = []
 #
 #               Ether - Discord Bot
 #
-#              Made by Holy Crusader
+#              Made by  Atomic Junky
 #
 
 
 class Client(commands.Bot):
     def __init__(self):
         self.in_container: bool = os.environ.get("IN_DOCKER", False)
+        self.lavalink_ready_ran = False
 
         intents = discord.Intents().all()
 
@@ -44,6 +48,29 @@ class Client(commands.Bot):
         )
 
         self.pool = mafic.NodePool(self)
+
+    async def start_lavalink_node(self):
+        if config.lavalink.get("https"):
+            r = lavalink_request(timeout=20.0, in_container=self.in_container)
+        else:
+            r = 0
+
+        if r != 0:
+            await self.remove_cog("cogs.music")
+        elif not self.lavalink_ready_ran:
+            node = await self.pool.create_node(
+                host=config.lavalink.get("host"),
+                port=config.lavalink.get("port"),
+                label="MAIN",
+                password=config.lavalink.get("pass"),
+                secure=config.lavalink.get("https"),
+            )
+            self.lavalink_ready_ran = True
+
+            log.info("Lavalink node created")
+            log.info(f"\tNode {node.label}: {node.host}:{node.port}")
+            if not hasattr(node, "session"):
+                log.warning(f"Node ({node.label}) session is empty")
 
     async def set_activity(self):
         await self.change_presence(activity=discord.Game(name=f"/help"))

@@ -42,8 +42,10 @@ class MusicEvent(commands.Cog):
             except discord.errors.NotFound:
                 pass
 
-        if channel := player.text_channel:
+        if hasattr(player, "text_channel") and player.text_channel:
             try:
+                channel = player.text_channel
+
                 td = datetime.timedelta(milliseconds=track.length)
                 length = format_td(td)
 
@@ -158,3 +160,8 @@ class MusicEvent(commands.Cog):
         ):
             player: EtherPlayer = member.guild.voice_client
             return await player.stop()
+
+    @commands.Cog.listener()
+    async def on_web_socket_closed(self, _event):
+        self.lavalink_ready_ran = False
+        await self.client.start_lavalink_node()

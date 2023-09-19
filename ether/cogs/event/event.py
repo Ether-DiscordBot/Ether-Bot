@@ -6,7 +6,6 @@ from discord.ext import commands
 
 from ether.cogs.event.welcomecard import WelcomeCard
 from ether.core.db.client import Database, Guild, GuildUser
-from ether.core.lavalink_status import lavalink_request
 from ether.core.logging import log
 from ether.core.i18n import init_i18n
 from ether.core.config import config
@@ -16,7 +15,6 @@ from ether.core.utils import EtherEmbeds
 class Event(commands.Cog):
     def __init__(self, client) -> None:
         self.client = client
-        self.lavalink_ready_ran = False
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -32,27 +30,7 @@ class Event(commands.Cog):
 
         log.info(f"Global slash commands: {config.bot.get('global')}")
 
-        if config.lavalink.get("https"):
-            r = lavalink_request(timeout=20.0, in_container=in_container)
-        else:
-            r = 0
-
-        if r != 0:
-            await self.client.remove_cog("cogs.music")
-        elif not self.lavalink_ready_ran:
-            node = await self.client.pool.create_node(
-                host=config.lavalink.get("host"),
-                port=config.lavalink.get("port"),
-                label="MAIN",
-                password=config.lavalink.get("pass"),
-                secure=config.lavalink.get("https"),
-            )
-            self.lavalink_ready_ran = True
-
-            log.info("Lavalink node created")
-            log.info(f"\tNode {node.label}: {node.host}:{node.port}")
-            if not hasattr(node, "session"):
-                log.warn(f"Node ({node.label}) session is empty")
+        await self.client.start_lavalink_node()
 
         init_i18n(self.client)
 
