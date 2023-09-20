@@ -1,9 +1,10 @@
 import discord
 from discord import Embed, ApplicationContext, ComponentType, SelectOption
 from discord.ext import commands, pages
-from ether.core.i18n import _
 
+from ether.core.i18n import _
 from ether.core.constants import Emoji, Links, Other
+from ether.core.logging import log
 
 
 class Help(commands.Cog):
@@ -22,13 +23,13 @@ class Help(commands.Cog):
 
         self.owner_cogs = ["Owner"]
         self.admin_cogs = ["Admin"]
-        self.ignore_cogs = ["Help", "Event", "PlaylistEvent", "MusicEvent"]
+        self.ignore_cogs = ["Help", "Event", "PlaylistEvent", "MusicEvent", "Reddit"]
 
     @commands.slash_command(name="help")
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def help(self, ctx: ApplicationContext):
         """Help command"""
-        extensions, desc_array, options, commands = [], [], [], []
+        extensions, desc_array, options = [], [], []
 
         for ext in set(self.client.cogs.values()):
             if ext.qualified_name in self.ignore_cogs:
@@ -132,3 +133,6 @@ class Help(commands.Cog):
         return await interaction.response.edit_message(
             embed=Embed(description="Interaction closed."), delete_after=5
         )
+
+    async def error_callback(self, error, item, _interaction):
+        log.warning(f"Error in help command: {error} with item: {item}")

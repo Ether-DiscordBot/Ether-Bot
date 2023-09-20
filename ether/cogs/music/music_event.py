@@ -165,3 +165,4 @@ class MusicEvent(commands.Cog):
     async def on_web_socket_closed(self, _event):
         self.lavalink_ready_ran = False
         await self.client.start_lavalink_node()
+        log.info("Lavalink node restarted.")

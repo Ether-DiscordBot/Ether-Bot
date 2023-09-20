@@ -4,6 +4,7 @@ from discord import Embed, SlashCommandGroup, File
 from discord.ext import commands
 
 from ether.cogs.event.welcomecard import WelcomeCard
+from ether.core.constants import Emoji
 
 
 class Owner(commands.Cog, name="owner"):
@@ -11,9 +12,7 @@ class Owner(commands.Cog, name="owner"):
 
     def __init__(self, client):
         self.client = client
-
-        self.help_icon = ""
-        self.big_icon = ""
+        self.help_icon = Emoji.OWNER
 
     owner = SlashCommandGroup(name="owner", description="Owner commands")
 
