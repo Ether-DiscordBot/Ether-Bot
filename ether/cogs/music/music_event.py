@@ -1,9 +1,9 @@
 import datetime
 import discord
 
-from discord.ext import commands
-import humanize
 import mafic
+from discord.ext import commands
+from mafic import EndReason
 
 from ether.core.constants import Links
 from ether.core.logging import log
@@ -84,7 +84,7 @@ class MusicEvent(commands.Cog):
         reason = event.reason
         player = event.player
 
-        if reason not in ("FINISHED", "STOPPED", "REPLACED"):
+        if reason not in (EndReason.REPLACED, EndReason.STOPPED, EndReason.FINISHED):
             if channel := player.text_channel:
                 try:
                     return await channel.send(
