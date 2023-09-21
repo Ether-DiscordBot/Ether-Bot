@@ -4,6 +4,7 @@ import random
 from discord import ApplicationContext, Embed, File, HTTPException, errors
 from discord.ext import commands
 
+from ether import __version__
 from ether.cogs.event.welcomecard import WelcomeCard
 from ether.core.db.client import Database, Guild, GuildUser
 from ether.core.logging import log
@@ -21,9 +22,10 @@ class Event(commands.Cog):
         await self.client.set_activity()
         in_container = os.environ.get("IN_DOCKER", False)
 
+        log.info(f"Ether version: \t{__version__}")
+
         log.info(f"Client Name: \t{self.client.user.name}")
         log.info(f"Client ID: \t{self.client.user.id}")
-        log.info(f"Client Disc: \t{self.client.user.discriminator}")
         log.info(f"Guild Count: \t{len(self.client.guilds)}")
 
         log.info(f"Is in container: \t{in_container}")

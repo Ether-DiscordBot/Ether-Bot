@@ -8,6 +8,7 @@ import mafic
 import nest_asyncio
 from discord.ext import commands
 
+from ether import __version__
 from ether.core.lavalink_status import lavalink_request
 from ether.core.logging import log
 
@@ -73,7 +74,9 @@ class Client(commands.Bot):
                 log.warning(f"Node ({node.label}) session is empty")
 
     async def set_activity(self):
-        await self.change_presence(activity=discord.Game(name=f"/help"))
+        await self.change_presence(
+            activity=discord.Game(name=f"/help | v{__version__}")
+        )
 
     async def load_extensions(self):
         await CogManager.load_cogs(self)
