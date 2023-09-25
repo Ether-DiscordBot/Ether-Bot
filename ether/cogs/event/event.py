@@ -132,4 +132,14 @@ class Event(commands.Cog):
                 ephemeral=True,
             )
 
+        await ctx.respond(
+            embed=EtherEmbeds.error(
+                description=f"An error occured while executing this command, please retry later.\n If the problem persist, please contact the support.\n\n Error: `{error.__class__.__name__}({error})`"
+            ),
+            ephemeral=True,
+        )
+
+        log.error(f"Error on command {ctx.command}")
+        log.error(f" => Value: {ctx.value}")
+        log.error(f" => Options: {ctx.options}")
         raise error
