@@ -100,43 +100,6 @@ class Music(commands.Cog, name="music"):
                 delete_after=5,
             )
 
-    @music.command(name="join")
-    @commands.guild_only()
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def join(self, ctx: ApplicationContext):
-        """Connect the bot to your voice channel"""
-
-        await ctx.respond(
-            embed=Embed(description=f"`{ctx.author.voice.channel}` joined")
-        )
-
-    @music.command(name="leave")
-    @commands.guild_only()
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def leave(self, ctx: ApplicationContext):
-        """Disconnect the bot from your voice channel"""
-
-        player: EtherPlayer = ctx.guild.voice_client
-        if not player:
-            return
-
-        if not ctx.voice_client:
-            return await ctx.send(embed=EtherEmbeds.error("Not connected."))
-
-        if not ctx.author.voice or (
-            player.is_connected
-            and ctx.author.voice.channel.id != int(player.channel.id)
-        ):
-
-            return await ctx.send("You're not in my voicechannel!")
-
-        player.queue.clear()
-        await player.stop()
-        await ctx.voice_client.disconnect(force=True)
-        await ctx.respond(
-            embed=Embed(description=f"`{ctx.author.voice.channel}` leave")
-        )
-
     @commands.slash_command(name="play")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
