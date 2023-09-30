@@ -10,6 +10,7 @@ class EtherPlayer(Player[discord.Bot]):
         super().__init__(client, channel)
 
         self.queue: Queue = Queue()
+        self.loop: bool = False
 
 
 class Queue(list[Track]):

@@ -2,7 +2,7 @@ import datetime
 import discord
 
 import mafic
-from discord.ext import commands
+from discord.ext import commands, tasks
 from mafic import EndReason
 
 from ether.core.constants import Links
@@ -26,6 +26,28 @@ def format_td(td):
 class MusicEvent(commands.Cog):
     def __init__(self, client) -> None:
         self.client = client
+
+        self.update_lavalink_nodes.start()
+
+    @tasks.loop(hours=6)
+    async def update_lavalink_nodes(self):
+        if not self.client.lavalink_ready_ran:
+            return
+
+        await self.client.start_lavalink_node()
+
+        if len(self.client.pool.nodes) > 3:
+            log.info("Removing a node...")
+            older_node = None
+            for node in self.client.pool.nodes:
+                if not older_node:
+                    older_node = node
+                    continue
+                if node.stats and node.stats.uptime < older_node.stats.uptime:
+                    older_node = node
+
+            await self.client.pool.remove_node(older_node, transfer_players=True)
+            log.info(f"Node {older_node.label} removed")
 
     @commands.Cog.listener()
     async def on_track_start(self, event: mafic.TrackStartEvent):
@@ -102,7 +124,9 @@ class MusicEvent(commands.Cog):
                 pass
             delattr(player, "message")
 
-        if player.queue and not reason == "REPLACED":
+        if player.loop:
+            await player.play(player.current)
+        elif player.queue and not reason == "REPLACED":
             await player.play(player.queue.pop(0))
         elif not player.queue:
             await player.disconnect()
@@ -162,7 +186,5 @@ class MusicEvent(commands.Cog):
             return await player.stop()
 
     @commands.Cog.listener()
-    async def on_web_socket_closed(self, _event):
-        self.lavalink_ready_ran = False
-        await self.client.start_lavalink_node()
-        log.info("Lavalink node restarted.")
+    async def on_node_ready(self, node: mafic.Node):
+        log.info(f"Node {node.label} is ready")

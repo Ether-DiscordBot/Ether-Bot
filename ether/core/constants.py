@@ -1,4 +1,7 @@
 # COLORS
+import random
+
+
 class Colors:
 
     DEFAULT = 0x5865F2
@@ -60,3 +63,37 @@ class Other:
 
     AUTHOR_ID = 398763512052056064
     MAIN_CLIENT_ID = 985100792270819389
+
+
+class NODE_CODE_NAME:
+    CODES = [
+        "AWESOME",
+        "BEAST",
+        "COBRA",
+        "DARKNESS",
+        "ELITE",
+        "FEARLESS",
+        "GHOST",
+        "HUNTER",
+        "ICE",
+        "INCREDIBLE",
+        "JACKPOT",
+        "KILLER",
+        "LEGEND",
+        "MASTER",
+        "NOVA",
+        "OMEGA",
+        "PIERCING",
+        "QUAKE",
+        "REVOLUTION",
+        "SENTINEL",
+        "TITAN",
+        "ULTIMATE",
+        "VICTORY",
+        "WARRIOR",
+        "X-RAY",
+    ]
+
+    @classmethod
+    def get_random(cls):
+        return random.choice(cls.CODES)

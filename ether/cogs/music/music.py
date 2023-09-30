@@ -216,6 +216,15 @@ class Music(commands.Cog, name="music"):
         if not player:
             return
 
+        if not player.connected:
+            await ctx.respond(
+                embed=EtherEmbeds.error(
+                    description="Player is not connected to a voice channel"
+                ),
+                delete_after=5,
+            )
+            return
+
         player.queue.clear()
         await player.stop()
 
@@ -341,6 +350,26 @@ class Music(commands.Cog, name="music"):
             )
 
         return await ctx.respond(embed=embed)
+
+    @music.command(name="loop")
+    @commands.guild_only()
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def loop(self, ctx: ApplicationContext):
+        """Loop the current song"""
+
+        player: EtherPlayer = ctx.guild.voice_client
+
+        if not player:
+            return
+
+        if not player.loop:
+            player.loop = True
+            await ctx.respond(embed=Embed(description="🔁 Loop enabled"), delete_after=5)
+        else:
+            player.loop = False
+            await ctx.respond(
+                embed=Embed(description="🔁 Loop disabled"), delete_after=5
+            )
 
     @music.command(name="playlist")
     @commands.guild_only()

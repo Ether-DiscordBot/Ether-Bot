@@ -32,7 +32,7 @@ class Event(commands.Cog):
 
         log.info(f"Global slash commands: {config.bot.get('global')}")
 
-        await self.client.start_lavalink_node()
+        await self.client.start_lavalink_node(init=True)
 
         init_i18n(self.client)
 

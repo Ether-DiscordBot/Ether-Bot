@@ -12,14 +12,12 @@ config.validators.register(
     Validator("bot.token", must_exist=True),
     Validator("bot.debugGuilds", "bot.global", must_exist=None),
     Validator("database.mongodb.uri", must_exist=None),
+    Validator("lavalink.default_node", must_exist=True),
     Validator(
-        "lavalink.host",
-        "lavalink.port",
-        "lavalink.pass",
-        "lavalink.https",
+        "lavalink.nodes",
         must_exist=None,
+        condition=lambda x: len(x) > 0,
     ),
-    Validator("reddit.client.id", "reddit.client.secret", must_exist=None),
     Validator(
         "api.giphy.key",
         "api.youtube.key",

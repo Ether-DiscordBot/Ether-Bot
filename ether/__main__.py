@@ -1,5 +1,6 @@
 import asyncio
 import os
+import random
 import sys
 import signal
 
@@ -9,8 +10,10 @@ import nest_asyncio
 from discord.ext import commands
 
 from ether import __version__
+from ether.core.constants import NODE_CODE_NAME
 from ether.core.lavalink_status import lavalink_request
 from ether.core.logging import log
+from ether.core.voice_client import EtherPlayer
 
 nest_asyncio.apply()
 
@@ -50,28 +53,58 @@ class Client(commands.Bot):
 
         self.pool = mafic.NodePool(self)
 
-    async def start_lavalink_node(self):
-        if config.lavalink.get("https"):
+    async def start_lavalink_node(self, init: bool = False):
+        if config.lavalink.get("secure"):
             r = lavalink_request(timeout=20.0, in_container=self.in_container)
         else:
             r = 0
 
         if r != 0:
             await self.remove_cog("cogs.music")
-        elif not self.lavalink_ready_ran:
-            node = await self.pool.create_node(
-                host=config.lavalink.get("host"),
-                port=config.lavalink.get("port"),
-                label="MAIN",
-                password=config.lavalink.get("pass"),
-                secure=config.lavalink.get("https"),
-            )
-            self.lavalink_ready_ran = True
+        elif (not self.lavalink_ready_ran and init) or not init:
+            log.info("Creating a new lavalink node...")
 
-            log.info("Lavalink node created")
-            log.info(f"\tNode {node.label}: {node.host}:{node.port}")
-            if not hasattr(node, "session"):
-                log.warning(f"Node ({node.label}) session is empty")
+            config_node = config.lavalink.get("default_node")
+            if not init:
+                config_nodes = config.lavalink.get("nodes")
+
+                for node in self.pool.nodes:
+                    for config_node in config_nodes:
+                        if node.host == config_node.get(
+                            "host"
+                        ) and node.port == config_node.get("port"):
+                            config_nodes.remove(config_node)
+                            continue
+
+                if len(config_nodes) <= 0:
+                    log.warning(
+                        "All hosts are already used, switching to the default one"
+                    )
+                    config_node = config.lavalink.get("default_node")
+                else:
+                    config_node = random.choice(config_nodes)
+
+            try:
+                node = await self.pool.create_node(
+                    host=config_node.get("host"),
+                    port=config_node.get("port"),
+                    label=NODE_CODE_NAME.get_random(),
+                    password=config_node.get("pass"),
+                    secure=config_node.get("secure"),
+                    player_cls=EtherPlayer,
+                )
+                self.lavalink_ready_ran = True
+
+                log.info(f"Node {node.label} created")
+                log.info(f"\tHost: {node.host}:{node.port}")
+
+                return node
+            except Exception as e:
+                log.error(
+                    f"Failed to create a lavalink node ({config_node.host}:{config_node.port}): {e}"
+                )
+
+        return None
 
     async def set_activity(self):
         await self.change_presence(
