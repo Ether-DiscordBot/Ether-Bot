@@ -13,6 +13,10 @@ config.validators.register(
     Validator("bot.debugGuilds", "bot.global", must_exist=None),
     Validator("database.mongodb.uri", must_exist=None),
     Validator("lavalink.default_node", must_exist=True),
+    Validator("lavalink.default_node.host", must_exist=True),
+    Validator("lavalink.default_node.port", must_exist=True),
+    Validator("lavalink.default_node.pass", must_exist=True),
+    Validator("lavalink.default_node.secure", must_exist=True),
     Validator(
         "lavalink.nodes",
         must_exist=None,
