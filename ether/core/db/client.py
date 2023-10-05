@@ -65,6 +65,8 @@ class Database:
 
         @staticmethod
         async def get_or_none(guild_id: int):
+            print(Guild.id)
+
             guild = await Guild.find_one(Guild.id == guild_id)
             if guild:
                 return guild

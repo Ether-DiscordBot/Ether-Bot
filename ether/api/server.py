@@ -42,10 +42,25 @@ class ServerThread(threading.Thread):
         return (
             make_response(jsonify({"ensure": True}), 200)
             if user_result
-            else make_response(
-                jsonify({"error": "Could not identify the user"}), 401
-            )
+            else make_response(jsonify({"error": "Could not identify the user"}), 401)
         )
+
+    @app.route("/api/music/current", methods=["GET"])
+    def get_current(self):
+        guild_id = request.args.get("guild_id")
+        access_token = request.args.get("access_token")
+
+        # Check if the guild exists
+        guild = app.bot.get_guild(int(guild_id))
+        if not guild:
+            return make_response(jsonify({"error": "Could not find the guild"}), 404)
+
+        # Identify the user
+        user_result = self.login(access_token)
+        if not user_result:
+            return make_response(jsonify({"error": "Could not identify the user"}), 401)
+
+        return make_response(jsonify({"current": guild.voice_client.is_playing()}), 200)
 
     @app.route("/api/music/play", methods=["POST"])
     def play(self):

@@ -10,15 +10,14 @@ urllib3==2.0.6
 virtualenv==20.24.5
 python-dotenv==1.0.0
 dnspython==2.4.2
-# pillow-simd==9.0.0.post1 # Pillow-SIMD installation doesn't work on windows, use pillow instead
-pillow==10.0.0
+pillow==10.0.1
 aiohttp==3.8.5
 rich==13.5.2
 pynacl==1.5.0
 motor[srv]==3.3.1
-beanie==1.22.5
+beanie==1.22.6
 pydantic==1.10.12
-nest_asyncio==1.5.7
+nest_asyncio==1.5.8
 howlongtobeatpy==1.0.5
 dynaconf==3.2.2
 # pycord18n==1.0.3

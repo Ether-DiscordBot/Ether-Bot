@@ -201,14 +201,18 @@ class CardHandler:
             outline=(255, 255, 255),
         )
 
-        level_size = draw.textsize(
-            str(db_guild_user.levels), font=CardHandler.LEVEL_FONT
+        level_size_width = draw.textlength(
+            str(db_guild_user.levels), CardHandler.LEVEL_FONT, "rtl"
+        )
+
+        level_size_height = draw.textlength(
+            str(db_guild_user.levels), CardHandler.LEVEL_FONT, "ttb"
         )
 
         draw.text(
             xy=(
-                228 + exp_advancement - (level_size[0] / 2) + 3,
-                162 - (level_size[1] / 2),
+                228 + exp_advancement - (level_size_width / 2) + 3,
+                162 - (level_size_height / 2),
             ),
             text=f"{db_guild_user.levels}",
             fill=(64, 64, 64),
@@ -227,7 +231,9 @@ class CardHandler:
         # Discriminator
         draw.text(
             xy=(
-                228 + CardHandler.BASE_FONT.getsize(f"{user.name[:20]}")[0] + 5,
+                228
+                + CardHandler.BASE_FONT.getlength(f"{user.name[:20]}", direction="rtl")
+                + 5,
                 101,
             ),
             text=f"#{user.discriminator}",
@@ -236,7 +242,9 @@ class CardHandler:
         )
 
         # Experience
-        exp_size = draw.textsize(str(db_guild_user.exp), CardHandler.EXP_FONT)
+        exp_size_width = draw.textlength(
+            str(db_guild_user.exp), CardHandler.EXP_FONT, "rtl"
+        )
         draw.text(
             xy=(228, 183),
             text=f"{db_guild_user.exp}",
@@ -244,7 +252,7 @@ class CardHandler:
             font=CardHandler.EXP_FONT,
         )
         draw.text(
-            xy=(228 + exp_size[0], 183),
+            xy=(228 + exp_size_width, 183),
             text=f"/{LevelsHandler.get_next_level(db_guild_user.levels)}exp",
             fill=(175, 175, 175),
             font=CardHandler.EXP_FONT,

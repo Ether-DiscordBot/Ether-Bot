@@ -1,5 +1,4 @@
 import datetime
-from random import shuffle
 import re
 
 import requests
@@ -103,18 +102,20 @@ class Music(commands.Cog, name="music"):
     @commands.slash_command(name="play")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def _play(self, ctx: ApplicationContext, *, query: str):
+    async def _play(
+        self, ctx: ApplicationContext, *, query: str, shuffle: bool = False
+    ):
         """Play a song from YouTube
 
         query:
             The song to search or play
         """
-        await ctx.invoke(self.play, query=query)
+        await ctx.invoke(self.play, query=query, shuffle=shuffle)
 
     @music.command(name="play")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def play(self, ctx: ApplicationContext, *, query: str):
+    async def play(self, ctx: ApplicationContext, *, query: str, shuffle: bool = False):
         """Play a song from YouTube (the same as /play)
 
         query:
@@ -140,6 +141,9 @@ class Music(commands.Cog, name="music"):
         if isinstance(tracks, mafic.Playlist):
             playlist_tracks = tracks.tracks
             player.queue.extend(playlist_tracks)
+
+            if shuffle:
+                player.queue.shuffle()
 
             await ctx.respond(
                 embed=Embed(
@@ -258,7 +262,7 @@ class Music(commands.Cog, name="music"):
         if not player:
             return
 
-        player.queue = shuffle(player.queue)
+        player.queue.shuffle()
 
         await ctx.respond(
             embed=Embed(

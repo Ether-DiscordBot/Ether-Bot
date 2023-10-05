@@ -1,3 +1,4 @@
+import random
 from typing import Self
 
 import discord
@@ -26,3 +27,6 @@ class Queue(list[Track]):
 
     def copy(self) -> Self:
         return Queue(self)
+
+    def shuffle(self) -> None:
+        random.shuffle(self)

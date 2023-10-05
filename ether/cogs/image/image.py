@@ -84,7 +84,7 @@ class Image(commands.Cog, name="image"):
 
 class ImageModifier:
     FONT = ImageFont.truetype(
-        os.path.abspath("ether/assets/fonts/Inter-Medium.ttf"), 30
+        font=os.path.abspath("ether/assets/fonts/Inter-Medium.ttf"), size=30
     )
 
     def __init__(self, template_path: str) -> None:
@@ -103,7 +103,7 @@ class ImageModifier:
 
         sentences = re.finditer(".{0," + str(max_words) + "}(\s+|$)", text)
 
-        height = draw.textsize("A", ImageModifier.FONT)[1] + 5
+        height = draw.textlength(text, ImageModifier.FONT, "ttb") + 5
         i = 0
         for match in sentences:
             splitted = match.group().split("\\n")
