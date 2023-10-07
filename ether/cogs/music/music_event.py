@@ -187,7 +187,9 @@ class MusicEvent(commands.Cog):
             and len(before.channel.members) <= 1
         ):
             player: EtherPlayer = member.guild.voice_client
-            return await player.stop()
+            if player:
+                return await player.stop()
+            return
 
     @commands.Cog.listener()
     async def on_node_ready(self, node: mafic.Node):
