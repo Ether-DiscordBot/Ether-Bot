@@ -64,6 +64,10 @@ class MusicEvent(commands.Cog):
             except discord.errors.NotFound:
                 pass
 
+        if not hasattr(player, "current"):
+            # Used because something weird appears sometimes
+            log.error(f"Player ({type(player)}) has no attribute current track !")
+
         if hasattr(player, "text_channel") and player.text_channel:
             try:
                 channel = player.text_channel
@@ -71,7 +75,7 @@ class MusicEvent(commands.Cog):
                 td = datetime.timedelta(milliseconds=track.length)
                 length = format_td(td)
 
-                range_pointer_pos = min(int((60000 / player.current.length) * 30), 30)
+                range_pointer_pos = min(int((60000 / track.length) * 30), 30)
 
                 range = ["─"] * 30
                 range[:range_pointer_pos] = "░" * range_pointer_pos
