@@ -132,8 +132,6 @@ class MusicEvent(commands.Cog):
             await player.play(player.current)
         elif player.queue and not reason == "REPLACED":
             await player.play(player.queue.pop(0))
-        elif not player.queue:
-            await player.disconnect()
 
     @commands.Cog.listener()
     async def on_node_stats(self, node: mafic.Node):
@@ -173,23 +171,13 @@ class MusicEvent(commands.Cog):
             setattr(player, "message", edited_message)
 
     @commands.Cog.listener()
-    async def on_voice_state_update(self, member, before, after):
-        if (  # Check if the bot was move to an empty channel
-            member.id == self.client.user.id
-            and after.channel
-            and len(after.channel.members) <= 1
-        ) or (  # Check is nobody is in the channel
-            before
-            and before.channel
-            and not member.bot
-            and member.guild.me.voice
-            and (before.channel.id == member.guild.me.voice.channel.id)
-            and len(before.channel.members) <= 1
-        ):
+    async def on_voice_state_update(self, member, _before, _after):
+        if member.guild.me.voice and len(member.guild.me.voice.channel.members) <= 1:
             player: EtherPlayer = member.guild.voice_client
-            if player:
-                return await player.stop()
-            return
+            if not player:
+                return
+
+            await player.disconnect(force=True)
 
     @commands.Cog.listener()
     async def on_node_ready(self, node: mafic.Node):

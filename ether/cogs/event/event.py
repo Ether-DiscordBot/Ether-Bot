@@ -90,12 +90,11 @@ class Event(commands.Cog):
 
     @commands.Cog.listener()
     async def on_application_command(self, ctx):
-        # Check if have permission to send messages
-
-        if random.randint(1, 100) <= 5:
+        if random.randint(1, 100) <= 1:
             embed = Embed(
-                title="Support us!",
-                description="Ether is a free and open source bot, if you like it, please vote for the bot on [Top.gg](https://top.gg/bot/985100792270819389) and consider supporting us on [Ko-fi](https://ko-fi.com/holycrusader)!",
+                title="Support us (we need money)!",
+                description="Ether is a free and open source bot, please vote for the bot on [Top.gg](https://top.gg/bot/985100792270819389) and consider supporting us on [Ko-fi](https://ko-fi.com/holycrusader)!\n"
+                "(we only need 7$ per month to keep the bot running)",
                 color=0x2F3136,
             )
 
