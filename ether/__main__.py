@@ -70,6 +70,13 @@ class Client(commands.Bot):
 
                 for node in self.pool.nodes:
                     for config_node in config_nodes:
+
+                        if not type(config_node) != dict:
+                            log.warning(
+                                f"Invalid type for the config node variable:\n{config_node}"
+                            )
+                            continue
+
                         if node.host == config_node.get(
                             "host"
                         ) and node.port == config_node.get("port"):
