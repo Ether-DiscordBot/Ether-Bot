@@ -71,9 +71,9 @@ class Client(commands.Bot):
                 for node in self.pool.nodes:
                     for config_node in config_nodes:
 
-                        if not type(config_node) != dict:
+                        if not isinstance(config_node, dict):
                             log.warning(
-                                f"Invalid type for the config node variable:\n{config_node}"
+                                f"Invalid type for the config node variable (type: {type(config_node)}):\n{config_node}"
                             )
                             continue
 
