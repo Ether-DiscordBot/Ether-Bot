@@ -50,6 +50,11 @@ class MusicEvent(commands.Cog):
             log.info(f"Node {older_node.label} removed")
 
     @commands.Cog.listener()
+    async def on_node_unvailable(self, node: mafic.Node):
+        await self.client.pool.remove_node(node, transfer_players=True)
+        log.warn(f"Node {node.label} is unavailable and has been removed")
+
+    @commands.Cog.listener()
     async def on_track_start(self, event: mafic.TrackStartEvent):
         """When a track starts, the bot sends a message in the channel where the command was sent.
         The channel is taken on the object of the track and the message are saved in the player.
