@@ -98,6 +98,7 @@ class MusicEvent(commands.Cog):
                     url=f"http://i.ytimg.com/vi/{track.identifier}/mqdefault.jpg"
                 )
                 embed.set_author(name=track.author, icon_url=Links.VINYL_GIF_URL)
+                embed.set_footer(text=f"{player.node.label} ({player.node.host})")
 
                 message: discord.Message = await channel.send(embed=embed)
                 setattr(player, "message", message)
@@ -117,14 +118,13 @@ class MusicEvent(commands.Cog):
 
         if reason not in (EndReason.REPLACED, EndReason.STOPPED, EndReason.FINISHED):
             if channel := player.text_channel:
+                error_message = f"Track finished for reason `{reason}` with node `{player.node.label}`({player.node.host}:{player.node.port})"
+                log.warn(error_message)
+
                 try:
-                    return await channel.send(
-                        embed=EtherEmbeds.error(f"Track finished for reason `{reason}`")
-                    )
+                    return await channel.send(embed=EtherEmbeds.error(error_message))
                 except discord.errors.Forbidden:
                     return
-
-            log.warn(f"Track finished for reason `{reason}`")
 
         if hasattr(player, "message"):
             try:

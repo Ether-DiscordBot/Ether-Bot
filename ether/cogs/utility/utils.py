@@ -50,6 +50,23 @@ class Utils(commands.Cog, name="utils"):
 
     @slash_command()
     @commands.cooldown(1, 5, commands.BucketType.user)
+    async def changelog(self, ctx: ApplicationContext) -> None:
+        """Get the changelog"""
+
+        changelog = "# Latest changes\n\n"
+
+        with open("CHANGELOG.md", "r") as f:
+            lines = f.readlines()
+
+            content = "".join(lines)
+            content = content.split("##")[:5]
+
+            changelog += "##".join(content)
+
+        await ctx.respond(f"```md\n{changelog}\n```")
+
+    @slash_command()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def ping(self, ctx: ApplicationContext) -> None:
         """Pong!"""
 
