@@ -7,7 +7,7 @@ asyncpraw==7.7.1
 pymongo==4.5.0
 requests==2.31.0
 twine==4.0.2
-urllib3==2.0.6
+urllib3==2.0.7
 virtualenv==20.24.5
 python-dotenv==1.0.0
 dnspython==2.4.2

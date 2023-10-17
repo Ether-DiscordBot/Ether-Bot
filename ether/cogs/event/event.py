@@ -11,6 +11,7 @@ from ether.core.logging import log
 from ether.core.i18n import init_i18n
 from ether.core.config import config
 from ether.core.utils import EtherEmbeds
+from ether.core.voice_client import EtherPlayer
 
 
 class Event(commands.Cog):
@@ -89,7 +90,7 @@ class Event(commands.Cog):
                     )
 
     @commands.Cog.listener()
-    async def on_application_command(self, ctx):
+    async def on_application_command_completion(self, ctx):
         if random.randint(1, 100) <= 1:
             embed = Embed(
                 title="Support us (we need money)!",
@@ -131,6 +132,20 @@ class Event(commands.Cog):
                 ephemeral=True,
             )
 
+        if (
+            isinstance(error, RuntimeError)
+            and error.args[0]
+            == "Websocket is not connected but attempted to listen, report this."
+        ):
+            player: EtherPlayer = ctx.guild.voice_client
+
+            if player:
+                log.error(
+                    f"Lavalink Runtime error with node {player.node.label}({player.node.host}:{player.node.port})"
+                )
+                log.error(f"\t => Available: {player.node.available}")
+                log.error(f"\t => Uptime: {player.node.stats.uptime}")
+
         await ctx.respond(
             embed=EtherEmbeds.error(
                 description=f"An error occured while executing this command, please retry later.\n If the problem persist, please contact the support.\n\n Error: `{error.__class__.__name__}({error})`"
@@ -139,6 +154,5 @@ class Event(commands.Cog):
         )
 
         log.error(f"Error on command {ctx.command}")
-        log.error(f" => Value: {ctx.value}")
-        log.error(f" => Options: {ctx.options}")
+        log.error(f" => Selected options: {ctx.selected_options}")
         raise error

@@ -1,11 +1,19 @@
 import datetime
 import re
+from typing import List
 
 import requests
 import mafic
 import humanize
 from discord.ext import commands
-from discord import ApplicationContext, Embed, Member, SlashCommandGroup
+from discord import (
+    ApplicationContext,
+    Embed,
+    Member,
+    Option,
+    SlashCommandGroup,
+    OptionChoice,
+)
 
 from ether.core.i18n import _
 from ether.core.constants import Colors
@@ -87,7 +95,16 @@ class Music(commands.Cog, name="music"):
             if not isinstance(ctx.user, Member):
                 return
 
-            await ctx.user.voice.channel.connect(cls=EtherPlayer)
+            try:
+                await ctx.user.voice.channel.connect(cls=EtherPlayer)
+            except mafic.NoNodesAvailable:
+                await ctx.respond(
+                    embed=EtherEmbeds.error(
+                        "Sorry, the bot isn't ready yet, please retry later!"
+                    )
+                )
+
+                return False
 
             player: EtherPlayer = ctx.guild.voice_client
 
@@ -103,19 +120,49 @@ class Music(commands.Cog, name="music"):
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def _play(
-        self, ctx: ApplicationContext, *, query: str, shuffle: bool = False
+        self,
+        ctx: ApplicationContext,
+        *,
+        query: str,
+        shuffle: bool = False,
+        search_type=Option(
+            name="search_type",
+            choices=[
+                OptionChoice("YouTube", value="ytsearch"),
+                OptionChoice("YouTube Music", value="ytmsearch"),
+                OptionChoice("SoundCloud", value="scsearch"),
+            ],
+            default="ytsearch",
+        ),
     ):
         """Play a song from YouTube
 
         query:
             The song to search or play
         """
-        await ctx.invoke(self.play, query=query, shuffle=shuffle)
+        await ctx.invoke(
+            self.play, query=query, shuffle=shuffle, search_type=search_type
+        )
 
     @music.command(name="play")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def play(self, ctx: ApplicationContext, *, query: str, shuffle: bool = False):
+    async def play(
+        self,
+        ctx: ApplicationContext,
+        *,
+        query: str,
+        shuffle: bool = False,
+        search_type=Option(
+            name="search_type",
+            choices=[
+                OptionChoice("YouTube", value="ytsearch"),
+                OptionChoice("YouTube Music", value="ytmsearch"),
+                OptionChoice("SoundCloud", value="scsearch"),
+            ],
+            default="ytsearch",
+        ),
+    ):
         """Play a song from YouTube (the same as /play)
 
         query:
@@ -126,8 +173,18 @@ class Music(commands.Cog, name="music"):
         if not player:
             return
 
+        await ctx.defer()
+
+        if not player.node.available:
+            await ctx.respond(
+                embed=EtherEmbeds.error(
+                    f"Sorry, the node ({player.node.label}) is not available, please retry later!"
+                )
+            )
+            return player.node.close()
+
         try:
-            tracks = await player.fetch_tracks(query)
+            tracks = await player.fetch_tracks(query, search_type=search_type)
         except mafic.errors.TrackLoadException:
             return await ctx.respond(
                 embed=EtherEmbeds.error(

@@ -52,7 +52,7 @@ class MusicEvent(commands.Cog):
     @commands.Cog.listener()
     async def on_node_unvailable(self, node: mafic.Node):
         await self.client.pool.remove_node(node, transfer_players=True)
-        log.warn(f"Node {node.label} is unavailable and has been removed")
+        log.warning(f"Node {node.label} is unavailable and has been removed")
 
     @commands.Cog.listener()
     async def on_track_start(self, event: mafic.TrackStartEvent):
@@ -183,6 +183,25 @@ class MusicEvent(commands.Cog):
                 return
 
             await player.disconnect(force=True)
+
+            if hasattr(player, "message"):
+                try:
+                    await player.message.delete()
+                except discord.errors.NotFound:
+                    pass
+                delattr(player, "message")
+
+        if not member.guild.me.voice and member.guild.voice_client:
+            player: EtherPlayer = member.guild.voice_client
+            if not player:
+                return
+
+            if hasattr(player, "message"):
+                try:
+                    await player.message.delete()
+                except discord.errors.NotFound:
+                    pass
+                delattr(player, "message")
 
     @commands.Cog.listener()
     async def on_node_ready(self, node: mafic.Node):

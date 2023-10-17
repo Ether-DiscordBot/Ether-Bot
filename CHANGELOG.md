@@ -1,3 +1,10 @@
+## 0.18.0
+- New `search_type` option for the command `play`
+- Technical changes
+    - Enhance the voice update function
+    - Fix, prevent or log things in the node music system
+    - Update urllib3 version to 2.0.7
+
 ## 0.17.0
 - New Changelog
 - Add the node label to the player and some error messages
