@@ -1,6 +1,7 @@
 import asyncio
 import os
 import random
+import subprocess
 import sys
 import signal
 import threading
@@ -133,9 +134,10 @@ def run_lavalink():
         log.error("application.yml not found")
         return
 
-    log.info("Starting Lavalink...")
+    log.info("Starting Lavalink.jar...")
 
-    os.system("cd ./lavalink & java -jar Lavalink.jar")
+    cmd = "cd ./lavalink & java -jar Lavalink.jar"
+    subprocess.check_call(cmd, shell=True)
 
 
 def signal_handler(sig, frame):
