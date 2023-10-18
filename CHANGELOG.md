@@ -1,5 +1,6 @@
 ## 0.19.1
 - Fix logging in `on_ready`
+- Log an error if some lavalink files are not found
 
 ## 0.19.0
 - Ether disconnect when using the command `stop`

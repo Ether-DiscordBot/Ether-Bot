@@ -124,6 +124,13 @@ class Client(commands.Bot):
 
 
 def run_lavalink():
+    # check if the lavalink.jar file exists
+    if not os.path.isfile("./lavalink/Lavalink.jar"):
+        log.error("Lavalink.jar not found")
+
+    if not os.path.isfile("./lavalink/application.yml"):
+        log.error("application.yml not found")
+
     os.system("cd ./lavalink & java -jar Lavalink.jar")
 
 
