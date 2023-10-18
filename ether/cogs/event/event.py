@@ -35,12 +35,18 @@ class Event(commands.Cog):
         | (___ | |_ | | | |(  ___/| |   
         (____/ \__) (_) (_) \____)(_)
 
-        Version:        {__version__}
+        Version:        {__version__}"""
+            + (
+                f"""
         Commit:         {repo["commit"][:7]}
         Commit Date:    {repo["author_date"]}
         Author:         {repo["author"]}
         Branch:         {repo["refs"]}
-        
+        """
+                if repo
+                else ""
+            )
+            + f"""
         Client Name:    {self.client.user.name}
         Client ID:      {self.client.user.id}
         Guild Count:    {len(self.client.guilds)}
