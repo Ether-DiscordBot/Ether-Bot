@@ -1,3 +1,9 @@
+## 0.19.0
+- Ether disconnect when using the command `stop`
+- Some big technical changes
+    - Ether is now running lavalink by itself beside the bot
+    - New logging in `on_ready`
+
 ## 0.18.0
 - New `search_type` option for the command `play`
 - Technical changes

@@ -3,6 +3,7 @@ import random
 
 from discord import ApplicationContext, Embed, File, HTTPException, errors
 from discord.ext import commands
+import gitinfo
 
 from ether import __version__
 from ether.cogs.event.welcomecard import WelcomeCard
@@ -23,15 +24,30 @@ class Event(commands.Cog):
         await self.client.set_activity()
         in_container = os.environ.get("IN_DOCKER", False)
 
-        log.info(f"Ether version: \t{__version__}")
+        repo = gitinfo.get_git_info()
 
-        log.info(f"Client Name: \t{self.client.user.name}")
-        log.info(f"Client ID: \t{self.client.user.id}")
-        log.info(f"Guild Count: \t{len(self.client.guilds)}")
+        log.info(
+            f"""\n\n
+         ____   _   _                  
+        ( ,__\ ( )_ ( )                 
+        | (_   | ,_)| |__     __   ____ 
+        | ,_)  | |  |  _  \ /'__`\(  __)
+        | (___ | |_ | | | |(  ___/| |   
+        (____/ \__) (_) (_) \____)(_)
 
-        log.info(f"Is in container: \t{in_container}")
-
-        log.info(f"Global slash commands: {config.bot.get('global')}")
+        Version:        {__version__}
+        Commit:         {repo["commit"][:7]}
+        Commit Date:    {repo["author_date"]}
+        Author:         {repo["author"]}
+        Branch:         {repo["refs"]}
+        
+        Client Name:    {self.client.user.name}
+        Client ID:      {self.client.user.id}
+        Guild Count:    {len(self.client.guilds)}
+        In container:   {in_container}
+        Global SC:      {config.bot.get('global')}
+        """
+        )
 
         await self.client.start_lavalink_node(init=True)
 

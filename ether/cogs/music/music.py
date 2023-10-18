@@ -253,6 +253,7 @@ class Music(commands.Cog, name="music"):
         await player.stop()
 
         await ctx.respond(embed=Embed(description="🛑 Stopped"), delete_after=5)
+        await player.disconnect()
 
     @music.command(name="pause")
     @commands.guild_only()

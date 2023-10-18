@@ -3,6 +3,7 @@ import os
 import random
 import sys
 import signal
+import threading
 
 import discord
 import mafic
@@ -65,7 +66,7 @@ class Client(commands.Bot):
             log.info("Creating a new lavalink node...")
 
             config_node = config.lavalink.get("default_node")
-            if not init:
+            if not init and config.lavalink.get("nodes"):
                 config_nodes = config.lavalink.get("nodes")
 
                 for node in self.pool.nodes:
@@ -122,6 +123,10 @@ class Client(commands.Bot):
         await CogManager.load_cogs(self)
 
 
+def run_lavalink():
+    os.system("cd ./lavalink & java -jar Lavalink.jar")
+
+
 def signal_handler(sig, frame):
     # Exit the program
     print("\033[35mProcess killed by user\033[0m")
@@ -140,6 +145,10 @@ def main():
     server_thread = ServerThread(port=config.server.get("port"), bot=bot)
     threads.append(server_thread)
     server_thread.start()
+
+    threading.Thread(target=run_lavalink).start()
+
+    asyncio.run(asyncio.sleep(10))
 
     asyncio.run(bot.load_extensions())
     bot.run(config.bot.get("token"))
