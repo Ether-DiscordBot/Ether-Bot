@@ -50,7 +50,6 @@ class Event(commands.Cog):
         Client Name:    {self.client.user.name}
         Client ID:      {self.client.user.id}
         Guild Count:    {len(self.client.guilds)}
-        In container:   {in_container}
         Global SC:      {config.bot.get('global')}
         """
         )

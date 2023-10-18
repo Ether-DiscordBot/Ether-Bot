@@ -39,7 +39,6 @@ subprocesses = []
 
 class Client(commands.Bot):
     def __init__(self):
-        self.in_container: bool = os.environ.get("IN_DOCKER", False)
         self.lavalink_ready_ran = False
 
         intents = discord.Intents().all()
@@ -152,6 +151,10 @@ def run_lavalink():
         shell=True,
     )
     subprocesses.append(process)
+
+    with process as proc:
+        for line in proc.stdout:
+            print(line.strip())
 
 
 def signal_handler(sig, frame):
