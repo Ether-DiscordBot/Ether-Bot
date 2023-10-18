@@ -176,10 +176,9 @@ def main():
     # threads.append(server_thread)
     # server_thread.start()
 
-    # threading.Thread(target=run_lavalink).start()
-    run_lavalink()
+    threading.Thread(target=run_lavalink).start()
 
-    asyncio.run(asyncio.sleep(10))
+    asyncio.run(asyncio.sleep(15))
 
     asyncio.run(bot.load_extensions())
     bot.run(config.bot.get("token"))

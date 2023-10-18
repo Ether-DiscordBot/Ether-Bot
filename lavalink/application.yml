@@ -75,7 +75,7 @@ logging:
 
   level:
     root: WARN
-    lavalink: WARN
+    lavalink: INFO
 
   request:
     enabled: true
