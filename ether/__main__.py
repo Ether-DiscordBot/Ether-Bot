@@ -27,6 +27,7 @@ from ether.api.server import ServerThread
 init_database(config.database.mongodb.get("uri"))
 
 threads = []
+subprocesses = []
 
 
 #
@@ -125,19 +126,31 @@ class Client(commands.Bot):
 
 
 def run_lavalink():
+    base_dir = os.path.dirname(os.path.realpath(__file__))
+    lavalink_dir = os.path.join(
+        os.path.abspath(os.path.join(base_dir, os.pardir)), "lavalink"
+    )
+
     # check if the lavalink.jar file exists
-    if not os.path.isfile("./lavalink/Lavalink.jar"):
+    if not os.path.isfile(f"{lavalink_dir}/Lavalink.jar"):
         log.error("Lavalink.jar not found")
         return
 
-    if not os.path.isfile("./lavalink/application.yml"):
+    if not os.path.isfile(f"{lavalink_dir}/application.yml"):
         log.error("application.yml not found")
         return
 
     log.info("Starting Lavalink.jar...")
 
-    cmd = "cd ./lavalink & java -jar Lavalink.jar"
-    subprocess.check_call(cmd, shell=True)
+    cmd = f"cd {lavalink_dir} & java -jar Lavalink.jar"
+    process = subprocess.Popen(
+        cmd.split(" "),
+        stdout=subprocess.PIPE,
+        close_fds=True,
+        universal_newlines=True,
+        shell=True,
+    )
+    subprocesses.append(process)
 
 
 def signal_handler(sig, frame):
@@ -155,11 +168,12 @@ def main():
     global bot
     bot = Client()
 
-    server_thread = ServerThread(port=config.server.get("port"), bot=bot)
-    threads.append(server_thread)
-    server_thread.start()
+    # server_thread = ServerThread(port=config.server.get("port"), bot=bot)
+    # threads.append(server_thread)
+    # server_thread.start()
 
-    threading.Thread(target=run_lavalink).start()
+    # threading.Thread(target=run_lavalink).start()
+    run_lavalink()
 
     asyncio.run(asyncio.sleep(10))
 
