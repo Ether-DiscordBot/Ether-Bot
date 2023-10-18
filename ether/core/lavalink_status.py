@@ -8,15 +8,17 @@ from ether.core.logging import log
 def lavalink_request(timeout=10.0, in_container: bool = False):
     log.info("Checking lavalink socket status...")
     start_time = time.perf_counter()
+    config_node = config.lavalink.get("default_node")
+
     while True:
-        if config.lavalink.get("https"):
+        if config_node.get("secure"):
             break
         try:
             with socket.create_connection(
                 # If is in docker: host = lavalink
                 (
-                    "lavalink" if in_container else config.lavalink.get("host"),
-                    config.lavalink.get("port"),
+                    "lavalink" if in_container else config_node.get("host"),
+                    config_node.get("port"),
                 ),
                 timeout=timeout,
             ):

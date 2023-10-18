@@ -57,6 +57,7 @@ class Client(commands.Bot):
         self.pool = mafic.NodePool(self)
 
     async def start_lavalink_node(self, init: bool = False):
+        lavalink_request()
         if config.lavalink.get("secure"):
             r = lavalink_request(timeout=20.0, in_container=self.in_container)
         else:
