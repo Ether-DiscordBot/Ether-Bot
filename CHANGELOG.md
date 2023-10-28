@@ -1,3 +1,8 @@
+## 0.19.2
+- Hot Fix
+    - Better handling of track finished for bad reasons
+    - Fix the `pause` command
+
 ## 0.19.1
 - Fix logging in `on_ready`
 - Log an error if some lavalink files are not found

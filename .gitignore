@@ -149,3 +149,6 @@ ENV/
 # Project config file
 config.toml
 .secrets.toml
+
+# Lavalink
+lavalink/logs

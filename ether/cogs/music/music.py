@@ -264,14 +264,14 @@ class Music(commands.Cog, name="music"):
         if not player:
             return
 
-        if not player.is_playing:
+        if not player.current:
             await ctx.respond(
                 embed=EtherEmbeds.error("I am not currently playing anything!"),
                 delete_after=5,
             )
             return
 
-        await player.set_pause(not player.paused)
+        await player.pause(not player.paused)
         action = "▶️ Paused" if player.paused else "⏸️ Resume"
         await ctx.respond(embed=Embed(description=action), delete_after=5)
 
@@ -290,7 +290,7 @@ class Music(commands.Cog, name="music"):
             )
             return
 
-        await player.set_pause(False)
+        await player.resume()
         await ctx.respond(embed=Embed(description="⏸️ Resume"), delete_after=5)
 
     @music.command(name="skip")

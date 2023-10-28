@@ -119,12 +119,16 @@ class MusicEvent(commands.Cog):
         if reason not in (EndReason.REPLACED, EndReason.STOPPED, EndReason.FINISHED):
             if channel := player.text_channel:
                 error_message = f"Track finished for reason `{reason}` with node `{player.node.label}`({player.node.host}:{player.node.port})"
+
+                if reason == EndReason.LOAD_FAILED:
+                    error_message = f"Failed to load track probably due to the source. This eror occured on the node `{player.node.label}`({player.node.host}:{player.node.port})"
+
                 log.warn(error_message)
 
                 try:
-                    return await channel.send(embed=EtherEmbeds.error(error_message))
+                    await channel.send(embed=EtherEmbeds.error(error_message))
                 except discord.errors.Forbidden:
-                    return
+                    pass
 
         if hasattr(player, "message"):
             try:
@@ -141,7 +145,7 @@ class MusicEvent(commands.Cog):
     @commands.Cog.listener()
     async def on_node_stats(self, node: mafic.Node):
         for player in node.players:
-            if player.current is None:
+            if not player.current:
                 await player.disconnect()
 
             if not hasattr(player, "message"):

@@ -22,7 +22,8 @@ class Event(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         await self.client.set_activity()
-        in_container = os.environ.get("IN_DOCKER", False)
+
+        self.client.dbl.submit_command()
 
         repo = gitinfo.get_git_info()
 
