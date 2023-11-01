@@ -23,7 +23,7 @@ class Event(commands.Cog):
     async def on_ready(self):
         await self.client.set_activity()
 
-        self.client.dbl.submit_command()
+        # self.client.dbl.submit_command()
 
         repo = gitinfo.get_git_info()
 

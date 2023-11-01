@@ -11,18 +11,18 @@ import mafic
 import nest_asyncio
 from discord.ext import commands
 
+nest_asyncio.apply()
+
 from ether import __version__
+from ether.core.config import config
 from ether.core.constants import NODE_CODE_NAME
 from ether.core.lavalink_status import lavalink_request
 from ether.core.logging import log
 from ether.core.voice_client import EtherPlayer
-
-nest_asyncio.apply()
-
 from ether.core.cog_manager import CogManager
-from ether.core.config import config
 from ether.core.db import init_database
 from ether.api.server import ServerThread
+from ether.core.botlist import DBLClient
 
 init_database(config.database.mongodb.get("uri"))
 
@@ -39,6 +39,7 @@ subprocesses = []
 
 class Client(commands.Bot):
     def __init__(self):
+        # self.dbl = DBLClient(self)
         self.lavalink_ready_ran = False
 
         intents = discord.Intents().all()
@@ -172,9 +173,9 @@ def main():
     global bot
     bot = Client()
 
-    # server_thread = ServerThread(port=config.server.get("port"), bot=bot)
-    # threads.append(server_thread)
-    # server_thread.start()
+    server_thread = ServerThread(port=config.server.get("port"), bot=bot)
+    threads.append(server_thread)
+    server_thread.start()
 
     threading.Thread(target=run_lavalink).start()
 

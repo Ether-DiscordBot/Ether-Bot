@@ -25,6 +25,7 @@ config.validators.register(
     Validator(
         "api.giphy.key",
         "api.youtube.key",
+        "api.dbl.key",
         must_exist=None,
     ),
     Validator("server.port", must_exist=None, default=5000),

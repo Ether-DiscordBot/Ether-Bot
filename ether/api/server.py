@@ -1,3 +1,4 @@
+from functools import wraps
 import os
 import signal
 import sys
@@ -20,55 +21,53 @@ class ServerThread(threading.Thread):
     def run(self):
         app.run(port=self.port)
 
-    def login(self, access_token):
-        r = requests.get(
-            "https://discord.com/api/oauth2/@me",
-            headers={"Authorization": f"Bearer {access_token}"},
-        )
+    def login_required(f):
+        @wraps(f)
+        def wrap(*args, **kwargs):
+            access_token = request.args.get("access_token")
+            r = requests.get(
+                "https://discord.com/api/oauth2/@me",
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
 
-        return r.json() if r.ok else False
+            if not r.ok:
+                make_response(jsonify({"error": "Could not identify the user"}), 401)
+            setattr(f, "user", r.json())
+
+            return f(*args, **kwargs)
+
+        return wrap
 
     @app.route("/api/music/ensure", methods=["GET"])
     def ensure(self):
         guild_id = request.args.get("guild_id")
-        access_token = request.args.get("access_token")
 
         # Check if the guild exists
         if not app.bot.get_guild(int(guild_id)):
             return make_response(jsonify({"error": "Could not find the guild"}), 404)
 
         # Identify the user
-        user_result = self.login(access_token)
-        return (
-            make_response(jsonify({"ensure": True}), 200)
-            if user_result
-            else make_response(jsonify({"error": "Could not identify the user"}), 401)
-        )
+        return make_response(jsonify({"ensure": True}), 200)
 
     @app.route("/api/music/current", methods=["GET"])
+    @login_required
     def get_current(self):
         guild_id = request.args.get("guild_id")
-        access_token = request.args.get("access_token")
 
         # Check if the guild exists
         guild = app.bot.get_guild(int(guild_id))
         if not guild:
             return make_response(jsonify({"error": "Could not find the guild"}), 404)
-
-        # Identify the user
-        user_result = self.login(access_token)
-        if not user_result:
-            return make_response(jsonify({"error": "Could not identify the user"}), 401)
 
         return make_response(jsonify({"current": guild.voice_client.is_playing()}), 200)
 
     @app.route("/api/music/play", methods=["POST"])
+    @login_required
     def play(self):
         guild_id = request.args.get("guild_id")
         channel_id = request.args.get("channel_id")
-        access_token = request.args.get("access_token")
         track = request.args.get("track")
-        source = request.args.get("source")
+        source = request.args.get("source")  # ytsearch, ytmsearch, scsearch
 
         # Check if the guild exists
         guild = app.bot.get_guild(int(guild_id))
@@ -85,16 +84,13 @@ class ServerThread(threading.Thread):
                 404,
             )
 
-        # Identify the user
-        user_result = self.login(access_token)
-        if not user_result:
-            return make_response(jsonify({"error": "Could not identify the user"}), 401)
+        print(track, source)
 
     @app.route("/api/music/pause", methods=["POST"])
+    @login_required
     def pause(self):
         guild_id = request.args.get("guild_id")
         channel_id = request.args.get("channel_id")
-        access_token = request.args.get("access_token")
 
         # Check if the guild exists
         guild = app.bot.get_guild(int(guild_id))
@@ -111,16 +107,11 @@ class ServerThread(threading.Thread):
                 404,
             )
 
-        # Identify the user
-        user_result = self.login(access_token)
-        if not user_result:
-            return make_response(jsonify({"error": "Could not identify the user"}), 401)
-
     @app.route("/api/music/skip", methods=["POST"])
+    @login_required
     def skip(self):
         guild_id = request.args.get("guild_id")
         channel_id = request.args.get("channel_id")
-        access_token = request.args.get("access_token")
 
         # Check if the guild exists
         guild = app.bot.get_guild(int(guild_id))
@@ -136,11 +127,6 @@ class ServerThread(threading.Thread):
                 ),
                 404,
             )
-
-        # Identify the user
-        user_result = self.login(access_token)
-        if not user_result:
-            return make_response(jsonify({"error": "Could not identify the user"}), 401)
 
     def kill(self):
         os.kill(os.getpid(), signal.SIGINT)
