@@ -74,7 +74,7 @@ logging:
     path: ./logs/
 
   level:
-    root: WARN
+    root: INFO
     lavalink: INFO
 
   request:
