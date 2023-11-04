@@ -1,6 +1,6 @@
 server: # REST and WS server
   port: 2333
-  address: 127.0.0.1
+  address: 0.0.0.0
 plugins:
 #  name: # Name of the plugin
 #    some_key: some_value # Some key-value pair for the plugin
