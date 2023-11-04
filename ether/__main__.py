@@ -142,8 +142,6 @@ def main():
     threads.append(server_thread)
     server_thread.start()
 
-    asyncio.run(asyncio.sleep(15))
-
     asyncio.run(bot.load_extensions())
     bot.run(config.bot.get("token"))
 

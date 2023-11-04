@@ -1,3 +1,9 @@
+## 0.19.3
+- Technical changes
+    - Remove the thread that run Lavalink
+    - Update the Procfile
+- Some HotFixes
+
 ## 0.19.2
 - Hot Fix
     - Better handling of track finished for bad reasons
