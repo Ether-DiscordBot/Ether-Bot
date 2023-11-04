@@ -117,16 +117,22 @@ class MusicEvent(commands.Cog):
         player = event.player
 
         if reason not in (EndReason.REPLACED, EndReason.STOPPED, EndReason.FINISHED):
-            if channel := player.text_channel:
+            if hasattr(player, "text_channel"):
+                channel = player.text_channel
                 error_message = f"Track finished for reason `{reason}` with node `{player.node.label}`({player.node.host}:{player.node.port})"
 
                 if reason == EndReason.LOAD_FAILED:
-                    error_message = f"Failed to load track probably due to the source. This eror occured on the node `{player.node.label}`({player.node.host}:{player.node.port})"
+                    error_message = f"Failed to load track probably due to the source. This error occured on the node `{player.node.label}`({player.node.host}:{player.node.port})"
 
                 log.warn(error_message)
 
                 try:
-                    await channel.send(embed=EtherEmbeds.error(error_message))
+                    await channel.send(
+                        embed=EtherEmbeds.error(
+                            error_message
+                            + "\nIf the source is YouTube, try an other source beacause YouTube is blocking some videos"
+                        )
+                    )
                 except discord.errors.Forbidden:
                     pass
 
