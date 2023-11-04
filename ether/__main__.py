@@ -1,10 +1,7 @@
 import asyncio
-import os
 import random
-import subprocess
 import sys
 import signal
-import threading
 
 import discord
 import mafic
@@ -126,38 +123,6 @@ class Client(commands.Bot):
         await CogManager.load_cogs(self)
 
 
-def run_lavalink():
-    base_dir = os.path.dirname(os.path.realpath(__file__))
-    lavalink_dir = os.path.join(
-        os.path.abspath(os.path.join(base_dir, os.pardir)), "lavalink"
-    )
-
-    # check if the lavalink.jar file exists
-    if not os.path.isfile(f"{lavalink_dir}/Lavalink.jar"):
-        log.error("Lavalink.jar not found")
-        return
-
-    if not os.path.isfile(f"{lavalink_dir}/application.yml"):
-        log.error("application.yml not found")
-        return
-
-    log.info("Starting Lavalink.jar...")
-
-    cmd = f"cd {lavalink_dir} & java -jar Lavalink.jar"
-    process = subprocess.Popen(
-        cmd.split(" "),
-        stdout=subprocess.PIPE,
-        close_fds=True,
-        universal_newlines=True,
-        shell=True,
-    )
-    subprocesses.append(process)
-
-    with process as proc:
-        for line in proc.stdout:
-            print(line.strip())
-
-
 def signal_handler(sig, frame):
     # Exit the program
     print("\033[35mProcess killed by user\033[0m")
@@ -176,8 +141,6 @@ def main():
     server_thread = ServerThread(port=config.server.get("port"), bot=bot)
     threads.append(server_thread)
     server_thread.start()
-
-    threading.Thread(target=run_lavalink).start()
 
     asyncio.run(asyncio.sleep(15))
 
