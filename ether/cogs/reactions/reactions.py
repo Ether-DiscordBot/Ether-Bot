@@ -100,7 +100,7 @@ class Reactions(commands.Cog, name="reaction"):
         if self.client.user.id != Other.MAIN_CLIENT_ID:
             return
 
-        reactions = await ReactionRole.from_guild(guild.id)
+        reactions = ReactionRole.from_guild(guild.id)
         if reactions:
             await reactions.delete()
 

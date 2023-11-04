@@ -121,6 +121,6 @@ class PlaylistEvent(commands.Cog):
         if self.client.user.id != Other.MAIN_CLIENT_ID:
             return
 
-        playlists = await Playlist.from_guild(guild.id)
+        playlists = Playlist.from_guild(guild.id)
         if playlists:
             await playlists.delete()
