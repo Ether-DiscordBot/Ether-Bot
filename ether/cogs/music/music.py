@@ -502,18 +502,46 @@ class Music(commands.Cog, name="music"):
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def equalize(
+    async def equalizer(
         self,
         ctx: ApplicationContext,
-        sub_bass: Optional[float] = None,
-        bass: Optional[float] = None,
-        low_mids: Optional[float] = None,
-        mids: Optional[float] = None,
-        high_mids: Optional[float] = None,
-        presence: Optional[float] = None,
-        brillance: Optional[float] = None,
+        sub_bass: Option(
+            float,
+            required=False,
+            description="16 - 60Hz(must be between -0.25 and 1.0)",
+        ) = None,
+        bass: Option(
+            float,
+            required=False,
+            description="60 - 250Hz (must be between -0.25 and 1.0)",
+        ) = None,
+        low_mids: Option(
+            float,
+            required=False,
+            description="250 - 500Hz (must be between -0.25 and 1.0)",
+        ) = None,
+        mids: Option(
+            float,
+            required=False,
+            description="500 - 2kHz (must be between -0.25 and 1.0)",
+        ) = None,
+        high_mids: Option(
+            float,
+            required=False,
+            description=" 2 - 4kHz (must be between -0.25 and 1.0)",
+        ) = None,
+        presence: Option(
+            float,
+            required=False,
+            description="4 - 6kHz (must be between -0.25 and 1.0)",
+        ) = None,
+        brillance: Option(
+            float,
+            required=False,
+            description="6 - 16kHz (must be between -0.25 and 1.0)",
+        ) = None,
     ):
-
+        """An equalizer with 6 bands for adjusting the volume of different frequency."""
         player: EtherPlayer = ctx.guild.voice_client
 
         if not player:
@@ -534,8 +562,10 @@ class Music(commands.Cog, name="music"):
             if not gain or not (gain >= -0.25 and gain <= 1.0):
                 return await ctx.respond(
                     embed=EtherEmbeds.error(
-                        "All values must be between `-0.25` and `1.0`."
-                    )
+                        "Values must be between `-0.25` and `1.0`."
+                    ),
+                    ephemeral=True,
+                    delete_after=5.0,
                 )
 
             bands.append(mafic.EQBand(band, gain))
@@ -543,92 +573,389 @@ class Music(commands.Cog, name="music"):
         equalizer = mafic.Equalizer(bands)
         filter = mafic.Filter(equalizer=equalizer)
 
-        await player.add_filter(filter=filter, label="equalize", fast_apply=True)
+        await player.add_filter(filter, label="equalizer")
+
+        await ctx.respond(
+            embed=Embed(description="The filter will be applied in a few seconds!"),
+            delete_after=5.0,
+        )
 
     @music_filter.command(name="karaoke")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def karaoke(self, ctx: ApplicationContext):
-
+    async def karaoke(
+        self,
+        ctx: ApplicationContext,
+        level: Option(
+            float,
+            required=False,
+            description="The level of the effect (between 0.0 and 1.0).",
+        ) = None,
+        mono_level: Option(
+            float,
+            required=False,
+            description="The level of the mono effect (between 0.0 and 1.0).",
+        ) = None,
+        filter_band: Option(
+            float,
+            required=False,
+            description="The frequency of the filter band in Hz (this defaults to 220.0).",
+        ) = None,
+        filter_width: Option(
+            float,
+            required=False,
+            description="The width of the filter band (this defaults to 100.0).",
+        ) = None,
+    ):
+        """Configure a Karaoke filter. This usually targets vocals, to sound like karaoke music."""
         player: EtherPlayer = ctx.guild.voice_client
 
         if not player:
             return
+
+        if (level and not (level <= 1.0 and level >= 0.0)) or (
+            mono_level and not (mono_level <= 1.0 and mono_level >= 0.0)
+        ):
+            return await ctx.respond(
+                embed=EtherEmbeds.error(
+                    "The level and mono_level values must be between `0.0` and `1.0`."
+                ),
+                ephemeral=True,
+                delete_after=5.0,
+            )
+
+        karaoke = mafic.Karaoke(level, mono_level, filter_band, filter_width)
+        filter = mafic.Filter(karaoke=karaoke)
+
+        await player.add_filter(filter, label="karaoke")
+
+        await ctx.respond(
+            embed=Embed(description="The filter will be applied in a few seconds!"),
+            delete_after=5.0,
+        )
 
     @music_filter.command(name="timescale")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def timescale(self, ctx: ApplicationContext):
-
+    async def timescale(
+        self,
+        ctx: ApplicationContext,
+        speed: Option(
+            float,
+            required=False,
+            description="The speed of ther audio (must be at least 0.0).",
+        ) = None,
+        pitch: Option(
+            float,
+            required=False,
+            description="The pitch of the audio (must be at least 0.0).",
+        ) = None,
+        rate: Option(
+            float,
+            required=False,
+            description="The rate of the audio (must be at least 0.0).",
+        ) = None,
+    ):
+        """Change the speed, pitch and rate of audio."""
         player: EtherPlayer = ctx.guild.voice_client
 
         if not player:
             return
+
+        if (
+            (speed and not (speed <= 1.0 and speed >= 0.0))
+            or (pitch and not (pitch <= 1.0 and pitch >= 0.0))
+            or (rate and not (rate <= 1.0 and rate >= 0.0))
+        ):
+            return await ctx.respond(
+                embed=EtherEmbeds.error("Values must be between`0.0` and `1.0`."),
+                ephemeral=True,
+                delete_after=5.0,
+            )
+
+        timescale = mafic.Timescale(speed, pitch, rate)
+        filter = mafic.Filter(timescale=timescale)
+
+        await player.add_filter(filter, label="timescale")
+
+        await ctx.respond(
+            embed=Embed(description="The filter will be applied in a few seconds!"),
+            delete_after=5.0,
+        )
 
     @music_filter.command(name="tremolo")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def tremolo(self, ctx: ApplicationContext):
-
+    async def tremolo(
+        self,
+        ctx: ApplicationContext,
+        frequency: Option(
+            float,
+            required=False,
+            description="The frequency of the tremolo effect (must be at least 0.0).",
+        ) = None,
+        depth: Option(
+            float,
+            required=False,
+            description="The depth of the tremolo effect (between 0.0 and 1.0).",
+        ) = None,
+    ):
+        """Tremolo oscillates the volume of the audio."""
         player: EtherPlayer = ctx.guild.voice_client
 
         if not player:
             return
+
+        if frequency and not (frequency >= 0.0 and frequency <= 2.0):
+            return await ctx.respond(
+                embed=EtherEmbeds.error(
+                    "Frequency value must be between`0.0` and `2.0`."
+                ),
+                ephemeral=True,
+                delete_after=5.0,
+            )
+
+        if depth and not (depth >= 0.0 and depth <= 1.0):
+            return await ctx.respond(
+                embed=EtherEmbeds.error(
+                    "Frequency value must be between`0.0` and `1.0` (this defaults to 0.5)."
+                ),
+                ephemeral=True,
+                delete_after=5.0,
+            )
+
+        timescale = mafic.Tremolo(frequency, depth)
+        filter = mafic.Filter(timescale=timescale)
+
+        await player.add_filter(filter, label="tremolo")
+
+        await ctx.respond(
+            embed=Embed(description="The filter will be applied in a few seconds!"),
+            delete_after=5.0,
+        )
 
     @music_filter.command(name="vibrato")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def vibrato(self, ctx: ApplicationContext):
-
+    async def vibrato(
+        self,
+        ctx: ApplicationContext,
+        frequency: Option(
+            float,
+            required=False,
+            description="The frequency of the vibrato effect (must be at least 0.0).",
+        ) = None,
+        depth: Option(
+            float,
+            required=False,
+            description="The depth of the vibrato effect (between 0.0 and 1.0).",
+        ) = None,
+    ):
+        """Vibrato oscillates the pitch of the audio."""
         player: EtherPlayer = ctx.guild.voice_client
 
         if not player:
             return
+
+        if frequency and not (frequency >= 0.0 and frequency <= 2.0):
+            return await ctx.respond(
+                embed=EtherEmbeds.error(
+                    "Frequency value must be between`0.0` and `2.0`."
+                ),
+                ephemeral=True,
+                delete_after=5.0,
+            )
+
+        if depth and not (depth >= 0.0 and depth <= 1.0):
+            return await ctx.respond(
+                embed=EtherEmbeds.error(
+                    "Frequency value must be between`0.0` and `1.0` (this defaults to 0.5)."
+                ),
+                ephemeral=True,
+                delete_after=5.0,
+            )
+
+        timescale = mafic.Vibrato(frequency, depth)
+        filter = mafic.Filter(timescale=timescale)
+
+        await player.add_filter(filter, label="vibrato")
+
+        await ctx.respond(
+            embed=Embed(description="The filter will be applied in a few seconds!"),
+            delete_after=5.0,
+        )
 
     @music_filter.command(name="distortion")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def distortion(self, ctx: ApplicationContext):
-
+    async def distortion(
+        self,
+        ctx: ApplicationContext,
+        sin_offset: Optional[float] = None,
+        sin_scale: Optional[float] = None,
+        cos_offset: Optional[float] = None,
+        cos_scale: Optional[float] = None,
+        tan_offset: Optional[float] = None,
+        tan_scale: Optional[float] = None,
+        offset: Optional[float] = None,
+        scale: Optional[float] = None,
+    ):
+        """This applies sine, cosine and tangent distortion to the audio. Pretty hard to use."""
         player: EtherPlayer = ctx.guild.voice_client
 
         if not player:
             return
+
+        distortion = mafic.Distortion(
+            sin_offset,
+            sin_scale,
+            cos_offset,
+            cos_scale,
+            tan_offset,
+            tan_scale,
+            offset,
+            scale,
+        )
+        filter = mafic.Filter(distortion=distortion)
+
+        await player.add_filter(filter, label="distortion")
+
+        await ctx.respond(
+            embed=Embed(description="The filter will be applied in a few seconds!"),
+            delete_after=5.0,
+        )
 
     @music_filter.command(name="channel_mix")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def channel_mix(self, ctx: ApplicationContext):
-
+    async def channel_mix(
+        self,
+        ctx: ApplicationContext,
+        left_to_left: Option(
+            float,
+            required=False,
+            description="The amount of the left channel to mix into the left channel.",
+        ) = None,
+        left_to_right: Option(
+            float,
+            required=False,
+            description="The amount of the left channel to mix into the right channel.",
+        ) = None,
+        right_to_left: Option(
+            float,
+            required=False,
+            description="The amount of the right channel to mix into the left channel.",
+        ) = None,
+        right_to_right: Option(
+            float,
+            required=False,
+            description="The amount of the right channel to mix into the right channel.",
+        ) = None,
+    ):
+        """Channel mix filter (all at 0.5 => mono, ll=1.0 and rr=1.0 => stereo)."""
         player: EtherPlayer = ctx.guild.voice_client
 
         if not player:
             return
+
+        channel_mix = mafic.ChannelMix(
+            left_to_left, left_to_right, right_to_left, right_to_right
+        )
+        filter = mafic.Filter(channel_mix=channel_mix)
+
+        await player.add_filter(filter, label="channel_mix")
+
+        await ctx.respond(
+            embed=Embed(description="The filter will be applied in a few seconds!"),
+            delete_after=5.0,
+        )
 
     @music_filter.command(name="low_pass")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def low_pass(self, ctx: ApplicationContext):
-
+    async def low_pass(self, ctx: ApplicationContext, smoothing: float):
+        """High frequencies are suppressed, while low frequencies are passed through. (this defaults is 0.0)"""
         player: EtherPlayer = ctx.guild.voice_client
 
         if not player:
             return
+
+        low_pass = mafic.LowPass(smoothing)
+        filter = mafic.Filter(low_pass=low_pass)
+
+        await player.add_filter(filter, label="low_pass")
+
+        await ctx.respond(
+            embed=Embed(description="The filter will be applied in a few seconds!"),
+            delete_after=5.0,
+        )
+
+    @music_filter.command(name="rotation")
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def rotation(
+        self,
+        ctx: ApplicationContext,
+        rotation_hz: Option(
+            float, required=False, description="The rotation speed in Hz. (1.0 is fast)"
+        ) = None,
+    ):
+        """Add a filter which can be used to add a rotating effect to audio."""
+        player: EtherPlayer = ctx.guild.voice_client
+
+        if not player:
+            return
+
+        if rotation_hz < 0.0:
+            return await ctx.respond(
+                embed=EtherEmbeds.error("The rotation_hz value must be at least 0.0."),
+                ephemeral=True,
+                delete_after=5.0,
+            )
+
+        rotation = mafic.Rotation(rotation_hz)
+        filter = mafic.Filter(rotation=rotation)
+
+        await player.add_filter(filter, label="rotation")
+
+        await ctx.respond(
+            embed=Embed(description="The filter will be applied in a few seconds!"),
+            delete_after=5.0,
+        )
 
     @music_filter.command(name="volume")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def volume(self, ctx: ApplicationContext):
-
+    async def volume(self, ctx: ApplicationContext, volume: int = 100):
+        """Change the volume of the audio. (this apply to all users)"""
         player: EtherPlayer = ctx.guild.voice_client
 
         if not player:
             return
+
+        await player.set_volume(volume)
+
+        await ctx.respond(embed=Embed(description="Volume updated!"), delete_after=5.0)
+
+    @music_filter.command(name="clear")
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def volume(self, ctx: ApplicationContext):
+        player: EtherPlayer = ctx.guild.voice_client
+
+        if not player:
+            return
+
+        await player.clear_filters()
+
+        await ctx.respond(embed=Embed(description="Filters clear!"), delete_after=5.0)

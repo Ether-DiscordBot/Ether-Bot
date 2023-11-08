@@ -54,15 +54,10 @@ class Client(commands.Bot):
         self.pool = mafic.NodePool(self)
 
     async def start_lavalink_node(self, init: bool = False):
-        lavalink_request()
-        if config.lavalink.get("secure"):
-            r = lavalink_request(timeout=20.0, in_container=self.in_container)
-        else:
-            r = 0
+        if not lavalink_request():
+            log.warning("Lavalink socket is not open, can't create a lavalink node...")
 
-        if r != 0:
-            await self.remove_cog("cogs.music")
-        elif (not self.lavalink_ready_ran and init) or not init:
+        if (not self.lavalink_ready_ran and init) or not init:
             log.info("Creating a new lavalink node...")
 
             config_node = config.lavalink.get("default_node")

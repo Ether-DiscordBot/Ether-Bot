@@ -6,13 +6,14 @@ from ether.core.logging import log
 
 
 def lavalink_request(timeout=10.0):
+    config_node = config.lavalink.get("default_node")
+    if config_node.get("secure"):
+        return True
+
     log.info("Checking lavalink socket status...")
     start_time = time.perf_counter()
-    config_node = config.lavalink.get("default_node")
 
     while True:
-        if config_node.get("secure"):
-            break
         try:
             with socket.create_connection(
                 (config_node.get("host"), config_node.get("port")),
@@ -23,7 +24,6 @@ def lavalink_request(timeout=10.0):
             time.sleep(0.01)
             if time.perf_counter() - start_time >= timeout:
                 log.warning("Lavalink socket is not open")
-                return None
+                return False
 
-    log.info("Lavalink socket is open")
-    return 0
+    return True

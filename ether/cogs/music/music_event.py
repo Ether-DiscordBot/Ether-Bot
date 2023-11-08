@@ -29,7 +29,7 @@ class MusicEvent(commands.Cog):
 
         self.update_lavalink_nodes.start()
 
-    @tasks.loop(hours=6)
+    @tasks.loop(hours=2)
     async def update_lavalink_nodes(self):
         if not self.client.lavalink_ready_ran:
             return
