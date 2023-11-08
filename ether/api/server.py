@@ -21,6 +21,10 @@ class ServerThread(threading.Thread):
     def run(self):
         app.run(port=self.port)
 
+    @app.route("/ping", methods=["GET"])
+    def ping():
+        return make_response(jsonify({"response": "pong"}), 200)
+
     def login_required(f):
         @wraps(f)
         def wrap(*args, **kwargs):
@@ -39,7 +43,7 @@ class ServerThread(threading.Thread):
         return wrap
 
     @app.route("/api/music/ensure", methods=["GET"])
-    def ensure(self):
+    def ensure():
         guild_id = request.args.get("guild_id")
 
         # Check if the guild exists
@@ -51,7 +55,7 @@ class ServerThread(threading.Thread):
 
     @app.route("/api/music/current", methods=["GET"])
     @login_required
-    def get_current(self):
+    def get_current():
         guild_id = request.args.get("guild_id")
 
         # Check if the guild exists
@@ -63,7 +67,7 @@ class ServerThread(threading.Thread):
 
     @app.route("/api/music/play", methods=["POST"])
     @login_required
-    def play(self):
+    def play():
         guild_id = request.args.get("guild_id")
         channel_id = request.args.get("channel_id")
         track = request.args.get("track")
@@ -88,7 +92,7 @@ class ServerThread(threading.Thread):
 
     @app.route("/api/music/pause", methods=["POST"])
     @login_required
-    def pause(self):
+    def pause():
         guild_id = request.args.get("guild_id")
         channel_id = request.args.get("channel_id")
 
@@ -109,7 +113,7 @@ class ServerThread(threading.Thread):
 
     @app.route("/api/music/skip", methods=["POST"])
     @login_required
-    def skip(self):
+    def skip():
         guild_id = request.args.get("guild_id")
         channel_id = request.args.get("channel_id")
 

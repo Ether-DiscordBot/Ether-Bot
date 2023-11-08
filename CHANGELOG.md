@@ -1,3 +1,6 @@
+## 0.20.0
+- Add filters for the music
+
 ## 0.19.3
 - Technical changes
     - Remove the thread that run Lavalink

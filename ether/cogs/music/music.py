@@ -1,6 +1,6 @@
 import datetime
 import re
-from typing import List
+from typing import List, Optional
 
 import requests
 import mafic
@@ -42,6 +42,9 @@ class Music(commands.Cog, name="music"):
         self.tape_in = open("ether/assets/sfx/tape_in.mp3", "rb").read()
 
     music = SlashCommandGroup("music", "Music commands!")
+    music_filter = music.create_subgroup(
+        "filter", "Manage filters for your music player"
+    )
 
     async def cog_before_invoke(self, ctx):
         """Command before-invoke handler."""
@@ -494,3 +497,138 @@ class Music(commands.Cog, name="music"):
                 inline=False,
             )
         await ctx.respond(embed=embed)
+
+    @music_filter.command(name="equalizer")
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def equalize(
+        self,
+        ctx: ApplicationContext,
+        sub_bass: Optional[float] = None,
+        bass: Optional[float] = None,
+        low_mids: Optional[float] = None,
+        mids: Optional[float] = None,
+        high_mids: Optional[float] = None,
+        presence: Optional[float] = None,
+        brillance: Optional[float] = None,
+    ):
+
+        player: EtherPlayer = ctx.guild.voice_client
+
+        if not player:
+            return
+
+        bands_value = {
+            0: sub_bass,
+            2: bass,
+            4: low_mids,
+            6: mids,
+            8: high_mids,
+            10: brillance,
+            12: presence,
+        }
+        bands = []
+
+        for band, gain in bands_value.items():
+            if not gain or not (gain >= -0.25 and gain <= 1.0):
+                return await ctx.respond(
+                    embed=EtherEmbeds.error(
+                        "All values must be between `-0.25` and `1.0`."
+                    )
+                )
+
+            bands.append(mafic.EQBand(band, gain))
+
+        equalizer = mafic.Equalizer(bands)
+        filter = mafic.Filter(equalizer=equalizer)
+
+        await player.add_filter(filter=filter, label="equalize", fast_apply=True)
+
+    @music_filter.command(name="karaoke")
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def karaoke(self, ctx: ApplicationContext):
+
+        player: EtherPlayer = ctx.guild.voice_client
+
+        if not player:
+            return
+
+    @music_filter.command(name="timescale")
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def timescale(self, ctx: ApplicationContext):
+
+        player: EtherPlayer = ctx.guild.voice_client
+
+        if not player:
+            return
+
+    @music_filter.command(name="tremolo")
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def tremolo(self, ctx: ApplicationContext):
+
+        player: EtherPlayer = ctx.guild.voice_client
+
+        if not player:
+            return
+
+    @music_filter.command(name="vibrato")
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def vibrato(self, ctx: ApplicationContext):
+
+        player: EtherPlayer = ctx.guild.voice_client
+
+        if not player:
+            return
+
+    @music_filter.command(name="distortion")
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def distortion(self, ctx: ApplicationContext):
+
+        player: EtherPlayer = ctx.guild.voice_client
+
+        if not player:
+            return
+
+    @music_filter.command(name="channel_mix")
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def channel_mix(self, ctx: ApplicationContext):
+
+        player: EtherPlayer = ctx.guild.voice_client
+
+        if not player:
+            return
+
+    @music_filter.command(name="low_pass")
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def low_pass(self, ctx: ApplicationContext):
+
+        player: EtherPlayer = ctx.guild.voice_client
+
+        if not player:
+            return
+
+    @music_filter.command(name="volume")
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def volume(self, ctx: ApplicationContext):
+
+        player: EtherPlayer = ctx.guild.voice_client
+
+        if not player:
+            return
