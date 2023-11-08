@@ -79,6 +79,18 @@ class Utils(commands.Cog, name="utils"):
             )
         )
 
+    @slash_command()
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def status(self, ctx: ApplicationContext) -> None:
+        """Show the status of Ether"""
+
+        await ctx.respond(
+            embed=Embed(
+                title="🟢 Ether Status",
+                description="Here is the [Ether's status page](https://stats.uptimerobot.com/yxDgrt60O3).",
+            )
+        )
+
     @utils.command(name="flipcoin")
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def flip_coin(self, ctx: ApplicationContext) -> None:

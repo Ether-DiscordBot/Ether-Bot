@@ -1,5 +1,6 @@
 ## 0.20.0
 - Add filters for the music
+- Add a new command `status`
 
 ## 0.19.3
 - Technical changes
