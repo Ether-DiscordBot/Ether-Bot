@@ -28,12 +28,14 @@ class EtherFormatter(logging.Formatter):
 
 
 log = logging.getLogger("ether")
+werkzeug = logging.getLogger("werkzeug")
 log.setLevel(logging.DEBUG)
+werkzeug.setLevel(logging.INFO)
 
 stream = logging.StreamHandler()
 stream.setFormatter(EtherFormatter())
 log.addHandler(stream)
-
+werkzeug.addHandler(stream)
 
 file = logging.FileHandler("logs.log")
 

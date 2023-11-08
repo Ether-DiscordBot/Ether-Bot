@@ -1,12 +1,16 @@
 from functools import wraps
 import os
 import signal
-import sys
 import threading
 import discord
 import requests
+import logging
 
+
+from waitress import serve
 from flask import Flask, jsonify, make_response, request
+
+from ether.core.logging import log
 
 app = Flask(__name__)
 
@@ -19,7 +23,11 @@ class ServerThread(threading.Thread):
         self.bot = bot
 
     def run(self):
-        app.run(port=self.port)
+        log.info("Server starting...")
+
+        app.logger.setLevel(logging.INFO)
+
+        serve(app, port=self.port, _quiet=True)
 
     @app.route("/ping", methods=["GET"])
     def ping():

@@ -26,3 +26,4 @@ git+https://github.com/YoungTrep/pycord18n.git
 apscheduler==3.10.4
 pytz==2023.3.post1
 python-git-info==0.8.3
+waitress==2.1.2
