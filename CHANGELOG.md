@@ -1,3 +1,6 @@
+## 0.20.1
+- Technical changes: Added a new loop to prevent lavalink from sleeping and find unavailable nodes
+
 ## 0.20.0
 - Add filters for the music
 - Add a new command `status`

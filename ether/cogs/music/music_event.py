@@ -49,6 +49,23 @@ class MusicEvent(commands.Cog):
             await self.client.pool.remove_node(older_node, transfer_players=True)
             log.info(f"Node {older_node.label} removed")
 
+    @tasks.loop(minutes=10)
+    async def nodes_checkup(self):
+        if not self.client.lavalink_ready_ran:
+            return
+
+        for node in self.client.pool.nodes:
+            if not node.available:
+                log.warning(f"An unavailable node has been found ({node.label})")
+                await self.client.pool.remove_node(node, transfer_players=True)
+                log.info(f"Node {node.label} removed")
+
+                await self.client.start_lavalink_node()
+                continue
+
+            # Waking up nodes
+            await node.fetch_route_planner_status()
+
     @commands.Cog.listener()
     async def on_node_unvailable(self, node: mafic.Node):
         await self.client.pool.remove_node(node, transfer_players=True)
