@@ -68,6 +68,7 @@ class MusicEvent(commands.Cog):
 
     @commands.Cog.listener()
     async def on_node_unvailable(self, node: mafic.Node):
+        # Don't work with Mafic v2.9.3
         await self.client.pool.remove_node(node, transfer_players=True)
         log.warning(f"Node {node.label} is unavailable and has been removed")
 
@@ -232,4 +233,6 @@ class MusicEvent(commands.Cog):
 
     @commands.Cog.listener()
     async def on_node_ready(self, node: mafic.Node):
-        log.info(f"Node {node.label} is ready")
+        if not node.label in self.client.ready_nodes:
+            log.info(f"Node {node.label} is ready")
+            self.client.ready_nodes.append(node.label)

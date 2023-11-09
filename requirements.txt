@@ -1,6 +1,5 @@
 py-cord[voice]==2.4.1
-# mafic==2.9.3
-git+https://github.com/penggin/mafic@patch-1
+mafic==2.9.3
 flask==2.3.3
 humanize==4.8.0
 asyncpraw==7.7.1

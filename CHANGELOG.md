@@ -1,3 +1,9 @@
+## 0.20.2
+- Remove the node host information in the player
+- Technical changes
+    - Prevent new nodes to have an already taken name
+    - When a new node is ready it no longer log that all other nodes are ready
+
 ## 0.20.1
 - Technical changes: Added a new loop to prevent lavalink from sleeping and find unavailable nodes
 

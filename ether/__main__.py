@@ -38,6 +38,7 @@ class Client(commands.Bot):
     def __init__(self):
         # self.dbl = DBLClient(self)
         self.lavalink_ready_ran = False
+        self.ready_nodes = []
 
         intents = discord.Intents().all()
 
@@ -87,25 +88,30 @@ class Client(commands.Bot):
                 else:
                     config_node = random.choice(config_nodes)
 
+            nodes_name = []
+            for node in self.pool.nodes:
+                nodes_name.append(node.label)
+
             try:
                 node = await self.pool.create_node(
                     host=config_node.get("host"),
                     port=config_node.get("port"),
-                    label=NODE_CODE_NAME.get_random(),
+                    label=NODE_CODE_NAME.get_random(excepts=nodes_name),
                     password=config_node.get("pass"),
                     secure=config_node.get("secure"),
                     player_cls=EtherPlayer,
                 )
                 self.lavalink_ready_ran = True
-
-                log.info(f"Node {node.label} created")
-                log.info(f"\tHost: {node.host}:{node.port}")
-
-                return node
             except Exception as e:
                 log.error(
                     f"Failed to create a lavalink node ({config_node.host}:{config_node.port}): {e}"
                 )
+                return None
+
+            log.info(f"Node {node.label} created")
+            log.info(f"\tHost: {node.host}:{node.port}")
+
+            return node
 
         return None
 

@@ -1,5 +1,6 @@
 # COLORS
 import random
+from typing import Optional, List
 
 
 class Colors:
@@ -95,5 +96,10 @@ class NODE_CODE_NAME:
     ]
 
     @classmethod
-    def get_random(cls):
-        return random.choice(cls.CODES)
+    def get_random(cls, excepts: Optional[List[str]] = []):
+        codes = cls.CODES.copy()
+
+        for e in excepts:
+            codes.remove(e)
+
+        return random.choice(codes)
