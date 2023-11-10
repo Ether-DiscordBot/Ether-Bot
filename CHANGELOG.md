@@ -1,3 +1,6 @@
+## 0.20.3
+- HotFix
+
 ## 0.20.2
 - Remove the node host information in the player
 - Technical changes

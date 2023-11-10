@@ -111,7 +111,8 @@ class Music(commands.Cog, name="music"):
 
             player: EtherPlayer = ctx.guild.voice_client
 
-            setattr(player, "text_channel", ctx.channel)
+            if player:
+                setattr(player, "text_channel", ctx.channel)
         elif not ctx.author.voice or (player.channel.id != ctx.author.voice.channel.id):
             await ctx.respond(
                 embed=EtherEmbeds.error("You need to be in my voicechannel."),
@@ -184,7 +185,12 @@ class Music(commands.Cog, name="music"):
                     f"Sorry, the node ({player.node.label}) is not available, please retry later!"
                 )
             )
-            return player.node.close()
+            await player.node.close()
+            log.warning(
+                f"Node {player.node.label} is not available, so it'll be replaced"
+            )
+            self.client.start_lavalink_node()
+            return
 
         try:
             tracks = await player.fetch_tracks(query, search_type=search_type)
