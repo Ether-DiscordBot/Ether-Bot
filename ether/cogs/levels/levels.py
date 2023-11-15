@@ -6,14 +6,16 @@ import discord
 
 import requests
 from PIL import Image, ImageDraw, ImageFont
-from discord import ApplicationContext, SlashCommandGroup, Embed, Option, OptionChoice
-from discord.file import File
+from discord import File, app_commands
+from discord.app_commands import Choice
+from discord.ext.commands import Context
 from discord.ext import commands
-from ether.core.i18n import _
 
-from ether.core.utils import LevelsHandler, EtherEmbeds
+from ether.core.i18n import _
+from ether.core.utils import LevelsHandler
 from ether.core.db import Database, User, GuildUser, Guild
 from ether.core.constants import Emoji
+from ether.core.embed import Embed
 
 
 class Levels(commands.Cog, name="levels"):
@@ -21,48 +23,49 @@ class Levels(commands.Cog, name="levels"):
         self.client = client
         self.help_icon = Emoji.LEVELS
 
-    levels = SlashCommandGroup("levels", "levels commands!")
+    levels = app_commands.Group(name="levels", description="Leveling releated commands")
 
     @levels.command(name="boosters")
-    @commands.has_permissions(moderate_members=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def boost(
-        self,
-        ctx: ApplicationContext,
-        multiplier: Option(
-            float, "Set the experience multiplier of this server (default: 1.0)"
-        ),
-    ) -> None:
+    @app_commands.checks.has_permissions(moderate_members=True)
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.describe(
+        multiplier="Set the experience multiplier of this server (default: 1.0)"
+    )
+    async def boost(self, interaction: discord.Interaction, multiplier: float) -> None:
         """Get the boosters of the server"""
-        db_guild = await Guild.from_id(ctx.guild.id)
+        db_guild = await Guild.from_id(interaction.guild.id)
 
         if multiplier > 5:
-            await ctx.respond("The multiplier must be less than 5.0")
+            await interaction.response.send_message(
+                "The multiplier must be less than 5.0"
+            )
             return
         elif multiplier < 0:
-            await ctx.respond("The multiplier must be greater than 0.0")
+            await interaction.response.send_message(
+                "The multiplier must be greater than 0.0"
+            )
             return
 
         await db_guild.set({Guild.exp_mult: multiplier})
 
-        await ctx.respond(
-            embed=EtherEmbeds.success(f"Experience multiplier set to `{multiplier}`!"),
+        await interaction.response.send_message(
+            embed=Embed.success(f"Experience multiplier set to `{multiplier}`!"),
             delete_after=5,
         )
 
     @levels.command(name="xp")
-    @commands.has_permissions(moderate_members=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def xp(self, ctx: ApplicationContext, level: int = -1, xp: int = -1):
+    @app_commands.checks.has_permissions(moderate_members=True)
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def xp(self, interaction: discord.Interaction, level: int = -1, xp: int = -1):
         """Set the xp or the level"""
         # TODO Set a user to a specific level or xp value
         pass
 
     @levels.command(name="leaderboard")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def leaderboard(self, ctx):
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def leaderboard(self, interaction: discord.Interaction):
         """Get the leaderboard of the server"""
-        members = await Database.GuildUser.get_all(ctx.guild.id, max=10)
+        members = await Database.GuildUser.get_all(interaction.guild.id, max=10)
         members.sort(key=lambda x: (x.levels, x.exp), reverse=True)
 
         embed = Embed(title=_("Leaderboard"), description="")
@@ -79,54 +82,55 @@ class Levels(commands.Cog, name="levels"):
                 case _:
                     place = f"#{i}"
 
-            user = await ctx.guild.fetch_member(member.user_id)
+            user = await interaction.guild.fetch_member(member.user_id)
             embed.description += f"{place} {user.mention} - Level **{member.levels}** | **{member.exp}** xp\n"
 
-        await ctx.respond(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
     @levels.command(name="set_background")
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.describe(background="Choose the background of your rank card")
+    @app_commands.choices(
+        background=[
+            Choice(name="Grainy (default)", value=0),
+            Choice(name="Art Deco", value=1),
+            Choice(name="Rapture", value=2),
+            Choice(name="Mucha", value=3),
+        ]
+    )
     async def set_background(
         self,
-        ctx: ApplicationContext,
-        background: Option(
-            int,
-            name="background",
-            description="Choose the background of your rank card",
-            choices=[
-                OptionChoice("Grainy (default)", value=0),
-                OptionChoice("Art Deco", value=1),
-                OptionChoice("Rapture", value=2),
-                OptionChoice("Mucha", value=3),
-            ],
-        ),
+        interaction: discord.Interaction,
+        background: Choice[int],
     ):
         """Set the background of your rank card"""
-        db_user = await User.from_id(ctx.author.id)
+        db_user = await User.from_id(interaction.message.author.id)
         await db_user.set({User.background: background})
 
-        await ctx.respond(
-            embed=EtherEmbeds.success(_("✅ Your background has been changed!")),
+        await interaction.response.send_message(
+            embed=Embed.success(_("✅ Your background has been changed!")),
             delete_after=5,
         )
 
     @levels.command(name="profile")
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def profile(
-        self, ctx: ApplicationContext, member: Optional[discord.Member] = None
+        self, interaction: discord.Interaction, member: Optional[discord.Member] = None
     ):
         """Get the profile of a user"""
-        user = member if member else ctx.author
+        user = member if member else interaction.message.author
         db_guild_user = await GuildUser.from_member_object(user)
         db_user = await User.from_id(user.id)
 
         if not db_guild_user or not db_user:
-            return await ctx.respond(
-                embed=EtherEmbeds.error("Error when trying to get your profile!")
+            return await interaction.response.send_message(
+                embed=Embed.error("Error when trying to get your profile!")
             )
         card = CardHandler.create_card(user, db_user, db_guild_user)
         image = io.BytesIO(base64.b64decode(card))
-        return await ctx.respond(file=File(fp=image, filename=f"{user.name}_card.png"))
+        return await interaction.response.send_message(
+            file=File(fp=image, filename=f"{user.name}_card.png")
+        )
 
 
 class CardHandler:

@@ -2,12 +2,12 @@ import asyncio
 import datetime
 from typing import List, Optional, Literal
 
-from beanie import Document, TimeSeriesConfig, init_beanie
+from beanie import Document, init_beanie
+import discord
 from discord import Guild as GuildModel
 from discord import Member as MemberModel
 from discord import Message as MessageModel
 from discord import User as UserModel
-from discord.ext.commands import Context
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
 
@@ -277,8 +277,8 @@ class Guild(Document):
     async def from_guild_object(guild: GuildModel):
         return await Guild.from_id(guild.id)
 
-    async def from_context(ctx: Context):
-        return await Guild.from_id(ctx.guild.id)
+    async def from_interaction(interaction: discord.Interaction):
+        return await Guild.from_id(interaction.guild.id)
 
 
 class Date(BaseModel):
@@ -309,8 +309,10 @@ class GuildUser(Document):
     async def from_member_object(member: MemberModel):
         return await GuildUser.from_id(member.id, member.guild.id)
 
-    async def from_context(ctx: Context):
-        return await GuildUser.from_id(ctx.author.id, ctx.guild.id)
+    async def from_context(interaction: discord.Interaction):
+        return await GuildUser.from_id(
+            interaction.message.author.id, interaction.guild.id
+        )
 
 
 class User(Document):
@@ -328,8 +330,8 @@ class User(Document):
     async def from_user_object(user: UserModel):
         return await User.from_id(user.id)
 
-    async def from_context(ctx: Context):
-        return await User.from_id(ctx.author.id)
+    async def from_context(interaction: discord.Interaction):
+        return await User.from_id(interaction.message.author.id)
 
 
 class Playlist(Document):
@@ -347,8 +349,8 @@ class Playlist(Document):
     async def from_message_object(message: MessageModel):
         return await Playlist.from_id(message.id)
 
-    async def from_context(ctx: Context):
-        return await Playlist.from_id(ctx.message.id)
+    async def from_context(interaction: discord.Interaction):
+        return await Playlist.from_id(interaction.message.id)
 
     def from_guild(guild_id: int):
         return Playlist.find(Playlist.guild_id == guild_id)
@@ -378,8 +380,8 @@ class ReactionRole(Document):
     async def from_message_object(message: MessageModel):
         return await ReactionRole.from_id(message.id)
 
-    async def from_context(ctx: Context):
-        return await ReactionRole.from_id(ctx.message.id)
+    async def from_context(interaction: discord.Interaction):
+        return await ReactionRole.from_id(interaction.message.id)
 
     def from_guild(guild_id: int):
         return ReactionRole.find(ReactionRole.guild_id == guild_id)

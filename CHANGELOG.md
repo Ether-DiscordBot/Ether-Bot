@@ -1,3 +1,11 @@
+## 1.0.0b1
+- A lot of technical changes
+    - Ether is now using discord.py (instead of py-cord)
+    - Ether is now using wevelink (instead of mafic)
+    - The above changes result in a rewriting of the bot
+    - Rewrite parts like the base client and some events
+- Rename the `Image` cog to `Remix`
+
 ## 0.20.3
 - HotFix
 

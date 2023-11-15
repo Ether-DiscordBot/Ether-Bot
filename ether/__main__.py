@@ -1,25 +1,32 @@
+from argparse import Namespace
+import argparse
 import asyncio
+import functools
+import logging
 import random
 import sys
 import signal
+from typing import Any, Coroutine
 
 import discord
-import mafic
+import wavelink
+from wavelink import Node
 import nest_asyncio
-from discord.ext import commands
+
+from ether.core.bot import Ether
 
 nest_asyncio.apply()
 
 from ether import __version__
 from ether.core.config import config
-from ether.core.constants import NODE_CODE_NAME
+from ether.core.constants import NODE_CODE_NAME, ExitCodes
 from ether.core.lavalink_status import lavalink_request
 from ether.core.logging import log
-from ether.core.voice_client import EtherPlayer
 from ether.core.cog_manager import CogManager
 from ether.core.db import init_database
 from ether.api.server import ServerThread
-from ether.core.botlist import DBLClient
+
+# from ether.core.botlist import DBLClient
 
 init_database(config.database.mongodb.get("uri"))
 
@@ -34,117 +41,126 @@ subprocesses = []
 #
 
 
-class Client(commands.Bot):
-    def __init__(self):
-        # self.dbl = DBLClient(self)
-        self.lavalink_ready_ran = False
-        self.ready_nodes = []
+# Thanks to Cog-Creators/Red-DiscordBot, I reuse a lot of code from there
 
-        intents = discord.Intents().all()
 
-        self.debug_guilds: list[int] = list(config.bot.get("debugGuilds"))
-        if config.bot.get("global"):
-            self.debug_guilds = None
+async def run_bot(ether: Ether, cli_flags: Namespace | None = None):
+    token = config.bot.get("token")
 
-        super().__init__(
-            help_command=None,
-            debug_guilds=self.debug_guilds,
-            intents=intents,
+    await ether.start(token)
+
+    try:
+        pass
+    except discord.LoginFailure:
+        log.critical("This token doesn't seem to be valid.")
+        sys.exit(ExitCodes.CONFIGURATION_ERROR)
+    except discord.PrivilegedIntentsRequired:
+        log.critical("Ether requires Privileged Intents to be enabled.\n")
+        sys.exit(ExitCodes.CONFIGURATION_ERROR)
+
+    return None
+
+
+async def shutdown_handler(ether, signal_type=None, exit_code=None):
+    if signal_type:
+        log.info("%s received. Quitting...", signal_type.name)
+        sys.exit(ExitCodes.SHUTDOWN)
+    elif exit_code is None:
+        log.info("Shutting down from unhandled exception")
+
+    try:
+        if not ether.is_closed():
+            await ether.close()
+    finally:
+        # Then cancels all outstanding tasks other than ourselves
+        pending = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+        [task.cancel() for task in pending]
+        await asyncio.gather(*pending, return_exceptions=True)
+
+        # Kill all threads
+        for thread in threads:
+            thread.kill()
+
+    sys.exit(ExitCodes.SHUTDOWN)
+
+
+def global_exception_handler(ether, loop, context):
+    """
+    Logs unhandled exceptions in other tasks
+    """
+    exc = context.get("exception")
+    # These will get handled later when it *also* kills loop.run_forever
+    if exc is not None and isinstance(exc, (KeyboardInterrupt, SystemExit)):
+        return
+
+    loop.default_exception_handler(context)
+
+
+def ether_exception_handler(ether, ether_task: asyncio.Future):
+    try:
+        ether_task.result()
+    except (SystemExit, KeyboardInterrupt, asyncio.CancelledError):
+        pass
+    except Exception as e:
+        log.critical(
+            "The main bot task didn't handle an exception and has crashed", exc_info=e
         )
-
-        self.pool = mafic.NodePool(self)
-
-    async def start_lavalink_node(self, init: bool = False):
-        if not lavalink_request():
-            log.warning("Lavalink socket is not open, can't create a lavalink node...")
-
-        if (not self.lavalink_ready_ran and init) or not init:
-            log.info("Creating a new lavalink node...")
-
-            config_node = config.lavalink.get("default_node")
-            if not init and config.lavalink.get("nodes"):
-                config_nodes = config.lavalink.get("nodes")
-
-                for node in self.pool.nodes:
-                    for config_node in config_nodes:
-
-                        if not isinstance(config_node, dict):
-                            log.warning(
-                                f"Invalid type for the config node variable (type: {type(config_node)}):\n{config_node}"
-                            )
-                            continue
-
-                        if node.host == config_node.get(
-                            "host"
-                        ) and node.port == config_node.get("port"):
-                            config_nodes.remove(config_node)
-                            continue
-
-                if len(config_nodes) <= 0:
-                    log.warning(
-                        "All hosts are already used, switching to the default one"
-                    )
-                    config_node = config.lavalink.get("default_node")
-                else:
-                    config_node = random.choice(config_nodes)
-
-            nodes_name = []
-            for node in self.pool.nodes:
-                nodes_name.append(node.label)
-
-            try:
-                node = await self.pool.create_node(
-                    host=config_node.get("host"),
-                    port=config_node.get("port"),
-                    label=NODE_CODE_NAME.get_random(excepts=nodes_name),
-                    password=config_node.get("pass"),
-                    secure=config_node.get("secure"),
-                    player_cls=EtherPlayer,
-                )
-                self.lavalink_ready_ran = True
-            except Exception as e:
-                log.error(
-                    f"Failed to create a lavalink node ({config_node.host}:{config_node.port}): {e}"
-                )
-                return None
-
-            log.info(f"Node {node.label} created")
-            log.info(f"\tHost: {node.host}:{node.port}")
-
-            return node
-
-        return None
-
-    async def set_activity(self):
-        await self.change_presence(
-            activity=discord.Game(name=f"/help | v{__version__}")
-        )
-
-    async def load_extensions(self):
-        await CogManager.load_cogs(self)
-
-
-def signal_handler(sig, frame):
-    # Exit the program
-    print("\033[35mProcess killed by user\033[0m")
-    # Close the bot
-    for thread in threads:
-        thread.kill()
-    sys.exit(0)
+        log.warning("Attempting to die as gracefully as possible...")
+        asyncio.create_task(shutdown_handler(ether))
 
 
 def main():
-    signal.signal(signal.SIGINT, signal_handler)
+    ether = Ether(description="Ether V1", dm_help=True)
 
-    global bot
-    bot = Client()
+    try:
+        server_thread = ServerThread(port=config.server.get("port"), bot=ether)
+        threads.append(server_thread)
+        server_thread.start()
 
-    server_thread = ServerThread(port=config.server.get("port"), bot=bot)
-    threads.append(server_thread)
-    server_thread.start()
+        loop = asyncio.new_event_loop()
 
-    asyncio.run(bot.load_extensions())
-    bot.run(config.bot.get("token"))
+        exc_handler = functools.partial(global_exception_handler, ether)
+        loop.set_exception_handler(exc_handler)
+
+        fut = loop.create_task(run_bot(ether))
+        e_exc_handler = functools.partial(ether_exception_handler, ether)
+        fut.add_done_callback(e_exc_handler)
+        loop.run_forever()
+    except KeyboardInterrupt:
+        log.warning(
+            "Please do not use Ctrl+C to Shutdown Ether! (attempting to die gracefully...)"
+        )
+        log.error("Received KeyboardInterrupt, treating as interrupt")
+        if ether is not None:
+            loop.run_until_complete(shutdown_handler(ether, signal.SIGINT))
+    except SystemExit as exc:
+        exit_code = int(exc.code)
+        try:
+            exit_code_name = ExitCodes(exit_code).name
+        except ValueError:
+            exit_code_name = "UNKNOWN"
+        log.info("Shutting down with exit code: %s (%s)", exit_code, exit_code_name)
+        if ether is not None:
+            loop.run_until_complete(shutdown_handler(ether, None, exc.code))
+    except Exception as exc:  # Non standard case.
+        log.exception("Unexpected exception (%s): ", type(exc), exc_info=exc)
+        if ether is not None:
+            loop.run_until_complete(shutdown_handler(ether, None, ExitCodes.CRITICAL))
+    finally:
+        # Kill all threads
+        log.info("killing all threads")
+        for thread in threads:
+            thread.kill()
+
+        loop.run_until_complete(loop.shutdown_asyncgens())
+
+        log.info("Please wait, cleaning up a bit more")
+        loop.run_until_complete(asyncio.sleep(2))
+        asyncio.set_event_loop(None)
+        loop.stop()
+        loop.close()
+
+    sys.exit(ExitCodes.SHUTDOWN)
 
 
 if __name__ == "__main__":

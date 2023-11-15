@@ -1,14 +1,12 @@
 import datetime
 import discord
 
-import mafic
+import wavelink
 from discord.ext import commands, tasks
-from mafic import EndReason
 
 from ether.core.constants import Links
 from ether.core.logging import log
-from ether.core.utils import EtherEmbeds
-from ether.core.voice_client import EtherPlayer
+from ether.core.embed import Embed
 
 
 def format_td(td):
@@ -31,22 +29,19 @@ class MusicEvent(commands.Cog):
 
     @tasks.loop(hours=2)
     async def update_lavalink_nodes(self):
-        if not self.client.lavalink_ready_ran:
-            return
+        await self.client.create_lavalink_node()
 
-        await self.client.start_lavalink_node()
-
-        if len(self.client.pool.nodes) > 3:
+        if len(wavelink.Pool.nodes) > 3:
             log.info("Removing a node...")
             older_node = None
-            for node in self.client.pool.nodes:
+            for node in wavelink.Pool.nodes:
                 if not older_node:
                     older_node = node
                     continue
                 if node.stats and node.stats.uptime < older_node.stats.uptime:
                     older_node = node
 
-            await self.client.pool.remove_node(older_node, transfer_players=True)
+            await wavelink.Pool.remove_node(older_node, transfer_players=True)
             log.info(f"Node {older_node.label} removed")
 
     @tasks.loop(minutes=10)
@@ -54,10 +49,10 @@ class MusicEvent(commands.Cog):
         if not self.client.lavalink_ready_ran:
             return
 
-        for node in self.client.pool.nodes:
+        for node in wavelink.Pool.nodes:
             if not node.available:
                 log.warning(f"An unavailable node has been found ({node.label})")
-                await self.client.pool.remove_node(node, transfer_players=True)
+                await wavelink.Pool.remove_node(node, transfer_players=True)
                 log.info(f"Node {node.label} removed")
 
                 await self.client.start_lavalink_node()
@@ -67,18 +62,17 @@ class MusicEvent(commands.Cog):
             await node.fetch_route_planner_status()
 
     @commands.Cog.listener()
-    async def on_node_unvailable(self, node: mafic.Node):
-        # Don't work with Mafic v2.9.3
-        await self.client.pool.remove_node(node, transfer_players=True)
-        log.warning(f"Node {node.label} is unavailable and has been removed")
+    async def on_wavelink_node_closed(self, node: wavelink.Node):
+        await wavelink.Pool.remove_node(node, transfer_players=True)
+        log.warning(f"Node {node.label} was closed with dignity!")
 
     @commands.Cog.listener()
-    async def on_track_start(self, event: mafic.TrackStartEvent):
+    async def on_wavelink_track_start(payload: wavelink.TrackStartEventPayload):
         """When a track starts, the bot sends a message in the channel where the command was sent.
         The channel is taken on the object of the track and the message are saved in the player.
         """
-        player: EtherPlayer = event.player
-        track: mafic.Track = event.track
+        player: wavelink.Player = payload.player
+        track: wavelink.Playable = payload.track
 
         if hasattr(player, "message"):
             try:
@@ -124,29 +118,29 @@ class MusicEvent(commands.Cog):
                 return
 
     @commands.Cog.listener()
-    async def on_track_end(self, event: mafic.TrackEndEvent):
+    async def on_wavelink_track_end(payload: wavelink.TrackEndEventPayload):
         """When a track ends, the bot delete the start message.
         If it's the last track, the player is kill.
         """
-        player: EtherPlayer = event.player
-        reason = event.reason
+        player: wavelink.Player = payload.player
+        reason = payload.reason
 
-        reason = event.reason
-        player = event.player
+        reason = payload.reason
+        player = payload.player
 
-        if reason not in (EndReason.REPLACED, EndReason.STOPPED, EndReason.FINISHED):
+        if reason not in ("replaced", "finished"):
             if hasattr(player, "text_channel"):
                 channel = player.text_channel
                 error_message = f"Track finished for reason `{reason}` with node `{player.node.label}`({player.node.host}:{player.node.port})"
 
-                if reason == EndReason.LOAD_FAILED:
+                if reason == "loadFailed":
                     error_message = f"Failed to load track probably due to the source. This error occured on the node `{player.node.label}`({player.node.host}:{player.node.port})"
 
                 log.warn(error_message)
 
                 try:
                     await channel.send(
-                        embed=EtherEmbeds.error(
+                        embed=Embed.error(
                             error_message
                             + "\nIf the source is YouTube, try an other source beacause YouTube is blocking some videos"
                         )
@@ -167,8 +161,8 @@ class MusicEvent(commands.Cog):
             await player.play(player.queue.pop(0))
 
     @commands.Cog.listener()
-    async def on_node_stats(self, node: mafic.Node):
-        for player in node.players:
+    async def on_wavelink_stats_update(self, payload: wavelink.StatsEventPayload):
+        for player in payload.players:
             if not player.current:
                 await player.disconnect()
 
@@ -206,7 +200,7 @@ class MusicEvent(commands.Cog):
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, _before, _after):
         if member.guild.me.voice and len(member.guild.me.voice.channel.members) <= 1:
-            player: EtherPlayer = member.guild.voice_client
+            player: wavelink.Player = member.guild.voice_client
             if not player:
                 return
 
@@ -220,7 +214,7 @@ class MusicEvent(commands.Cog):
                 delattr(player, "message")
 
         if not member.guild.me.voice and member.guild.voice_client:
-            player: EtherPlayer = member.guild.voice_client
+            player: wavelink.Player = member.guild.voice_client
             if not player:
                 return
 
@@ -232,7 +226,11 @@ class MusicEvent(commands.Cog):
                 delattr(player, "message")
 
     @commands.Cog.listener()
-    async def on_node_ready(self, node: mafic.Node):
+    async def on_wavelink_node_ready(
+        self, payload: wavelink.NodeReadyEventPayload
+    ) -> None:
+        node = payload.node
+
         if not node.label in self.client.ready_nodes:
             log.info(f"Node {node.label} is ready")
             self.client.ready_nodes.append(node.label)

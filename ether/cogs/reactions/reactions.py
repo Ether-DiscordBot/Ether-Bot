@@ -1,19 +1,19 @@
 from discord import (
-    ApplicationContext,
     Message,
     NotFound,
     Role,
-    SlashCommandGroup,
-    Option,
-    OptionChoice,
+    app_commands,
 )
+import discord
+from discord.app_commands import Choice
 from discord.errors import HTTPException
 from discord.ext import commands
-from ether.core.i18n import _
+from discord.ext.commands import Context
 
+from ether.core.i18n import _
 from ether.core.db.client import Database, ReactionRole
 from ether.core.constants import Emoji, Other
-from ether.core.utils import EtherEmbeds
+from ether.core.embed import Embed
 
 
 class Reactions(commands.Cog, name="reaction"):
@@ -21,7 +21,9 @@ class Reactions(commands.Cog, name="reaction"):
         self.help_icon = Emoji.REACTIONS
         self.client = client
 
-    reactions = SlashCommandGroup("reactions", "Reactions roles commands!")
+    reaction = app_commands.Group(
+        name="reaction", description="Reaction releated commands"
+    )
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -104,34 +106,34 @@ class Reactions(commands.Cog, name="reaction"):
         if reactions:
             await reactions.delete()
 
-    @reactions.command()
-    @commands.has_permissions(manage_roles=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @reaction.command(name="add")
+    @app_commands.checks.has_permissions(manage_roles=True)
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.rename(_type="type")
+    @app_commands.describe(_type="Reaction type")
+    @app_commands.choices(
+        _type=[
+            Choice(name="normal", value=0),  # Add or remove role
+            Choice(name="unique", value=1),  # Only one role per messages
+            Choice(name="verify", value=2),  # Claim one time for ever
+            Choice(name="drop", value=3),  # Can only remove role
+        ]
+    )
     async def add(
         self,
-        ctx: ApplicationContext,
+        interaction: discord.Interaction,
         message_id: str,
         emoji: str,
         role: Role,
-        _type: Option(
-            int,
-            name="type",
-            description="Reaction type",
-            choices=[
-                OptionChoice(name="normal", value=0),  # Add or remove role
-                OptionChoice(name="unique", value=1),  # Only one role per messages
-                OptionChoice(name="verify", value=2),  # Claim one time for ever
-                OptionChoice(name="drop", value=3),  # Can only remove role
-            ],
-        ) = 0,
+        _type: Choice[int] = 0,
     ):
         """Add a reaction role to a message"""
 
         try:
-            msg: Message = await ctx.fetch_message(message_id)
+            msg: Message = await interaction.channel.fetch_message(message_id)
         except NotFound:
-            return await ctx.respond(
-                embed=EtherEmbeds.error(_("Message not found!")),
+            return await interaction.response.send_message(
+                embed=Embed.error(_("Message not found!")),
                 ephemeral=True,
                 delete_after=5,
             )
@@ -142,13 +144,18 @@ class Reactions(commands.Cog, name="reaction"):
                 role_id=role.id, reaction=emoji
             )
             await Database.ReactionRole.update_or_create(
-                message_id=msg.id, guild_id=ctx.guild.id, option=option, _type=_type
+                message_id=msg.id,
+                guild_id=interaction.guild.id,
+                option=option,
+                _type=_type,
             )
 
-            await ctx.respond("✅ Done !", delete_after=5, ephemeral=True)
+            await interaction.response.send_message(
+                "✅ Done !", delete_after=5, ephemeral=True
+            )
         except HTTPException:
-            await ctx.respond(
-                embed=EtherEmbeds.error(_("Emoji not found!")),
+            await interaction.response.send_message(
+                embed=Embed.error(_("Emoji not found!")),
                 ephemeral=True,
                 delete_after=5,
             )

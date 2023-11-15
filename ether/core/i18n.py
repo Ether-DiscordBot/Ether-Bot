@@ -3,6 +3,7 @@ from os import path
 from functools import wraps
 
 from typing import Any, Callable, Optional
+import discord
 from pycord18n.i18n import InvalidTranslationKeyError
 from pycord18n.extension import I18nExtension, _
 from pycord18n.language import Language
@@ -75,8 +76,8 @@ def translate(string: str, locale: Optional[str] = None, **kwargs) -> str:
         return string
 
 
-def get_locale(ctx: Context) -> str:
-    locale = ctx.locale.split("-")[0]
+def get_locale(interaction: discord.Interaction) -> str:
+    locale = interaction.locale.split("-")[0]
     return locale if locale in i18n._languages else default_locale
 
 

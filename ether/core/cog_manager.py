@@ -18,7 +18,8 @@ class CogManager:
 
     COGS_PATH = Path(ether.cogs.__path__[0])
 
-    async def paths() -> List[str]:
+    @classmethod
+    async def paths(cls) -> List[str]:
         """Get the paths of the __init__.py files in the cogs directory
 
         Returns
@@ -35,7 +36,8 @@ class CogManager:
             and d not in banned_dir
         ]
 
-    async def load_cogs(self):
+    @classmethod
+    async def load_cogs(cls, ether):
         """Load cogs
 
         This function goes to all folders in the ether/cogs/ folder and loads all cogs.
@@ -44,7 +46,7 @@ class CogManager:
 
         paths = await CogManager.paths()
 
-        ignoring_cogs = "reddit"
+        ignoring_cogs = []
 
         init_file = "__init__.py"
 
@@ -62,9 +64,6 @@ class CogManager:
                         continue
                     mod = importlib.import_module(name, package=package)
                     try:
-                        mod.setup(self)
-                        log.info(
-                            f"[{paths.index(path) + 1}/{len(paths)}] Commands loaded in {mod.__name__}"
-                        )
+                        await mod.setup(ether)
                     except Exception as e:
                         raise e

@@ -1,9 +1,12 @@
 import os
 import random
 
-from discord import ApplicationContext, Embed, File, HTTPException, errors
+import discord
+from discord import File, HTTPException
 from discord.ext import commands
+from discord.ext.commands import Context, errors
 import gitinfo
+import wavelink
 
 from ether import __version__
 from ether.cogs.event.welcomecard import WelcomeCard
@@ -11,8 +14,7 @@ from ether.core.db.client import Database, Guild, GuildUser
 from ether.core.logging import log
 from ether.core.i18n import init_i18n
 from ether.core.config import config
-from ether.core.utils import EtherEmbeds
-from ether.core.voice_client import EtherPlayer
+from ether.core.embed import Embed
 
 
 class Event(commands.Cog):
@@ -29,7 +31,7 @@ class Event(commands.Cog):
 
         log.info(
             f"""\n\n
-         ____   _   _                  
+         ____   _    _                  
         ( ,__\ ( )_ ( )                 
         | (_   | ,_)| |__     __   ____ 
         | ,_)  | |  |  _  \ /'__`\(  __)
@@ -54,8 +56,6 @@ class Event(commands.Cog):
         Global SC:      {config.bot.get('global')}
         """
         )
-
-        await self.client.start_lavalink_node(init=True)
 
         init_i18n(self.client)
 
@@ -95,47 +95,49 @@ class Event(commands.Cog):
                 return
 
     @commands.Cog.listener()
-    async def on_message(self, ctx):
-        if ctx.author.bot:
+    async def on_message(self, message: discord.Message):
+        if message.author.bot:
             return
 
-        if Database.client != None and ctx.guild:
-            guild = await Guild.from_guild_object(ctx.guild)
-            await GuildUser.from_member_object(ctx.author)
+        if Database.client != None and message.guild:
+            guild = await Guild.from_guild_object(message.guild)
+            await GuildUser.from_member_object(message.author)
             if random.randint(1, 100) <= 33:
                 new_level = await Database.GuildUser.add_exp(
-                    ctx.author.id, ctx.guild.id, 4 * guild.exp_mult
+                    message.author.id, message.guild.id, 4 * guild.exp_mult
                 )
                 if not new_level:
                     return
-                if not ctx.channel.permissions_for(ctx.guild.me).send_messages:
+                if not message.channel.permissions_for(message.guild.me).send_messages:
                     return
                 if guild.logs and guild.logs.join and guild.logs.join.enabled:
-                    await ctx.channel.send(
-                        f"Congratulation <@{ctx.author.id}>, you just pass to level {new_level}!"
+                    await message.channel.send(
+                        f"Congratulation <@{message.author.id}>, you just pass to level {new_level}!"
                     )
 
     @commands.Cog.listener()
-    async def on_application_command_completion(self, ctx):
+    async def on_application_command_completion(self, interaction: discord.Interaction):
         if random.randint(1, 100) <= 1:
             embed = Embed(
                 title="Support us (we need money)!",
                 description="Ether is a free and open source bot, please vote for the bot on [Top.gg](https://top.gg/bot/985100792270819389) and consider supporting us on [Ko-fi](https://ko-fi.com/holycrusader)!\n"
-                "(we only need 7$ per month to keep the bot running)",
+                "(we need 14$ per month to keep the bot running properly)",
                 color=0x2F3136,
             )
 
-            if not ctx.channel.can_send():
+            if not interaction.message.channel.can_send():
                 return
 
-            await ctx.respond(embed=embed, ephemeral=True)
+            await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @commands.Cog.listener()
-    async def remove_cog(self, ctx: ApplicationContext, extension):
+    async def remove_cog(self, interaction: discord.Interaction, extension):
         log.info(f"Removed cog: {extension}")
 
     @commands.Cog.listener()
-    async def on_application_command_error(self, ctx: ApplicationContext, error):
+    async def on_command_error(self, interaction: discord.Interaction, error):
+        print("BOOOOOOOOOOOOOOOOOOOOOOOOOOBA")
+
         ignored = (
             commands.NoPrivateMessage,
             commands.DisabledCommand,
@@ -151,8 +153,8 @@ class Event(commands.Cog):
             return
 
         if isinstance(error, commands.errors.CommandOnCooldown):
-            return await ctx.respond(
-                embed=EtherEmbeds.error(
+            return await interaction.response.send_message(
+                embed=Embed.error(
                     f"This command is on cooldown, please retry in `{error.retry_after:.2f}s`."
                 ),
                 ephemeral=True,
@@ -163,7 +165,7 @@ class Event(commands.Cog):
             and error.args[0]
             == "Websocket is not connected but attempted to listen, report this."
         ):
-            player: EtherPlayer = ctx.guild.voice_client
+            player: wavelink.Player = interaction.guild.voice_client
 
             if player:
                 log.error(
@@ -172,13 +174,17 @@ class Event(commands.Cog):
                 log.error(f"\t => Available: {player.node.available}")
                 log.error(f"\t => Uptime: {player.node.stats.uptime}")
 
-        await ctx.respond(
-            embed=EtherEmbeds.error(
+        await interaction.response.send_message(
+            embed=Embed.error(
                 description=f"An error occured while executing this command, please retry later.\n If the problem persist, please contact the support.\n\n Error: `{error.__class__.__name__}({error})`"
             ),
             ephemeral=True,
         )
 
-        log.error(f"Error on command {ctx.command}")
-        log.error(f" => Selected options: {ctx.selected_options}")
+        log.error(f"Error on command {interaction.command}")
+        log.error(f" => Selected parameters: {str(interaction.command.parameters)}")
         raise error
+
+    @commands.Cog.listener()
+    async def on_shard_ready(self, shard_id):
+        log.info(f"Shard {shard_id} ready!")

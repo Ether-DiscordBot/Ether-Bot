@@ -1,5 +1,7 @@
 import logging
 
+from ether.core.config import config
+
 
 class EtherFormatter(logging.Formatter):
 
@@ -27,16 +29,20 @@ class EtherFormatter(logging.Formatter):
         return formatter.format(record)
 
 
-log = logging.getLogger("ether")
-werkzeug = logging.getLogger("werkzeug")
-log.setLevel(logging.DEBUG)
-werkzeug.setLevel(logging.INFO)
+def setup_logger(logger_name: str, level=None) -> logging.Logger:
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(level if level else logging.WARNING)
 
-stream = logging.StreamHandler()
-stream.setFormatter(EtherFormatter())
-log.addHandler(stream)
-werkzeug.addHandler(stream)
+    stream = logging.StreamHandler()
+    stream.setFormatter(EtherFormatter())
+    logger.addHandler(stream)
 
-file = logging.FileHandler("logs.log")
+    file = logging.FileHandler("logs.log")
+    logger.addHandler(file)
 
-log.addHandler(file)
+    return logger
+
+
+log = setup_logger("ether", config.get("logLevel"))
+setup_logger("werkzeug")
+setup_logger("discord")
