@@ -161,41 +161,42 @@ class MusicEvent(commands.Cog):
             await player.play(player.queue.pop(0))
 
     @commands.Cog.listener()
-    async def on_wavelink_stats_update(self, payload: wavelink.StatsEventPayload):
-        for player in payload.players:
-            if not player.current:
-                await player.disconnect()
+    async def on_wavelink_player_update(
+        self, payload: wavelink.PlayerUpdateEventPayload
+    ):
+        player = payload.player
 
-            if not hasattr(player, "message"):
-                continue
-            message: discord.Message = player.message
-            if not message:
-                continue
+        if not player.current:
+            await player.disconnect()
 
-            embed = message.embeds[0]
+        if not hasattr(player, "message"):
+            return
 
-            length = format_td(datetime.timedelta(milliseconds=player.current.length))
+        message: discord.Message = player.message
+        if not message:
+            return
 
-            min_max_pos = max(min(player.position, player.current.length), 0)
-            position = format_td(datetime.timedelta(milliseconds=min_max_pos))
-            pointer_pos = int((min_max_pos / player.current.length) * 30)
+        embed = message.embeds[0]
 
-            range_pos = max(
-                min(player.position + 60000, player.current.length), min_max_pos
-            )
-            range_pointer_pos = min(int((range_pos / player.current.length) * 30), 30)
+        length = format_td(datetime.timedelta(milliseconds=player.current.length))
 
-            range = ["─"] * 30
-            range[pointer_pos:range_pointer_pos] = "░" * (
-                range_pointer_pos - pointer_pos
-            )
-            range[pointer_pos] = "█"
-            range = "".join(range[:30])
+        min_max_pos = max(min(player.position, player.current.length), 0)
+        position = format_td(datetime.timedelta(milliseconds=min_max_pos))
+        pointer_pos = int((min_max_pos / player.current.length) * 30)
 
-            description = f"`{position}` {range} `{length}`"
-            embed.description = description
-            edited_message = await message.edit(embed=embed)
-            setattr(player, "message", edited_message)
+        range_pos = max(
+            min(player.position + 60000, player.current.length), min_max_pos
+        )
+        range_pointer_pos = min(int((range_pos / player.current.length) * 30), 30)
+        range = ["─"] * 30
+        range[pointer_pos:range_pointer_pos] = "░" * (range_pointer_pos - pointer_pos)
+        range[pointer_pos] = "█"
+        range = "".join(range[:30])
+
+        description = f"`{position}` {range} `{length}`"
+        embed.description = description
+        edited_message = await message.edit(embed=embed)
+        setattr(player, "message", edited_message)
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, _before, _after):
@@ -229,8 +230,6 @@ class MusicEvent(commands.Cog):
     async def on_wavelink_node_ready(
         self, payload: wavelink.NodeReadyEventPayload
     ) -> None:
-        node = payload.node
+        node: wavelink.Node = payload.node
 
-        if not node.label in self.client.ready_nodes:
-            log.info(f"Node {node.label} is ready")
-            self.client.ready_nodes.append(node.label)
+        log.info(f"Node {node.identifier} is ready")
