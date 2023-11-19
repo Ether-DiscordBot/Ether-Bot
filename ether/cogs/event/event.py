@@ -124,7 +124,7 @@ class Event(commands.GroupCog):
                 color=0x2F3136,
             )
 
-            if not interaction.message.channel.can_send():
+            if not interaction.channel.can_send():
                 return
 
             await interaction.response.send_message(embed=embed, ephemeral=True)

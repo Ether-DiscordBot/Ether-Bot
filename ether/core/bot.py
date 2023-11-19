@@ -39,7 +39,7 @@ class Ether(commands.bot.AutoShardedBot):
                 count += 1
             return count
 
-        commands_count = cmd_count(cog.get_app_commands())
+        commands_count = cmd_count(cog.walk_app_commands())
 
         log.info(f"{commands_count} commands added from the cog {cog.qualified_name}.")
 

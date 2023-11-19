@@ -531,7 +531,7 @@ class Music(commands.GroupCog, group_name="music"):
     async def playlist(self, interaction: discord.Interaction, playlist_link: str):
         """Setup a playlist player for a YouTube playlist"""
 
-        if not interaction.message.channel.permissions_for(self.user).send_messages:
+        if not interaction.channel.permissions_for(self.user).send_messages:
             return await interaction.response.send_message(
                 embed=ErrorEmbed("Please allow me to send messages!"),
                 ephemeral=True,

@@ -45,7 +45,7 @@ class InformationHandler:
         ).set_image(url=avatar)
 
 
-class Information(commands.Cog, name="information"):
+class Information(commands.GroupCog, name="information"):
     def __init__(self, client):
         self.help_icon = Emoji.INFORMATION
         self.client = client
@@ -62,9 +62,7 @@ class Information(commands.Cog, name="information"):
         )
         self.client.tree.add_command(self.user_avatar_menu)
 
-    info = app_commands.Group(name="info", description="Information related commands")
-
-    @info.command(name="user")
+    @app_commands.command(name="user")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def user(self, interaction: discord.Interaction, member: Member = None):
         """Get information about a user"""
@@ -73,7 +71,7 @@ class Information(commands.Cog, name="information"):
             embed=InformationHandler.get_user_infos(member)
         )
 
-    @info.command(name="server")
+    @app_commands.command(name="server")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def server(self, interaction: discord.Interaction):
         """Get information about the server"""
@@ -102,7 +100,7 @@ class Information(commands.Cog, name="information"):
 
         await interaction.response.send_message(embed=embed)
 
-    @info.command(name="avatar")
+    @app_commands.command(name="avatar")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def avatar(
         self, interaction: discord.Interaction, member: Optional[Member] = None

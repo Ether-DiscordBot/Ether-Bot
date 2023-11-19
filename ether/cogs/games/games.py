@@ -60,7 +60,7 @@ class TicTacToe:
             return 0
 
 
-class Games(commands.Cog, name="games"):
+class Games(commands.GroupCog, name="games"):
     def __init__(
         self,
         client,
@@ -68,9 +68,7 @@ class Games(commands.Cog, name="games"):
         self.help_icon = Emoji.GAMES
         self.client = client
 
-    games = app_commands.Group(name="games", description="Games related commands")
-
-    @games.command(name="tictactoe")
+    @app_commands.command(name="tictactoe")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def tictactoe(
         self, interaction: discord.Interaction, opponent: Optional[Member] = None
@@ -194,7 +192,7 @@ class Games(commands.Cog, name="games"):
         if players[turn].id == self.client.user.id:
             await ai_play(interaction)
 
-    @games.command(name="rps")
+    @app_commands.command(name="rps")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def rps(self, interaction: discord.Interaction, opponent: Member):
         """Play a game of Rock-Paper-Scissors with a friend!"""

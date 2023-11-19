@@ -12,17 +12,15 @@ from PIL import ImageDraw, ImageFont
 from ether.core.constants import Emoji
 from ether.core.i18n import _
 
-ASSETS_FOLDER_PATH = "ether/cogs/image/assets/"
+ASSETS_FOLDER_PATH = "ether/cogs/remix/assets/"
 
 
-class Remix(commands.Cog, name="remix"):
+class Remix(commands.GroupCog, name="remix"):
     def __init__(self, client) -> None:
         self.help_icon = Emoji.IMAGE
         self.client = client
 
-    remix = app_commands.Group(name="remix", description="Remix memes")
-
-    @remix.command(name="hold_up")
+    @app_commands.command(name="hold_up")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def hold_up(self, interaction: discord.Interaction, text: str):
         """Hold up!"""
@@ -33,7 +31,7 @@ class Remix(commands.Cog, name="remix"):
             file=File(fp=image.bytes, filename="hold-up.png")
         )
 
-    @remix.command(name="vault-boy")
+    @app_commands.command(name="vault-boy")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def vault_boy(self, interaction: discord.Interaction, up: str, bottom: str):
         """Vault boy meme"""
@@ -45,7 +43,7 @@ class Remix(commands.Cog, name="remix"):
             file=File(fp=image.bytes, filename="vault_boy.jpg")
         )
 
-    @remix.command(name="mr_incredible")
+    @app_commands.command(name="mr_incredible")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def mr_incredible(
         self, interaction: discord.Interaction, left: str, right: str
@@ -59,7 +57,7 @@ class Remix(commands.Cog, name="remix"):
             file=File(fp=image.bytes, filename="mr_incredible.png")
         )
 
-    @remix.command(name="philosoraptor")
+    @app_commands.command(name="philosoraptor")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def philosoraptor(
         self, interaction: discord.Interaction, top: str, bottom: str
@@ -73,7 +71,7 @@ class Remix(commands.Cog, name="remix"):
             file=File(fp=image.bytes, filename="philosoraptor.png")
         )
 
-    @remix.command(name="never_again")
+    @app_commands.command(name="never_again")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def never_again(
         self, interaction: discord.Interaction, first: str, second: str, third: str
@@ -88,7 +86,7 @@ class Remix(commands.Cog, name="remix"):
             file=File(fp=image.bytes, filename="never_again.png")
         )
 
-    @remix.command(name="doom_bonked_zombie")
+    @app_commands.command(name="doom_bonked_zombie")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def doom_bonked_zombie(self, interaction: discord.Interaction, text: str):
         """Doom bonked zombie meme"""

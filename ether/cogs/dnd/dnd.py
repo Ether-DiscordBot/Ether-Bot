@@ -10,19 +10,18 @@ from ether.core.constants import Emoji
 from ether.core.embed import Embed, ErrorEmbed
 
 
-class DnD(commands.Cog, name="dnd"):
+class DnD(commands.GroupCog, name="dnd"):
     DND_API_URL = "https://www.dnd5eapi.co/api/"
 
     def __init__(self, client) -> None:
         self.help_icon = Emoji.DND
         self.client = client
 
-    dnd = app_commands.Group(name="dnd", description="DnD related commands")
     _class = app_commands.Group(
-        parent=dnd, name="class", description="DnD class related commands"
+        name="class", description="DnD class related commands"
     )
 
-    @dnd.command(name="spells")
+    @app_commands.command(name="spells")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def spells(
         self, interaction: discord.Interaction, spell: Optional[str] = None
@@ -356,7 +355,7 @@ class DnD(commands.Cog, name="dnd"):
         return await interaction.response.send_message(embed=embed)
 
     @commands.is_owner()
-    @dnd.command(name="test")
+    @app_commands.command(name="test")
     async def test(self, interaction: discord.Interaction):
         cls = [
             "barbarian",

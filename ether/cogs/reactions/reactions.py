@@ -11,14 +11,10 @@ from ether.core.embed import Embed, ErrorEmbed
 from ether.core.i18n import _
 
 
-class Reactions(commands.Cog, name="reaction"):
+class Reactions(commands.GroupCog, name="reaction"):
     def __init__(self, client) -> None:
         self.help_icon = Emoji.REACTIONS
         self.client = client
-
-    reaction = app_commands.Group(
-        name="reaction", description="Reaction related commands"
-    )
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -101,7 +97,7 @@ class Reactions(commands.Cog, name="reaction"):
         if reactions:
             await reactions.delete()
 
-    @reaction.command(name="add")
+    @app_commands.command(name="add")
     @app_commands.checks.has_permissions(manage_roles=True)
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.rename(_type="type")

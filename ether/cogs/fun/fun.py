@@ -16,7 +16,7 @@ from ether.core.i18n import _
 from ether.core.utils import NerglishTranslator
 
 
-class Fun(commands.Cog, name="fun"):
+class Fun(commands.GroupCog, name="fun"):
     SUPPORTED_EMBED_FORMAT = ("jpg", "jpeg", "JPG", "JPEG", "png", "PNG", "gif", "gifv")
     HEIGHT_BALL_ANSWERS = [
         [
@@ -53,9 +53,7 @@ class Fun(commands.Cog, name="fun"):
 
         self.giphy_api_key = os.getenv("GIPHY_API_KEY")
 
-    fun = app_commands.Group(name="fun", description="Fun related commands")
-
-    @fun.command(name="gif")
+    @app_commands.command(name="gif")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def gif(self, interaction: discord.Interaction, *, query: str):
         """Search a gif on giphy"""
@@ -75,7 +73,7 @@ class Fun(commands.Cog, name="fun"):
 
         await interaction.response.send_message(gif_url)
 
-    @fun.command(name="sticker")
+    @app_commands.command(name="sticker")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def sticker(self, interaction: discord.Interaction, *, query: str):
         """Search a sticker on giphy"""
@@ -95,7 +93,7 @@ class Fun(commands.Cog, name="fun"):
 
         await interaction.response.send_message(sticker_url)
 
-    @fun.command(name="8-ball")
+    @app_commands.command(name="8-ball")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def height_ball(self, interaction: discord.Interaction, question: str):
         """Ask the magic 8-ball a question!"""
@@ -104,7 +102,7 @@ class Fun(commands.Cog, name="fun"):
             f"🎱 {choice(choice(self.HEIGHT_BALL_ANSWERS))}"
         )
 
-    @fun.command(name="say")
+    @app_commands.command(name="say")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def say(
         self,
@@ -120,12 +118,12 @@ class Fun(commands.Cog, name="fun"):
                 ephemeral=True,
                 delete_after=5,
             )
-            await interaction.message.channel.send(message)
+            await interaction.channel.send(message)
             return
 
         await interaction.response.send_message(message)
 
-    @fun.command(name="howgay")
+    @app_commands.command(name="howgay")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def howgay(
         self, interaction: discord.Interaction, user: Optional[Member] = None
@@ -145,7 +143,7 @@ class Fun(commands.Cog, name="fun"):
             f"{user.mention} is gay at `{gaymeter}%` !"
         )
 
-    @fun.command(name="howattractive")
+    @app_commands.command(name="howattractive")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def howattractive(
         self, interaction: discord.Interaction, user: Optional[Member] = None
@@ -165,7 +163,7 @@ class Fun(commands.Cog, name="fun"):
             f"{user.mention} is `{attractivemeter}%` attractive!"
         )
 
-    @fun.command(name="howhot")
+    @app_commands.command(name="howhot")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def howhot(
         self, interaction: discord.Interaction, user: Optional[Member] = None
@@ -183,7 +181,7 @@ class Fun(commands.Cog, name="fun"):
             )
         await interaction.response.send_message(f"{user.mention} is `{hotmeter}%` hot!")
 
-    @fun.command(name="lovecalc")
+    @app_commands.command(name="lovecalc")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def howhot(
         self,
@@ -212,7 +210,7 @@ class Fun(commands.Cog, name="fun"):
             f"{user1.mention} and {user2.mention} are compatible at `{lovecalc}%` {love_emoji} !"
         )
 
-    @fun.command(name="useless_facts")
+    @app_commands.command(name="useless_facts")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def useless_facts(self, interaction: discord.Interaction):
         r = request("GET", "https://uselessfacts.jsph.pl/random.json?language=en")
@@ -224,7 +222,7 @@ class Fun(commands.Cog, name="fun"):
         embed = Embed(title="Useless facts", description=r.json()["text"])
         await interaction.response.send_message(embed=embed)
 
-    @fun.command(name="horoscope")
+    @app_commands.command(name="horoscope")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.describe(sign="Pick a class")
     @app_commands.choices(
@@ -260,14 +258,14 @@ class Fun(commands.Cog, name="fun"):
 
         await interaction.response.send_message(embed=embed)
 
-    @fun.command(name="nerglish")
+    @app_commands.command(name="nerglish")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def nerglish(self, interaction: discord.Interaction, text: str):
         """Translate text to nerglish"""
         translated = NerglishTranslator.translate(text)
         await interaction.response.send_message(translated)
 
-    @fun.command(name="lmgtfy")
+    @app_commands.command(name="lmgtfy")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def lmgtfy(self, interaction: discord.Interaction, text: str):
         """Let me google that for you"""

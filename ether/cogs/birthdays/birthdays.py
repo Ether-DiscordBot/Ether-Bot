@@ -25,7 +25,7 @@ def date_time_left(user):
     return (obj_date - now).days
 
 
-class Birthday(commands.Cog, name="birthday"):
+class Birthday(commands.GroupCog, name="birthday"):
     def __init__(self, client: commands.Bot):
         self.client = client
         self.help_icon = Emoji.BIRTHDAY
@@ -34,11 +34,8 @@ class Birthday(commands.Cog, name="birthday"):
         scheduler.add_job(self.birthdays_loop, "cron", minute=0)
         scheduler.start()
 
-    birthday = app_commands.Group(
-        name="birthday", description="Birthday related commands"
-    )
     config = app_commands.Group(
-        parent=birthday, name="config", description="Birthday related commands"
+        name="config", description="Birthday related commands"
     )
 
     async def birthdays_loop(self):
@@ -75,7 +72,7 @@ class Birthday(commands.Cog, name="birthday"):
                 age = f"({now.year - user.birthday.year})" if user.birthday.year else ""
                 await channel.send(f"It's the birthday of <@{user.user_id}> {age} 🎂!")
 
-    @birthday.command(name="remember")
+    @app_commands.command(name="remember")
     @app_commands.checks.has_permissions(manage_guild=True)
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.describe(date="Date (dd/mm/yyyy) or (dd/mm)")
@@ -121,7 +118,7 @@ class Birthday(commands.Cog, name="birthday"):
             )
         )
 
-    @birthday.command(name="forget")
+    @app_commands.command(name="forget")
     @app_commands.checks.has_permissions(manage_guild=True)
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def forget(self, interaction: discord.Interaction, user: Member):
@@ -133,7 +130,7 @@ class Birthday(commands.Cog, name="birthday"):
             embed=Embed.success(f"I won't remember {user.mention}'s birthday anymore!")
         )
 
-    @birthday.command(name="show")
+    @app_commands.command(name="show")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def show(self, interaction: discord.Interaction, user: Member):
         """Show a user's birthday"""
@@ -150,7 +147,7 @@ class Birthday(commands.Cog, name="birthday"):
             )
         )
 
-    @birthday.command(name="list")
+    @app_commands.command(name="list")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def list(self, interaction: discord.Interaction):
         """List the 10 upcoming birthdays"""
@@ -197,7 +194,7 @@ class Birthday(commands.Cog, name="birthday"):
         self, interaction: discord.Interaction, channel: Optional[TextChannel] = None
     ):
         """Set the channel where the bot will post the birthday messages"""
-        channel = channel or interaction.message.channel
+        channel = channel or interaction.channel
 
         guild = await Guild.from_id(interaction.guild.id)
         await guild.set({Guild.birthday.channel_id: channel.id})

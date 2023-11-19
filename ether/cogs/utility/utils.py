@@ -29,14 +29,12 @@ def hltb_time(time: float) -> str:
     return f"{''.join(time)} Hours"
 
 
-class Utils(commands.Cog, name="utils"):
+class Utils(commands.GroupCog, name="utils"):
     def __init__(self, client):
         self.client = client
         self.help_icon = Emoji.UTILITY
 
-    utils = app_commands.Group(name="utils", description="Utility related commands")
-
-    @utils.command()
+    @app_commands.command()
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def vote(self, interaction: discord.Interaction) -> None:
         """Get the link to vote for the bot"""
@@ -50,7 +48,7 @@ class Utils(commands.Cog, name="utils"):
             )
         )
 
-    @utils.command()
+    @app_commands.command()
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def changelog(self, interaction: discord.Interaction) -> None:
         """Get the changelog"""
@@ -67,7 +65,7 @@ class Utils(commands.Cog, name="utils"):
 
         await interaction.response.send_message(f"```md\n{changelog}\n```")
 
-    @utils.command()
+    @app_commands.command()
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def ping(self, interaction: discord.Interaction) -> None:
         """Pong!"""
@@ -86,7 +84,7 @@ class Utils(commands.Cog, name="utils"):
             )
         )
 
-    @utils.command()
+    @app_commands.command()
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def status(self, interaction: discord.Interaction) -> None:
         """Show the status of Ether"""
@@ -98,14 +96,14 @@ class Utils(commands.Cog, name="utils"):
             )
         )
 
-    @utils.command(name="flipcoin")
+    @app_commands.command(name="flipcoin")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def flip_coin(self, interaction: discord.Interaction) -> None:
         """Flip a coin"""
         result = _("Heads") if round(random()) else _("Tails")
         await interaction.response.send_message(result)
 
-    @utils.command(name="choose")
+    @app_commands.command(name="choose")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def choose(
         self,
@@ -193,7 +191,7 @@ class Utils(commands.Cog, name="utils"):
             f"\n╚══════{'═' * max(6, most_larger_dice_str-4)}╩═════════{'═' * max(0, most_details_dice_str-7)}╩═════{'═' * max(1, most_larger_result_str-5)}╝```"
         )
 
-    @utils.command(name="urban")
+    @app_commands.command(name="urban")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def urban(self, interaction: discord.Interaction, term: str):
         """Search for a term on Urban Dictionary"""
@@ -238,7 +236,7 @@ class Utils(commands.Cog, name="utils"):
                 delete_after=5,
             )
 
-    @utils.command(name="howlongtobeat")
+    @app_commands.command(name="howlongtobeat")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def howlongtobeat(self, interaction: discord.Interaction, game: str):
         """Get the time to beat a game"""
@@ -281,7 +279,7 @@ class Utils(commands.Cog, name="utils"):
 
         await interaction.response.send_message(embed=embed)
 
-    @utils.command(name="rocket_launches")
+    @app_commands.command(name="rocket_launches")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.choices(
         timezone=[

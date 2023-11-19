@@ -18,14 +18,12 @@ from ether.core.i18n import _
 from ether.core.utils import LevelsHandler
 
 
-class Levels(commands.Cog, name="levels"):
+class Levels(commands.GroupCog, name="levels"):
     def __init__(self, client):
         self.client = client
         self.help_icon = Emoji.LEVELS
 
-    levels = app_commands.Group(name="levels", description="Leveling related commands")
-
-    @levels.command(name="boosters")
+    @app_commands.command(name="boosters")
     @app_commands.checks.has_permissions(moderate_members=True)
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.describe(
@@ -53,14 +51,14 @@ class Levels(commands.Cog, name="levels"):
             delete_after=5,
         )
 
-    @levels.command(name="xp")
+    @app_commands.command(name="xp")
     @app_commands.checks.has_permissions(moderate_members=True)
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def xp(self, interaction: discord.Interaction, level: int = -1, xp: int = -1):
         """Set the xp or the level"""
         # TODO Set a user to a specific level or xp value
 
-    @levels.command(name="leaderboard")
+    @app_commands.command(name="leaderboard")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def leaderboard(self, interaction: discord.Interaction):
         """Get the leaderboard of the server"""
@@ -86,7 +84,7 @@ class Levels(commands.Cog, name="levels"):
 
         await interaction.response.send_message(embed=embed)
 
-    @levels.command(name="set_background")
+    @app_commands.command(name="set_background")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.describe(background="Choose the background of your rank card")
     @app_commands.choices(
@@ -111,7 +109,7 @@ class Levels(commands.Cog, name="levels"):
             delete_after=5,
         )
 
-    @levels.command(name="profile")
+    @app_commands.command(name="profile")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def profile(
         self, interaction: discord.Interaction, member: Optional[discord.Member] = None

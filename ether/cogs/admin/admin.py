@@ -13,19 +13,16 @@ from ether.core.i18n import _
 from ether.core.logs import EtherLogs
 
 
-class Admin(commands.Cog, name="admin"):
+class Admin(commands.GroupCog, name="admin"):
     def __init__(self, client):
         self.help_icon = Emoji.ADMIN
         self.client = client
 
-    admin = app_commands.Group(
-        name="admin", description="Admin related commands", guild_only=True
-    )
     config = app_commands.Group(
-        parent=admin, name="config", description="Admin configuration related commands"
+        name="config", description="Admin configuration related commands"
     )
 
-    @admin.command(name="ban")
+    @app_commands.command(name="ban")
     @app_commands.checks.has_permissions(ban_members=True)
     @app_commands.checks.bot_has_permissions(ban_members=True)
     async def ban(
@@ -50,7 +47,7 @@ class Admin(commands.Cog, name="admin"):
                         embed=EtherLogs.ban(
                             member,
                             interaction.message.author.id,
-                            interaction.message.channel.id,
+                            interaction.channel.id,
                             reason,
                         )
                     )
@@ -63,7 +60,7 @@ class Admin(commands.Cog, name="admin"):
                 )
             )
 
-    @admin.command(name="kick")
+    @app_commands.command(name="kick")
     @app_commands.checks.has_permissions(kick_members=True)
     @app_commands.checks.bot_has_permissions(kick_members=True)
     async def kick(
@@ -93,7 +90,7 @@ class Admin(commands.Cog, name="admin"):
                         embed=EtherLogs.kick(
                             member,
                             interaction.message.author.id,
-                            interaction.message.channel.id,
+                            interaction.channel.id,
                             reason,
                         )
                     )
@@ -106,24 +103,24 @@ class Admin(commands.Cog, name="admin"):
                 )
             )
 
-    @admin.command(name="clear")
+    @app_commands.command(name="clear")
     @app_commands.checks.has_permissions(manage_messages=True)
     @app_commands.checks.bot_has_permissions(manage_messages=True)
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def clear(self, interaction: discord.Interaction, amount: int):
         """Clear a specific amount of messages"""
-        deleted = await interaction.message.channel.purge(limit=amount + 1)
+        deleted = await interaction.channel.purge(limit=amount + 1)
         embed = Embed(description=f"Deleted {len(deleted) - 1} message(s).")
         embed.colour = Colors.SUCCESS
         await interaction.response.send_message(embed=embed, delete_after=5)
 
-    @admin.command(name="slowmode")
+    @app_commands.command(name="slowmode")
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.checks.bot_has_permissions(manage_channels=True)
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def slowmode(self, interaction: discord.Interaction, cooldown: int):
         """Set the slowmode of the channel"""
-        await interaction.message.channel.edit(slowmode_delay=cooldown)
+        await interaction.channel.edit(slowmode_delay=cooldown)
         if cooldown == 0:
             await interaction.response.send_message("✅ Slowmode disabled!")
             return
@@ -144,7 +141,7 @@ class Admin(commands.Cog, name="admin"):
         """Set the welcome channel"""
         guild = await Database.Guild.get_or_create(interaction.guild.id)
 
-        channel = channel or interaction.message.channel
+        channel = channel or interaction.channel
         await guild.set(
             {
                 Guild.logs: Logs(
@@ -178,7 +175,7 @@ class Admin(commands.Cog, name="admin"):
         """Set the leave channel"""
         guild = await Database.Guild.get_or_create(interaction.guild.id)
 
-        channel = channel or interaction.message.channel
+        channel = channel or interaction.channel
         await guild.set(
             {
                 Guild.logs: Logs(
@@ -213,7 +210,7 @@ class Admin(commands.Cog, name="admin"):
         """Set the log channel"""
         guild = await Database.Guild.get_or_create(interaction.guild.id)
 
-        channel = channel or interaction.message.channel
+        channel = channel or interaction.channel
         await guild.set(
             {
                 Guild.logs: Logs(

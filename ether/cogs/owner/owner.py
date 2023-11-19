@@ -9,16 +9,14 @@ from ether.core.constants import Emoji
 from ether.core.embed import Embed, ErrorEmbed
 
 
-class Owner(commands.Cog, name="owner"):
+class Owner(commands.GroupCog, name="owner"):
     LOGS_FILE_PATH = os.path.abspath("logs.log")
 
     def __init__(self, client):
         self.client = client
         self.help_icon = Emoji.OWNER
 
-    owner = app_commands.Group(name="owner", description="Owner related commands")
-
-    @owner.command(name="logs")
+    @app_commands.command(name="logs")
     @commands.is_owner()
     async def logs(self, interaction: discord.Interaction, file: bool = False):
         """Get the logs"""
@@ -33,7 +31,7 @@ class Owner(commands.Cog, name="owner"):
                     f"```{text[len(text)-1994:]}```", ephemeral=True
                 )
 
-    @owner.command(name="clear_logs")
+    @app_commands.command(name="clear_logs")
     @commands.is_owner()
     async def clear_logs(self, interaction: discord.Interaction):
         """Clear the logs"""
@@ -41,14 +39,14 @@ class Owner(commands.Cog, name="owner"):
             f.write("")
         await interaction.response.send_message("Logs cleared", ephemeral=True)
 
-    @owner.command(name="test_welcome_card")
+    @app_commands.command(name="test_welcome_card")
     @commands.is_owner()
     async def test_welcome_card(self, interaction: discord.Interaction):
         card = WelcomeCard.create_card(
             interaction.message.author, interaction.message.author.guild
         )
         try:
-            await interaction.message.channel.send(
+            await interaction.channel.send(
                 file=File(
                     fp=card, filename=f"welcome_{interaction.message.author.name}.png"
                 )
@@ -60,7 +58,7 @@ class Owner(commands.Cog, name="owner"):
             )
         return await interaction.response.send_message("Done!", ephemeral=True)
 
-    @owner.command(name="server_count")
+    @app_commands.command(name="server_count")
     @commands.is_owner()
     async def server_count(self, interaction: discord.Interaction):
         """Get the server count"""

@@ -10,13 +10,11 @@ from ether.core.i18n import _
 from ether.core.logging import log
 
 
-class Steam(commands.Cog, name="steam"):
+class Steam(commands.GroupCog, name="steam"):
     def __init__(self, client) -> None:
         self.help_icon = Emoji.STEAM
         self.client = client
         self.fetch_app_list.start()
-
-    steam = app_commands.Group(name="steam", description="Steam related game")
 
     def search(self, game: str):
         """Search a game in the steam store"""
@@ -40,7 +38,7 @@ class Steam(commands.Cog, name="steam"):
 
         self.steam_app_list = r["applist"]["apps"]
 
-    @steam.command(name="game")
+    @app_commands.command(name="game")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def get_game(self, interaction: discord.Interaction, query: str):
         """Get infos about a game"""
@@ -106,7 +104,7 @@ class Steam(commands.Cog, name="steam"):
 
         await interaction.response.send_message(embed=embed)
 
-    @steam.command(name="specials")
+    @app_commands.command(name="specials")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def specials(self, interaction: discord.Interaction):
         """Get the current steam specials"""
@@ -127,7 +125,7 @@ class Steam(commands.Cog, name="steam"):
 
         await interaction.response.send_message(embed=embed)
 
-    @steam.command(name="top")
+    @app_commands.command(name="top")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def top(self, interaction: discord.Interaction):
         """Get the current steam top sellers"""
@@ -150,7 +148,7 @@ class Steam(commands.Cog, name="steam"):
 
         await interaction.response.send_message(embed=embed)
 
-    @steam.command(name="new")
+    @app_commands.command(name="new")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def new(self, interaction: discord.Interaction):
         """Get the current steam new releases"""
