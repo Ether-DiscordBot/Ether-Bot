@@ -1,19 +1,19 @@
 from typing import Optional
 
 import discord
-from discord import Embed, Member, TextChannel, User, app_commands
-from discord.ext.commands import Cog
+from discord import Member, TextChannel, User, app_commands
+from discord.ext import commands
 from humanize import precisedelta
 
-from ether.core.constants import Colors
-from ether.core.db.client import Database, Guild, Logs, JoinLog, LeaveLog, ModerationLog
-from ether.core.logs import EtherLogs
-from ether.core.embed import Embed
-from ether.core.constants import Emoji
+from ether.core.constants import Colors, Emoji
+from ether.core.db.client import (Database, Guild, JoinLog, LeaveLog, Logs,
+                                  ModerationLog)
+from ether.core.embed import Embed, ErrorEmbed
 from ether.core.i18n import _
+from ether.core.logs import EtherLogs
 
 
-class Admin(Cog, name="admin"):
+class Admin(commands.Cog, name="admin"):
     def __init__(self, client):
         self.help_icon = Emoji.ADMIN
         self.client = client
@@ -36,7 +36,7 @@ class Admin(Cog, name="admin"):
 
         if not guild:
             interaction.response.send_message(
-                embed=Embed.error("Sorry, an unexpected error has occurred!"),
+                embed=ErrorEmbed("Sorry, an unexpected error has occurred!"),
                 delete_after=5,
             )
 
@@ -58,7 +58,7 @@ class Admin(Cog, name="admin"):
             return await interaction.response.send_message("✅ Done")
         except discord.errors.Forbidden:
             await interaction.response.send_message(
-                embed=Embed.error(
+                embed=ErrorEmbed(
                     "Can't do that. Probably because I don't have the permissions for."
                 )
             )
@@ -77,7 +77,7 @@ class Admin(Cog, name="admin"):
 
         if not guild:
             interaction.response.send_message(
-                embed=Embed.error("Sorry, an unexpected error has occurred!"),
+                embed=ErrorEmbed("Sorry, an unexpected error has occurred!"),
                 delete_after=5,
             )
 
@@ -101,7 +101,7 @@ class Admin(Cog, name="admin"):
             return await interaction.response.send_message("✅ Done")
         except discord.errors.Forbidden:
             await interaction.response.send_message(
-                embed=Embed.error(
+                embed=ErrorEmbed(
                     "Can't do that. Probably because I don't have the permissions for."
                 )
             )

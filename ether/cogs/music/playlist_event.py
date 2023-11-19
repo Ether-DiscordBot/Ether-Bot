@@ -1,6 +1,6 @@
 import random
-import discord
 
+import discord
 from discord.ext import commands
 
 from ether.core.constants import Other

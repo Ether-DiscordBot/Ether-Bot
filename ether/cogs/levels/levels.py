@@ -2,20 +2,20 @@ import base64
 import io
 import os
 from typing import Optional
-import discord
 
+import discord
 import requests
-from PIL import Image, ImageDraw, ImageFont
 from discord import File, app_commands
 from discord.app_commands import Choice
-from discord.ext.commands import Context
 from discord.ext import commands
+from discord.ext.commands import Context
+from PIL import Image, ImageDraw, ImageFont
 
+from ether.core.constants import Emoji
+from ether.core.db import Database, Guild, GuildUser, User
+from ether.core.embed import Embed, ErrorEmbed
 from ether.core.i18n import _
 from ether.core.utils import LevelsHandler
-from ether.core.db import Database, User, GuildUser, Guild
-from ether.core.constants import Emoji
-from ether.core.embed import Embed
 
 
 class Levels(commands.Cog, name="levels"):
@@ -23,7 +23,7 @@ class Levels(commands.Cog, name="levels"):
         self.client = client
         self.help_icon = Emoji.LEVELS
 
-    levels = app_commands.Group(name="levels", description="Leveling releated commands")
+    levels = app_commands.Group(name="levels", description="Leveling related commands")
 
     @levels.command(name="boosters")
     @app_commands.checks.has_permissions(moderate_members=True)
@@ -59,7 +59,6 @@ class Levels(commands.Cog, name="levels"):
     async def xp(self, interaction: discord.Interaction, level: int = -1, xp: int = -1):
         """Set the xp or the level"""
         # TODO Set a user to a specific level or xp value
-        pass
 
     @levels.command(name="leaderboard")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
@@ -124,7 +123,7 @@ class Levels(commands.Cog, name="levels"):
 
         if not db_guild_user or not db_user:
             return await interaction.response.send_message(
-                embed=Embed.error("Error when trying to get your profile!")
+                embed=ErrorEmbed("Error when trying to get your profile!")
             )
         card = CardHandler.create_card(user, db_user, db_guild_user)
         image = io.BytesIO(base64.b64decode(card))

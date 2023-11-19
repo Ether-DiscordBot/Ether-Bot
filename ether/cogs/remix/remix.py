@@ -2,15 +2,15 @@ import io
 import os
 import re
 
-from discord import app_commands, File
 import discord
-from discord.ext.commands import Context
+from discord import File, app_commands
 from discord.ext import commands
-from PIL import Image as Img, ImageDraw, ImageFont
+from discord.ext.commands import Context
+from PIL import Image as Img
+from PIL import ImageDraw, ImageFont
 
-from ether.core.i18n import _
 from ether.core.constants import Emoji
-
+from ether.core.i18n import _
 
 ASSETS_FOLDER_PATH = "ether/cogs/image/assets/"
 
@@ -124,8 +124,8 @@ class ImageModifier:
         height = draw.textlength(text, ImageModifier.FONT, "ttb") + 5
         i = 0
         for match in sentences:
-            splitted = match.group().split("\\n")
-            for subs in splitted:
+            split = match.group().split("\\n")
+            for subs in split:
                 if max_lines > 0 and i >= max_lines:
                     break
                 draw.text(

@@ -1,17 +1,17 @@
 import datetime
 from typing import Optional
 
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import discord
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from discord import Member, TextChannel, app_commands
 from discord.app_commands import Choice
 from discord.ext import commands
 from discord.ext.commands import Context
-from ether.core.constants import Emoji
 
+from ether.core.constants import Emoji
 from ether.core.db import Guild, GuildUser
 from ether.core.db.client import Date
-from ether.core.embed import Embed
+from ether.core.embed import Embed, ErrorEmbed
 from ether.core.logging import log
 
 
@@ -101,7 +101,7 @@ class Birthday(commands.Cog, name="birthday"):
                 raise ValueError("Invalid date format")
         except ValueError:
             return await interaction.response.send_message(
-                embed=Embed.error("Invalid date format! (dd/mm/yyyy) or (dd/mm)")
+                embed=ErrorEmbed("Invalid date format! (dd/mm/yyyy) or (dd/mm)")
             )
 
         db_user = await GuildUser.from_id(
@@ -141,7 +141,7 @@ class Birthday(commands.Cog, name="birthday"):
 
         if not db_user.birthday:
             return await interaction.response.send_message(
-                embed=Embed.error("This user doesn't have a birthday set!")
+                embed=ErrorEmbed("This user doesn't have a birthday set!")
             )
 
         await interaction.response.send_message(

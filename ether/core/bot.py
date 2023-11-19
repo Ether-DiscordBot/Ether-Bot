@@ -1,15 +1,16 @@
-import asyncio
 
-from discord import Intents
 import discord
-from discord.ext import commands
 import wavelink
+from discord import Intents
+from discord.ext import commands
 
 from ether import __version__
-from ether.core.config import config
 from ether.core.cog_manager import CogManager
-from ether.core.logging import log
+from ether.core.config import config
 from ether.core.constants import NODE_CODE_NAME
+from ether.core.db.client import init_database
+from ether.core.logging import log
+from ether.core.tree import Tree
 
 
 class Ether(commands.bot.AutoShardedBot):
@@ -18,7 +19,7 @@ class Ether(commands.bot.AutoShardedBot):
     def __init__(self, *, cli_flags=None, **kwargs) -> None:
         intents = Intents.all()
         super().__init__(
-            command_prefix=None, intents=intents, help_command=None, **kwargs
+            command_prefix=None, intents=intents, help_command=None, tree_cls=Tree, **kwargs
         )
 
     async def add_cog(self, cog: commands.Cog) -> None:
@@ -43,10 +44,13 @@ class Ether(commands.bot.AutoShardedBot):
         log.info(f"{commands_count} commands added from the cog {cog.qualified_name}.")
 
     async def setup_hook(self) -> None:
+        # Load cogs and sync commands
         await CogManager.load_cogs(self)
         commands = await self.tree.sync()
         log.info(f"{len(commands)} commands synced.")
-        # await self.create_new_lavalink_node()
+
+        # Init database
+        init_database(config.database.mongodb.get("uri"))
 
         await super().setup_hook()
 
@@ -62,7 +66,13 @@ class Ether(commands.bot.AutoShardedBot):
         node = wavelink.Node(
             identifier=NODE_CODE_NAME.get_random(),
             uri=node_uri,
-            password=default_node.get("pass"),
+            password=default_node.get("pass")
         )
 
         await wavelink.Pool.connect(nodes=[node], client=self, cache_capacity=100)
+
+    async def close(self) -> None:
+        self.dispatch("close")
+
+        await wavelink.Pool.close()
+        await super().close()

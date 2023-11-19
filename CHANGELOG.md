@@ -1,3 +1,13 @@
+## 1.0.0b2
+- Again, a lot of technical changes
+    - Update the logging system
+    - Update pre-commit
+    - Ctrl+C close the bot "properly"
+    - A lot of other changes
+- Music cogs is now functional (in theory)
+- Add a new `auto_play` parameter to the `music play` command that is set to `true` by default
+- New `music loop_all`, `music history` and `music back` commands
+
 ## 1.0.0b1
 - A lot of technical changes
     - Ether is now using discord.py (instead of py-cord)

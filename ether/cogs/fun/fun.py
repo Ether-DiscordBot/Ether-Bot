@@ -1,19 +1,19 @@
-from random import choice, randint, seed
-from typing import Optional
-import discord
-from requests import get, request
 import os
 import urllib.parse
+from random import choice, randint, seed
+from typing import Optional
 
+import discord
 from discord import Member, app_commands
 from discord.app_commands import Choice
 from discord.ext import commands
 from discord.ext.commands import Context
+from requests import get, request
 
+from ether.core.constants import Emoji
+from ether.core.embed import Embed, ErrorEmbed
 from ether.core.i18n import _
 from ether.core.utils import NerglishTranslator
-from ether.core.embed import Embed
-from ether.core.constants import Emoji
 
 
 class Fun(commands.Cog, name="fun"):
@@ -66,7 +66,7 @@ class Fun(commands.Cog, name="fun"):
         r = r.json()
         if not r["data"]:
             await interaction.response.send_message(
-                embed=Embed.error(
+                embed=ErrorEmbed(
                     "Sorry, I could not find any gifs with this query.", delete_after=5
                 )
             )
@@ -86,7 +86,7 @@ class Fun(commands.Cog, name="fun"):
         r = r.json()
         if not r["data"]:
             await interaction.response.send_message(
-                embed=Embed.error(
+                embed=ErrorEmbed(
                     "Sorry, I could not find any gifs with this query.", delete_after=5
                 )
             )
@@ -218,7 +218,7 @@ class Fun(commands.Cog, name="fun"):
         r = request("GET", "https://uselessfacts.jsph.pl/random.json?language=en")
         if not r.ok:
             return await interaction.response.send_message(
-                embed=Embed.error("Sorry, I could not fetch any facts.", delete_after=5)
+                embed=ErrorEmbed("Sorry, I could not fetch any facts.", delete_after=5)
             )
 
         embed = Embed(title="Useless facts", description=r.json()["text"])

@@ -1,14 +1,13 @@
 import discord
 import requests
-
 from discord import app_commands
 from discord.ext import commands, tasks
 from discord.ext.commands import Context
 
+from ether.core.constants import Emoji
+from ether.core.embed import Embed, ErrorEmbed
 from ether.core.i18n import _
 from ether.core.logging import log
-from ether.core.constants import Emoji
-from ether.core.embed import Embed
 
 
 class Steam(commands.Cog, name="steam"):
@@ -17,7 +16,7 @@ class Steam(commands.Cog, name="steam"):
         self.client = client
         self.fetch_app_list.start()
 
-    steam = app_commands.Group(name="steam", description="Steam releated game")
+    steam = app_commands.Group(name="steam", description="Steam related game")
 
     def search(self, game: str):
         """Search a game in the steam store"""
@@ -113,7 +112,7 @@ class Steam(commands.Cog, name="steam"):
         """Get the current steam specials"""
         r = requests.get("https://store.steampowered.com/api/featuredcategories")
         if not r.ok:
-            await interaction.response.send_message("Sorry, an error was occured!")
+            await interaction.response.send_message("Sorry, an error was occurred!")
 
         r = r.json()
         data = r["specials"]
@@ -134,7 +133,7 @@ class Steam(commands.Cog, name="steam"):
         """Get the current steam top sellers"""
         r = requests.get("https://store.steampowered.com/api/featuredcategories")
         if not r.ok:
-            await interaction.response.send_message("Sorry, an error was occured!")
+            await interaction.response.send_message("Sorry, an error was occurred!")
 
         r = r.json()
         data = r["top_sellers"]
@@ -157,7 +156,7 @@ class Steam(commands.Cog, name="steam"):
         """Get the current steam new releases"""
         r = requests.get("https://store.steampowered.com/api/featuredcategories")
         if not r.ok:
-            await interaction.response.send_message("Sorry, an error was occured!")
+            await interaction.response.send_message("Sorry, an error was occurred!")
 
         r = r.json()
         data = r["new_releases"]

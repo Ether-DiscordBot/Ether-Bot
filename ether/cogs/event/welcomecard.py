@@ -2,8 +2,8 @@ import base64
 import io
 import os
 
-from PIL import Image, ImageDraw, ImageFont
 import requests
+from PIL import Image, ImageDraw, ImageFont
 
 
 class WelcomeCard:

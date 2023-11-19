@@ -1,13 +1,12 @@
 import json
 from os import path
-from functools import wraps
+from typing import Optional
 
-from typing import Any, Callable, Optional
 import discord
-from pycord18n.i18n import InvalidTranslationKeyError
-from pycord18n.extension import I18nExtension, _
-from pycord18n.language import Language
 from discord.ext.commands import Context
+from pycord18n.extension import I18nExtension, _
+from pycord18n.i18n import InvalidTranslationKeyError
+from pycord18n.language import Language
 
 from ether.core.logging import log
 
@@ -70,7 +69,7 @@ def translate(string: str, locale: Optional[str] = None, **kwargs) -> str:
     try:
         return i18n.contextual_get_text(string, should_fallback=False, **kwargs)
     except InvalidTranslationKeyError:
-        log.warn(
+        log.warning(
             f"Translation of '{string}' not found for locale `{i18n.get_current_locale()}`!"
         )
         return string

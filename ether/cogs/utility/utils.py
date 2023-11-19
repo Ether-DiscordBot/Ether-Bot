@@ -1,21 +1,21 @@
 import datetime
-import re
 import operator
-from random import choice, random, randint
+import re
+from random import choice, randint, random
 from typing import Optional
-import discord
-import requests
 
+import discord
 import pytz
-from discord import app_commands, Interaction
+import requests
+from discord import Interaction, app_commands
 from discord.app_commands import Choice
-from discord.ext.commands import Context
 from discord.ext import commands
+from discord.ext.commands import Context
 from howlongtobeatpy import HowLongToBeat
 
-from ether.core.i18n import _
-from ether.core.embed import Embed, SucessEmbed
 from ether.core.constants import Emoji
+from ether.core.embed import Embed, ErrorEmbed, SuccessEmbed
+from ether.core.i18n import _
 
 URBAN_PATTERN = r"\[(.*?)]"
 ops = {"+": operator.add, "-": operator.sub, "*": operator.mul, "/": operator.truediv}
@@ -34,7 +34,7 @@ class Utils(commands.Cog, name="utils"):
         self.client = client
         self.help_icon = Emoji.UTILITY
 
-    utils = app_commands.Group(name="utils", description="Utility releated commands")
+    utils = app_commands.Group(name="utils", description="Utility related commands")
 
     @utils.command()
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
@@ -72,15 +72,13 @@ class Utils(commands.Cog, name="utils"):
     async def ping(self, interaction: discord.Interaction) -> None:
         """Pong!"""
 
-        embed = SucessEmbed(
+        embed = SuccessEmbed(
             title=":ping_pong:" + _("Pong!"),
             description=_("Bot latency: `{x}ms`", x=round(self.client.latency * 1000)),
         )
 
-        print(isinstance(embed, discord.Embed))
-
         await interaction.response.send_message(
-            embed=SucessEmbed(
+            embed=SuccessEmbed(
                 title=":ping_pong:" + _("Pong!"),
                 description=_(
                     "Bot latency: `{x}ms`", x=round(self.client.latency * 1000)
@@ -172,8 +170,8 @@ class Utils(commands.Cog, name="utils"):
 
         except ValueError:
             return await interaction.response.send_message(
-                embed=Embed.error(
-                    _("An error occured, please check the syntax of your dices.")
+                embed=ErrorEmbed(
+                    _("An error occurred, please check the syntax of your dices.")
                 ),
                 ephemeral=True,
                 delete_after=5,
@@ -217,14 +215,14 @@ class Utils(commands.Cog, name="utils"):
 
             linked_definition = ""
             substring = re.finditer(URBAN_PATTERN, definition)
-            splitted = re.split(URBAN_PATTERN, definition)
+            split = re.split(URBAN_PATTERN, definition)
 
             i = 0
             for s in substring:
-                b_before = splitted[i]
+                b_before = split[i]
                 before = definition[s.span()[0] : s.span()[1]]
 
-                link = f"https://www.urbandictionary.com/define.php?term={splitted[i+1]}".replace(
+                link = f"https://www.urbandictionary.com/define.php?term={split[i+1]}".replace(
                     " ", "%20"
                 )
                 i += 2
@@ -236,7 +234,7 @@ class Utils(commands.Cog, name="utils"):
             await interaction.response.send_message(embed=embed)
         else:
             await interaction.response.send_message(
-                embed=Embed.error('Could not find any definition of **"{term}"**!'),
+                embed=ErrorEmbed('Could not find any definition of **"{term}"**!'),
                 delete_after=5,
             )
 
@@ -249,7 +247,7 @@ class Utils(commands.Cog, name="utils"):
             data = max(results_list, key=lambda element: element.similarity)
         else:
             return await interaction.response.send_message(
-                embed=Embed.error("Sorry, we could not find your game."),
+                embed=ErrorEmbed("Sorry, we could not find your game."),
                 ephemeral=True,
             )
 

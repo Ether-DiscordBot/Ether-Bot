@@ -1,12 +1,12 @@
 import os
 
-from discord import File, app_commands
 import discord
+from discord import File, app_commands
 from discord.ext import commands
 
 from ether.cogs.event.welcomecard import WelcomeCard
 from ether.core.constants import Emoji
-from ether.core.embed import Embed
+from ether.core.embed import Embed, ErrorEmbed
 
 
 class Owner(commands.Cog, name="owner"):
@@ -16,7 +16,7 @@ class Owner(commands.Cog, name="owner"):
         self.client = client
         self.help_icon = Emoji.OWNER
 
-    owner = app_commands.Group(name="owner", description="Owner releated commands")
+    owner = app_commands.Group(name="owner", description="Owner related commands")
 
     @owner.command(name="logs")
     @commands.is_owner()

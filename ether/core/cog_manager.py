@@ -1,7 +1,6 @@
-import os
-
-from pathlib import Path
 import importlib
+import os
+from pathlib import Path
 from typing import List
 
 import ether.cogs

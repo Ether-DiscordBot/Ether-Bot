@@ -1,34 +1,20 @@
-from argparse import Namespace
-import argparse
 import asyncio
 import functools
-import logging
-import random
-import sys
 import signal
-from typing import Any, Coroutine
+import sys
+from argparse import Namespace
 
 import discord
-import wavelink
-from wavelink import Node
 import nest_asyncio
 
 from ether.core.bot import Ether
 
 nest_asyncio.apply()
 
-from ether import __version__
-from ether.core.config import config
-from ether.core.constants import NODE_CODE_NAME, ExitCodes
-from ether.core.lavalink_status import lavalink_request
-from ether.core.logging import log
-from ether.core.cog_manager import CogManager
-from ether.core.db import init_database
 from ether.api.server import ServerThread
-
-# from ether.core.botlist import DBLClient
-
-init_database(config.database.mongodb.get("uri"))
+from ether.core.config import config
+from ether.core.constants import ExitCodes
+from ether.core.logging import log
 
 threads = []
 subprocesses = []
@@ -47,10 +33,8 @@ subprocesses = []
 async def run_bot(ether: Ether, cli_flags: Namespace | None = None):
     token = config.bot.get("token")
 
-    await ether.start(token)
-
     try:
-        pass
+        await ether.start(token)
     except discord.LoginFailure:
         log.critical("This token doesn't seem to be valid.")
         sys.exit(ExitCodes.CONFIGURATION_ERROR)
@@ -64,7 +48,6 @@ async def run_bot(ether: Ether, cli_flags: Namespace | None = None):
 async def shutdown_handler(ether, signal_type=None, exit_code=None):
     if signal_type:
         log.info("%s received. Quitting...", signal_type.name)
-        sys.exit(ExitCodes.SHUTDOWN)
     elif exit_code is None:
         log.info("Shutting down from unhandled exception")
 

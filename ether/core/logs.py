@@ -1,9 +1,10 @@
 from typing import Optional
 
 from discord import Member
+
 from ether.core.constants import Colors
+from ether.core.embed import Embed, ErrorEmbed
 from ether.core.utils import Utils
-from ether.core.embed import Embed
 
 
 class EtherLogs:

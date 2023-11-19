@@ -6,9 +6,10 @@ from typing import List, Tuple
 
 import aiofiles
 from asyncpraw import Reddit
-from asyncprawcore import exceptions
 from asyncpraw.models import Submission, Subreddit
+from asyncprawcore import exceptions
 from discord.ext import tasks
+
 from ether.core.logging import log
 
 

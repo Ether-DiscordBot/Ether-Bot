@@ -1,9 +1,9 @@
 import asyncio
 import datetime
-from typing import List, Optional, Literal
+from typing import List, Literal, Optional
 
-from beanie import Document, init_beanie
 import discord
+from beanie import Document, init_beanie
 from discord import Guild as GuildModel
 from discord import Member as MemberModel
 from discord import Message as MessageModel
@@ -11,8 +11,9 @@ from discord import User as UserModel
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
 
-from ether.core.utils import LevelsHandler
+import ether.core.db.events
 from ether.core.logging import log
+from ether.core.utils import LevelsHandler
 
 
 class Database:

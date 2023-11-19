@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Optional, Self, Union
+from typing import Any, Self
 
 import discord
 from discord.colour import Colour
@@ -71,7 +71,7 @@ class ErrorEmbed(Embed):
         )
 
 
-class SucessEmbed(Embed):
+class SuccessEmbed(Embed):
     def __init__(
         cls,
         *,
@@ -82,7 +82,7 @@ class SucessEmbed(Embed):
         timestamp: datetime | None = None
     ) -> Self:
         super().__init__(
-            colour=Colors.SUCESS,
+            colour=Colors.SUCCESS,
             title=title,
             type=type,
             url=url,

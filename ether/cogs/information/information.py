@@ -1,14 +1,14 @@
 from typing import Optional
 
-from discord import Member, app_commands
 import discord
-from discord.ext.commands import Context
+from discord import Member, app_commands
 from discord.ext import commands
+from discord.ext.commands import Context
 from humanize import naturaldate, naturalsize
-from ether.core.embed import Embed
 
-from ether.core.i18n import _
 from ether.core.constants import Emoji
+from ether.core.embed import Embed, ErrorEmbed
+from ether.core.i18n import _
 
 
 class InformationHandler:
@@ -67,7 +67,7 @@ class Information(commands.Cog, name="information"):
     @info.command(name="user")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def user(self, interaction: discord.Interaction, member: Member = None):
-        """Get informations about a user"""
+        """Get information about a user"""
         member = member or interaction.message.author
         await interaction.response.send_message(
             embed=InformationHandler.get_user_infos(member)
@@ -76,7 +76,7 @@ class Information(commands.Cog, name="information"):
     @info.command(name="server")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def server(self, interaction: discord.Interaction):
-        """Get informations about the server"""
+        """Get information about the server"""
         guild = interaction.guild
 
         embed = Embed(title="", description=f"**ID:** {guild.id}")
@@ -93,7 +93,7 @@ class Information(commands.Cog, name="information"):
             inline=False,
         )
         embed.add_field(
-            name="Additional informations",
+            name="Additional information",
             value=f"\t**Emoji:** {len(guild.emojis)}/{guild.emoji_limit}\n"
             f"\t**Sticker:** {len(guild.stickers)}/{guild.sticker_limit}\n"
             f"\t**Filesize:** {naturalsize(guild.filesize_limit, binary=True)}",
@@ -117,7 +117,7 @@ class Information(commands.Cog, name="information"):
 
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def user_infos(self, interaction: discord.Interaction, user: Member):
-        """Get informations about a user"""
+        """Get information about a user"""
         return await interaction.response.send_message(
             embed=InformationHandler.get_user_infos(user)
         )

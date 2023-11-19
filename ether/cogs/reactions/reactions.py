@@ -1,19 +1,14 @@
-from discord import (
-    Message,
-    NotFound,
-    Role,
-    app_commands,
-)
 import discord
+from discord import Message, NotFound, Role, app_commands
 from discord.app_commands import Choice
 from discord.errors import HTTPException
 from discord.ext import commands
 from discord.ext.commands import Context
 
-from ether.core.i18n import _
-from ether.core.db.client import Database, ReactionRole
 from ether.core.constants import Emoji, Other
-from ether.core.embed import Embed
+from ether.core.db.client import Database, ReactionRole
+from ether.core.embed import Embed, ErrorEmbed
+from ether.core.i18n import _
 
 
 class Reactions(commands.Cog, name="reaction"):
@@ -22,7 +17,7 @@ class Reactions(commands.Cog, name="reaction"):
         self.client = client
 
     reaction = app_commands.Group(
-        name="reaction", description="Reaction releated commands"
+        name="reaction", description="Reaction related commands"
     )
 
     @commands.Cog.listener()
@@ -133,7 +128,7 @@ class Reactions(commands.Cog, name="reaction"):
             msg: Message = await interaction.channel.fetch_message(message_id)
         except NotFound:
             return await interaction.response.send_message(
-                embed=Embed.error(_("Message not found!")),
+                embed=ErrorEmbed(_("Message not found!")),
                 ephemeral=True,
                 delete_after=5,
             )
@@ -155,7 +150,7 @@ class Reactions(commands.Cog, name="reaction"):
             )
         except HTTPException:
             await interaction.response.send_message(
-                embed=Embed.error(_("Emoji not found!")),
+                embed=ErrorEmbed(_("Emoji not found!")),
                 ephemeral=True,
                 delete_after=5,
             )

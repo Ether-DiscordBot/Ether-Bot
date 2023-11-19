@@ -1,13 +1,13 @@
 from typing import Optional
+
 import discord
 import requests
-
 from discord import app_commands
 from discord.app_commands import Choice
 from discord.ext import commands
 
-from ether.core.embed import Embed
 from ether.core.constants import Emoji
+from ether.core.embed import Embed, ErrorEmbed
 
 
 class DnD(commands.Cog, name="dnd"):
@@ -27,12 +27,12 @@ class DnD(commands.Cog, name="dnd"):
     async def spells(
         self, interaction: discord.Interaction, spell: Optional[str] = None
     ):
-        """Get informations about a spell or a list of all spells"""
+        """Get information about a spell or a list of all spells"""
         if not spell:
             r = requests.get(f"{DnD.DND_API_URL}spells")
             if not r.ok:
                 return await interaction.response.send_message(
-                    embed=Embed.error("Sorry, an error was occured!")
+                    embed=ErrorEmbed("Sorry, an error was occurred!")
                 )
 
             spells_data = r.json()
@@ -52,11 +52,11 @@ class DnD(commands.Cog, name="dnd"):
 
         if r.status_code == 404:
             return await interaction.response.send_message(
-                embed=Embed.error("Sorry, I don't found your spell!")
+                embed=ErrorEmbed("Sorry, I don't found your spell!")
             )
         elif not r.ok:
             return await interaction.response.send_message(
-                embed=Embed.error("Sorry, an error was occured!")
+                embed=ErrorEmbed("Sorry, an error was occurred!")
             )
 
         spell_data = r.json()
@@ -109,7 +109,7 @@ class DnD(commands.Cog, name="dnd"):
         r = requests.get(f"{DnD.DND_API_URL}classes/{_class}")
         if not r.ok:
             return await interaction.response.send_message(
-                embed=Embed.error("Sorry, an error was occured!")
+                embed=ErrorEmbed("Sorry, an error was occurred!")
             )
 
         class_data = r.json()
@@ -241,7 +241,7 @@ class DnD(commands.Cog, name="dnd"):
         r = requests.get(f"{DnD.DND_API_URL}classes/{_class}/levels")
         if not r.ok:
             return await interaction.response.send_message(
-                embed=Embed.error("Sorry, an error was occured!")
+                embed=ErrorEmbed("Sorry, an error was occurred!")
             )
 
         levels_data = r.json()
@@ -254,7 +254,7 @@ class DnD(commands.Cog, name="dnd"):
         if level >= 0:
             if len(levels_data) < level:
                 return await interaction.response.send_message(
-                    embed=Embed.error(
+                    embed=ErrorEmbed(
                         "Sorry, there is no information about this level!"
                     )
                 )
@@ -331,7 +331,7 @@ class DnD(commands.Cog, name="dnd"):
         r = requests.get(f"{DnD.DND_API_URL}classes/{_class}/spells")
         if not r.ok:
             return await interaction.response.send_message(
-                embed=Embed.error("Sorry, an error was occured!")
+                embed=ErrorEmbed("Sorry, an error was occurred!")
             )
 
         spells_data = r.json()

@@ -1,14 +1,13 @@
-from functools import wraps
+import logging
 import os
 import signal
 import threading
+from functools import wraps
+
 import discord
 import requests
-import logging
-
-
-from waitress import serve
 from flask import Flask, jsonify, make_response, request
+from waitress import serve
 
 from ether.core.logging import log
 

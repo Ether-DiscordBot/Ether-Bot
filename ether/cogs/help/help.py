@@ -2,14 +2,14 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from discord.ext.commands import Context, Paginator
-from ether.core.embed import Embed
 
-from ether.core.i18n import _
 from ether.core.constants import Emoji, Links, Other
+from ether.core.embed import Embed, ErrorEmbed
+from ether.core.i18n import _
 from ether.core.logging import log
 
 
-class Help(commands.Cog):
+class Help(commands.GroupCog):
     def __init__(self, client):
         self.client = client
 

@@ -3,12 +3,12 @@ from typing import Literal, Optional
 
 import discord
 from discord import Member, app_commands
-from discord.ext.commands import Context
 from discord.ext import commands
+from discord.ext.commands import Context
 
-from ether.core.i18n import _
-from ether.core.embed import Embed
 from ether.core.constants import Emoji
+from ether.core.embed import Embed, ErrorEmbed
+from ether.core.i18n import _
 
 
 class TicTacToe:
@@ -68,7 +68,7 @@ class Games(commands.Cog, name="games"):
         self.help_icon = Emoji.GAMES
         self.client = client
 
-    games = app_commands.Group(name="games", description="Games releated commands")
+    games = app_commands.Group(name="games", description="Games related commands")
 
     @games.command(name="tictactoe")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
@@ -85,7 +85,7 @@ class Games(commands.Cog, name="games"):
 
         if not vs_ai and opponent.bot:
             return await interaction.response.send_message(
-                embed=Embed.error("You can't play with this person!"),
+                embed=ErrorEmbed("You can't play with this person!"),
                 delete_after=5,
             )
 
@@ -199,4 +199,3 @@ class Games(commands.Cog, name="games"):
     async def rps(self, interaction: discord.Interaction, opponent: Member):
         """Play a game of Rock-Paper-Scissors with a friend!"""
         # TODO Rock/Paper/Scissors
-        pass

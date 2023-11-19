@@ -1,23 +1,22 @@
-import os
 import random
 
 import discord
+import gitinfo
+import wavelink
 from discord import File, HTTPException
 from discord.ext import commands
 from discord.ext.commands import Context, errors
-import gitinfo
-import wavelink
 
 from ether import __version__
 from ether.cogs.event.welcomecard import WelcomeCard
-from ether.core.db.client import Database, Guild, GuildUser
-from ether.core.logging import log
-from ether.core.i18n import init_i18n
 from ether.core.config import config
-from ether.core.embed import Embed
+from ether.core.db.client import Database, Guild, GuildUser
+from ether.core.embed import Embed, ErrorEmbed
+from ether.core.i18n import init_i18n
+from ether.core.logging import log
 
 
-class Event(commands.Cog):
+class Event(commands.GroupCog):
     def __init__(self, client) -> None:
         self.client = client
 
@@ -31,11 +30,11 @@ class Event(commands.Cog):
 
         log.info(
             f"""\n\n
-         ____   _    _                  
-        ( ,__\ ( )_ ( )                 
-        | (_   | ,_)| |__     __   ____ 
+         ____   _    _
+        ( ,__\ ( )_ ( )
+        | (_   | ,_)| |__     __   ____
         | ,_)  | |  |  _  \ /'__`\(  __)
-        | (___ | |_ | | | |(  ___/| |   
+        | (___ | |_ | | | |(  ___/| |
         (____/ \__) (_) (_) \____)(_)
 
         Version:        {__version__}"""
@@ -136,8 +135,6 @@ class Event(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, interaction: discord.Interaction, error):
-        print("BOOOOOOOOOOOOOOOOOOOOOOOOOOBA")
-
         ignored = (
             commands.NoPrivateMessage,
             commands.DisabledCommand,
@@ -154,7 +151,7 @@ class Event(commands.Cog):
 
         if isinstance(error, commands.errors.CommandOnCooldown):
             return await interaction.response.send_message(
-                embed=Embed.error(
+                embed=ErrorEmbed(
                     f"This command is on cooldown, please retry in `{error.retry_after:.2f}s`."
                 ),
                 ephemeral=True,
@@ -175,8 +172,8 @@ class Event(commands.Cog):
                 log.error(f"\t => Uptime: {player.node.stats.uptime}")
 
         await interaction.response.send_message(
-            embed=Embed.error(
-                description=f"An error occured while executing this command, please retry later.\n If the problem persist, please contact the support.\n\n Error: `{error.__class__.__name__}({error})`"
+            embed=ErrorEmbed(
+                description=f"An error occurred while executing this command, please retry later.\n If the problem persist, please contact the support.\n\n Error: `{error.__class__.__name__}({error})`"
             ),
             ephemeral=True,
         )
@@ -188,3 +185,7 @@ class Event(commands.Cog):
     @commands.Cog.listener()
     async def on_shard_ready(self, shard_id):
         log.info(f"Shard {shard_id} ready!")
+
+    @commands.Cog.listener()
+    async def on_close(self):
+        log.warning("Close signal receive. (a tragic ending...)")
