@@ -124,13 +124,17 @@ class Event(commands.GroupCog):
                 color=0x2F3136,
             )
 
-            if not interaction.channel.can_send():
+            if not interaction.channel.permissions_for(interaction.channel.me).send_messages:
                 return
 
             await interaction.response.send_message(embed=embed, ephemeral=True)
 
+        # If it's the dev bot we don't want to register the commands usage
+        if self.client.user.id == 1027225302641938452:
+            return
+
         await Database.BotStatistic.CommandUsage.register_usage(
-            command.name
+            command.qualified_name
         )
 
     @commands.Cog.listener()
