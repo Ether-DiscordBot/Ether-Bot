@@ -89,13 +89,13 @@ class Games(commands.GroupCog, name="games"):
 
         board: list[int] = [0 for _ in range(9)]
 
-        players = {1: opponent, 2: interaction.message.author}
+        players = {1: opponent, 2: interaction.user}
         # 1 => "X", 2 => "O"
 
         for sign, player in players.items():
             if player.id == opponent.id:
                 opponent_sign = sign
-            elif player.id == interaction.message.author.id:
+            elif player.id == interaction.user.id:
                 author_sign = sign
 
         global turn
@@ -126,7 +126,7 @@ class Games(commands.GroupCog, name="games"):
                 button.view.stop()
             else:
                 turn = 2 if turn == 1 else 1
-                content = f"<@{interaction.message.author.id}> VS <@{self.client.user.id if vs_ai else opponent.id}>\nIt's the turn of {players[turn]}! *(you have 30 sec)*"
+                content = f"<@{interaction.user.id}> VS <@{self.client.user.id if vs_ai else opponent.id}>\nIt's the turn of {players[turn]}! *(you have 30 sec)*"
 
             if interaction.response.is_done():
                 await interaction.edit_original_message(
@@ -185,7 +185,7 @@ class Games(commands.GroupCog, name="games"):
             await callback(button, interaction)
 
         await interaction.response.send_message(
-            f"<@{interaction.message.author.id}> VS <@{self.client.user.id if vs_ai else opponent.id}>\nIt's the turn of {players[turn]}! *(you have 30 sec)*",
+            f"<@{interaction.user.id}> VS <@{self.client.user.id if vs_ai else opponent.id}>\nIt's the turn of {players[turn]}! *(you have 30 sec)*",
             view=view,
         )
 

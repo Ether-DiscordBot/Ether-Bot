@@ -43,12 +43,12 @@ class Owner(commands.GroupCog, name="owner"):
     @commands.is_owner()
     async def test_welcome_card(self, interaction: discord.Interaction):
         card = WelcomeCard.create_card(
-            interaction.message.author, interaction.message.author.guild
+            interaction.user, interaction.user.guild
         )
         try:
             await interaction.channel.send(
                 file=File(
-                    fp=card, filename=f"welcome_{interaction.message.author.name}.png"
+                    fp=card, filename=f"welcome_{interaction.user.name}.png"
                 )
             )
         except commands.MissingPermissions:

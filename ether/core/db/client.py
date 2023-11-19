@@ -1,6 +1,6 @@
 import asyncio
 import datetime
-from typing import List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 import discord
 from beanie import Document, init_beanie
@@ -213,6 +213,47 @@ class Database:
                 return False
             return True
 
+    class BotStatistic:
+        class CommandUsage:
+
+            @staticmethod
+            async def get_or_create(command_name: str):
+                command = await Database.BotStatistic.CommandUsage.get_or_none(command_name)
+                if command:
+                    return command
+
+                command = CommandUsage(id=command_name)
+
+                await command.insert()
+                log.info(f"CommandUsage created ({command_name})")
+
+                return await Database.BotStatistic.CommandUsage.get_or_none(command_name)
+
+            @staticmethod
+            async def get_or_none(command_name: str):
+                command = await CommandUsage.find_one(CommandUsage.id == command_name)
+                if command:
+                    return command
+
+                return None
+
+            @staticmethod
+            async def register_usage(command_name: str):
+                command: CommandUsage = await Database.BotStatistic.CommandUsage.get_or_create(command_name)
+
+                year = datetime.datetime.now().year
+                month = datetime.datetime.now().month
+
+                key = f"({year}, {month})"
+
+                # It's ugly but it works
+                if not command.month_usage.get(key):
+                    command.month_usage[key] = 1
+                else:
+                    command.month_usage[key] += 1
+
+                await command.save_changes()
+
 
 def init_database(db_uri):
     Database.client = AsyncIOMotorClient(db_uri).dbot
@@ -220,7 +261,7 @@ def init_database(db_uri):
     asyncio.run(
         init_beanie(
             database=Database.client,
-            document_models=[Guild, GuildUser, User, ReactionRole, Playlist],
+            document_models=[Guild, GuildUser, User, ReactionRole, Playlist, CommandUsage],
         )
     )
 
@@ -312,7 +353,7 @@ class GuildUser(Document):
 
     async def from_context(interaction: discord.Interaction):
         return await GuildUser.from_id(
-            interaction.message.author.id, interaction.guild.id
+            interaction.user.id, interaction.guild.id
         )
 
 
@@ -332,7 +373,7 @@ class User(Document):
         return await User.from_id(user.id)
 
     async def from_context(interaction: discord.Interaction):
-        return await User.from_id(interaction.message.author.id)
+        return await User.from_id(interaction.user.id)
 
 
 class Playlist(Document):
@@ -386,3 +427,14 @@ class ReactionRole(Document):
 
     def from_guild(guild_id: int):
         return ReactionRole.find(ReactionRole.guild_id == guild_id)
+
+class CommandUsage(Document):
+    class Settings:
+        name = "command_usage"
+        use_state_management = True
+
+    id: str
+    month_usage: Dict[Any, int] = {} # {(year, month): count}
+
+    async def register_usage(command_name: str):
+        return await Database.BotStatistic.CommandUsage.register_usage(command_name)

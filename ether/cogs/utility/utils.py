@@ -7,15 +7,16 @@ from typing import Optional
 import discord
 import pytz
 import requests
-from discord import Interaction, app_commands
+from discord import app_commands
 from discord.app_commands import Choice
-from discord.ext import commands
-from discord.ext.commands import Context
+from discord.ext import commands, tasks
 from howlongtobeatpy import HowLongToBeat
 
+from ether.cogs.utility.uptime_cards import UptimeCards
 from ether.core.constants import Emoji
 from ether.core.embed import Embed, ErrorEmbed, SuccessEmbed
 from ether.core.i18n import _
+from ether.core.logging import log
 
 URBAN_PATTERN = r"\[(.*?)]"
 ops = {"+": operator.add, "-": operator.sub, "*": operator.mul, "/": operator.truediv}
@@ -28,11 +29,21 @@ def hltb_time(time: float) -> str:
 
     return f"{''.join(time)} Hours"
 
+print(__name__)
+
 
 class Utils(commands.GroupCog, name="utils"):
     def __init__(self, client):
         self.client = client
         self.help_icon = Emoji.UTILITY
+
+        self.monitors_card: discord.File | None = None
+        self.monitor_card_builder.start()
+
+    @tasks.loop(minutes=30.0)
+    async def monitor_card_builder(self):
+        log.debug("Building monitor cards...")
+        self.monitors_card = UptimeCards().card
 
     @app_commands.command()
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
@@ -341,3 +352,15 @@ class Utils(commands.GroupCog, name="utils"):
             )
 
         await interaction.response.send_message(embed=embed)
+
+    @app_commands.command(name="uptime")
+    @app_commands.checks.cooldown(1, 15.0, key=lambda i: (i.guild_id, i.user.id))
+    async def uptime(self, interaction: discord.Interaction):
+        if not self.monitors_card:
+            return await interaction.response.send_message(
+                embed=ErrorEmbed(description="Sorry, uptime cards are not available yet, retry later.")
+            )
+
+        await interaction.response.send_message(
+            file=self.monitors_card
+        )

@@ -66,7 +66,7 @@ class Information(commands.GroupCog, name="information"):
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def user(self, interaction: discord.Interaction, member: Member = None):
         """Get information about a user"""
-        member = member or interaction.message.author
+        member = member or interaction.user
         await interaction.response.send_message(
             embed=InformationHandler.get_user_infos(member)
         )
@@ -106,7 +106,7 @@ class Information(commands.GroupCog, name="information"):
         self, interaction: discord.Interaction, member: Optional[Member] = None
     ):
         """Get the avatar of a user"""
-        user = member or interaction.message.author
+        user = member or interaction.user
         return await interaction.response.send_message(
             embed=InformationHandler.get_user_avatar(user)
         )

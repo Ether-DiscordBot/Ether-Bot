@@ -101,7 +101,7 @@ class Levels(commands.GroupCog, name="levels"):
         background: Choice[int],
     ):
         """Set the background of your rank card"""
-        db_user = await User.from_id(interaction.message.author.id)
+        db_user = await User.from_id(interaction.user.id)
         await db_user.set({User.background: background})
 
         await interaction.response.send_message(
@@ -115,7 +115,7 @@ class Levels(commands.GroupCog, name="levels"):
         self, interaction: discord.Interaction, member: Optional[discord.Member] = None
     ):
         """Get the profile of a user"""
-        user = member if member else interaction.message.author
+        user = member if member else interaction.user
         db_guild_user = await GuildUser.from_member_object(user)
         db_user = await User.from_id(user.id)
 
@@ -221,23 +221,22 @@ class CardHandler:
         )
 
         # Pseudo
-        # Name
+        # Global name
         draw.text(
             xy=(228, 89),
-            text=f"{user.name[:20]}",
+            text=f"{user.global_name[:20]}",
             fill=(255, 255, 255),
             font=CardHandler.BASE_FONT,
         )
 
-        # Discriminator
+        # Name
         draw.text(
             xy=(
                 228
-                + CardHandler.BASE_FONT.getlength(f"{user.name[:20]}", direction="rtl")
-                + 5,
+                + CardHandler.BASE_FONT.getlength(f"{user.global_name[:20]} ", direction="rtl"),
                 101,
             ),
-            text=f"#{user.discriminator}",
+            text=f"{user.name}",
             fill=(175, 175, 175),
             font=CardHandler.DISC_FONT,
         )

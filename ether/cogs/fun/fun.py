@@ -130,12 +130,12 @@ class Fun(commands.GroupCog, name="fun"):
     ):
         """The bot guesses how gay your are"""
 
-        user = interaction.message.author if not user else user
+        user = interaction.user if not user else user
 
         seed(user.id / 1782)
         gaymeter = randint(0, 100)
 
-        if user == interaction.message.author:
+        if user == interaction.user:
             return await interaction.response.send_message(
                 f"You are gay at `{gaymeter}%` !"
             )
@@ -150,12 +150,12 @@ class Fun(commands.GroupCog, name="fun"):
     ):
         """The bot tells you how attractive you are"""
 
-        user = interaction.message.author if not user else user
+        user = interaction.user if not user else user
 
         seed(user.id / 294)
         attractivemeter = randint(0, 100)
 
-        if user == interaction.message.author:
+        if user == interaction.user:
             return await interaction.response.send_message(
                 f"You are `{attractivemeter}%` attractive!"
             )
@@ -170,12 +170,12 @@ class Fun(commands.GroupCog, name="fun"):
     ):
         """The bot guesses how hot you are"""
 
-        user = interaction.message.author if not user else user
+        user = interaction.user if not user else user
 
         seed(user.id / 15)
         hotmeter = randint(0, 100)
 
-        if user == interaction.message.author:
+        if user == interaction.user:
             return await interaction.response.send_message(
                 f"You are `{hotmeter}%` hot!"
             )
@@ -191,7 +191,7 @@ class Fun(commands.GroupCog, name="fun"):
     ):
         """The bot guesses how hot you are"""
 
-        user2 = interaction.message.author if not user2 else user2
+        user2 = interaction.user if not user2 else user2
 
         seed((user1.id + user2.id) / 144)
         lovecalc = randint(0, 100)

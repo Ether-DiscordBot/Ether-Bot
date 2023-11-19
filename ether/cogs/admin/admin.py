@@ -46,7 +46,7 @@ class Admin(commands.GroupCog, name="admin"):
                     await channel.send(
                         embed=EtherLogs.ban(
                             member,
-                            interaction.message.author.id,
+                            interaction.user.id,
                             interaction.channel.id,
                             reason,
                         )
@@ -89,7 +89,7 @@ class Admin(commands.GroupCog, name="admin"):
                     await channel.send(
                         embed=EtherLogs.kick(
                             member,
-                            interaction.message.author.id,
+                            interaction.user.id,
                             interaction.channel.id,
                             reason,
                         )

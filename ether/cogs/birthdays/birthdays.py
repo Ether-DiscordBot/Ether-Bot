@@ -83,7 +83,7 @@ class Birthday(commands.GroupCog, name="birthday"):
         user: Optional[Member] = None,
     ):
         """Remember a birthday"""
-        user = user or interaction.message.author
+        user = user or interaction.user
         try:
             date = date.split("/")
             date = list(map(int, date))

@@ -115,7 +115,7 @@ class Event(commands.GroupCog):
                     )
 
     @commands.Cog.listener()
-    async def on_application_command_completion(self, interaction: discord.Interaction):
+    async def on_app_command_completion(self, interaction: discord.Interaction, command):
         if random.randint(1, 100) <= 1:
             embed = Embed(
                 title="Support us (we need money)!",
@@ -128,6 +128,10 @@ class Event(commands.GroupCog):
                 return
 
             await interaction.response.send_message(embed=embed, ephemeral=True)
+
+        await Database.BotStatistic.CommandUsage.register_usage(
+            command.name
+        )
 
     @commands.Cog.listener()
     async def remove_cog(self, interaction: discord.Interaction, extension):

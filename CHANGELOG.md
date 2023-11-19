@@ -1,3 +1,8 @@
+## 1.0.0b3
+- Command usage statistic
+- Remove `ether/core/reddit.py` file
+- New `utils uptime` command and `Utils.monitor_card_builder` task
+
 ## 1.0.0b2
 - Again, a lot of technical changes
     - Update the logging system

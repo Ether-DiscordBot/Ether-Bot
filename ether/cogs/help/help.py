@@ -40,12 +40,12 @@ class Help(commands.GroupCog):
                 continue
             if (
                 ext.qualified_name in self.owner_cogs
-                and not app_info.owner.id == interaction.message.author.id
+                and not app_info.owner.id == interaction.user.id
             ):
                 continue
             if (
                 ext.qualified_name in self.admin_cogs
-                and not await interaction.message.author.guild_permissions.administrator
+                and not await interaction.user.guild_permissions.administrator
             ):
                 continue
             extensions.append(ext.qualified_name)
