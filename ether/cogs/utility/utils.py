@@ -1,19 +1,22 @@
 import datetime
-import re
 import operator
-from random import choice, random, randint
+import re
+from random import choice, randint, random
 from typing import Optional
-import requests
 
+import discord
 import pytz
-from discord import ApplicationContext, Embed, Option, OptionChoice
-from discord.commands import SlashCommandGroup, slash_command
-from discord.ext import commands
+import requests
+from discord import app_commands
+from discord.app_commands import Choice
+from discord.ext import commands, tasks
 from howlongtobeatpy import HowLongToBeat
 
-from ether.core.i18n import _
-from ether.core.utils import EtherEmbeds
+from ether.cogs.utility.uptime_cards import UptimeCards
 from ether.core.constants import Emoji
+from ether.core.embed import Embed
+from ether.core.i18n import _
+from ether.core.logging import log
 
 URBAN_PATTERN = r"\[(.*?)]"
 ops = {"+": operator.add, "-": operator.sub, "*": operator.mul, "/": operator.truediv}
@@ -26,20 +29,25 @@ def hltb_time(time: float) -> str:
 
     return f"{''.join(time)} Hours"
 
-
-class Utils(commands.Cog, name="utils"):
+class Utils(commands.GroupCog, name="utils"):
     def __init__(self, client):
         self.client = client
         self.help_icon = Emoji.UTILITY
 
-    utils = SlashCommandGroup("utils", "Utility commands!")
+        self.monitors_card: discord.File | None = None
+        self.monitor_card_builder.start()
 
-    @slash_command()
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def vote(self, ctx: ApplicationContext) -> None:
-        """Get the link to vote for the bot"""
+    @tasks.loop(minutes=30.0)
+    async def monitor_card_builder(self):
+        log.debug("Building monitor cards...")
+        self.monitors_card = UptimeCards().card
 
-        await ctx.respond(
+    @app_commands.command(name="vote")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def vote(self, interaction: discord.Interaction) -> None:
+        """Send a link to vote for Ether on top.gg."""
+
+        await interaction.response.send_message(
             embed=Embed(
                 title="Thank you for supporting us ❤️!",
                 description=_(
@@ -48,9 +56,9 @@ class Utils(commands.Cog, name="utils"):
             )
         )
 
-    @slash_command()
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def changelog(self, ctx: ApplicationContext) -> None:
+    @app_commands.command(name="changelog")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def changelog(self, interaction: discord.Interaction) -> None:
         """Get the changelog"""
 
         changelog = "# Latest changes\n\n"
@@ -63,15 +71,15 @@ class Utils(commands.Cog, name="utils"):
 
             changelog += "##".join(content)
 
-        await ctx.respond(f"```md\n{changelog}\n```")
+        await interaction.response.send_message(f"```md\n{changelog}\n```")
 
-    @slash_command()
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def ping(self, ctx: ApplicationContext) -> None:
+    @app_commands.command(name="ping")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def ping(self, interaction: discord.Interaction) -> None:
         """Pong!"""
 
-        await ctx.respond(
-            embed=Embed(
+        await interaction.response.send_message(
+            embed=Embed.success(
                 title=":ping_pong:" + _("Pong!"),
                 description=_(
                     "Bot latency: `{x}ms`", x=round(self.client.latency * 1000)
@@ -79,30 +87,30 @@ class Utils(commands.Cog, name="utils"):
             )
         )
 
-    @slash_command()
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def status(self, ctx: ApplicationContext) -> None:
+    @app_commands.command(name="status")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def status(self, interaction: discord.Interaction) -> None:
         """Show the status of Ether"""
 
-        await ctx.respond(
+        await interaction.response.send_message(
             embed=Embed(
                 title="🟢 Ether Status",
                 description="Here is the [Ether's status page](https://stats.uptimerobot.com/yxDgrt60O3).",
             )
         )
 
-    @utils.command(name="flipcoin")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def flip_coin(self, ctx: ApplicationContext) -> None:
+    @app_commands.command(name="flipcoin")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def flip_coin(self, interaction: discord.Interaction) -> None:
         """Flip a coin"""
         result = _("Heads") if round(random()) else _("Tails")
-        await ctx.respond(result)
+        await interaction.response.send_message(result)
 
-    @utils.command(name="choose")
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.command(name="choose")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def choose(
         self,
-        ctx: ApplicationContext,
+        interaction: discord.Interaction,
         first: str,
         second: str,
         third: Optional[str] = None,
@@ -128,14 +136,15 @@ class Utils(commands.Cog, name="utils"):
             tenth,
         ]
         list = [i for i in items if i]
-        return await ctx.respond(choice(list))
+        return await interaction.response.send_message(choice(list))
 
-    @commands.slash_command(name="roll")
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.command(name="roll")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.describe(dice="Dices to roll. (syntax: `1d6, 2d20+2`)")
     async def roll(
         self,
-        ctx: ApplicationContext,
-        dice: Option(str, "Dices to roll. (syntax: `1d6, 2d20+2`)", required=True),
+        interaction: discord.Interaction,
+        dice: str,
     ):
         """Roll a dice"""
 
@@ -161,9 +170,9 @@ class Utils(commands.Cog, name="utils"):
             result = [eval_binary_expr(r) if not r.isdigit() else r for r in details]
 
         except ValueError:
-            return await ctx.respond(
-                embed=EtherEmbeds.error(
-                    _("An error occured, please check the syntax of your dices.")
+            return await interaction.response.send_message(
+                embed=Embed.error(
+                    _("An error occurred, please check the syntax of your dices.")
                 ),
                 ephemeral=True,
                 delete_after=5,
@@ -178,16 +187,16 @@ class Utils(commands.Cog, name="utils"):
             for t, d, r in zip(dice.split(","), details, result)
         )
 
-        await ctx.respond(
+        await interaction.response.send_message(
             f"```\n╔══════{'═' * max(6, most_larger_dice_str-4)}╦═════════{'═' * max(0, most_details_dice_str-7)}╦═════{'═' * max(1, most_larger_result_str-5)}╗"
             f"\n║ Dice {' ' * max(6, most_larger_dice_str-4)}║ Details {' ' * max(0, most_details_dice_str-7)}║ Sum {' ' * max(1, most_larger_result_str-5)}║"
             f"\n╟──────{'─' * max(6, most_larger_dice_str-4)}╫─────────{'─' * max(0, most_details_dice_str-7)}╫─────{'─' * max(1, most_larger_result_str-5)}╢\n{result}"
             f"\n╚══════{'═' * max(6, most_larger_dice_str-4)}╩═════════{'═' * max(0, most_details_dice_str-7)}╩═════{'═' * max(1, most_larger_result_str-5)}╝```"
         )
 
-    @utils.command(name="urban")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def urban(self, ctx: ApplicationContext, term: str):
+    @app_commands.command(name="urban")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def urban(self, interaction: discord.Interaction, term: str):
         """Search for a term on Urban Dictionary"""
         r = requests.get(f"https://api.urbandictionary.com/v0/define?term={term}")
         res = r.json()
@@ -207,14 +216,14 @@ class Utils(commands.Cog, name="utils"):
 
             linked_definition = ""
             substring = re.finditer(URBAN_PATTERN, definition)
-            splitted = re.split(URBAN_PATTERN, definition)
+            split = re.split(URBAN_PATTERN, definition)
 
             i = 0
             for s in substring:
-                b_before = splitted[i]
+                b_before = split[i]
                 before = definition[s.span()[0] : s.span()[1]]
 
-                link = f"https://www.urbandictionary.com/define.php?term={splitted[i+1]}".replace(
+                link = f"https://www.urbandictionary.com/define.php?term={split[i+1]}".replace(
                     " ", "%20"
                 )
                 i += 2
@@ -223,25 +232,23 @@ class Utils(commands.Cog, name="utils"):
 
             embed.description = linked_definition
 
-            await ctx.respond(embed=embed)
+            await interaction.response.send_message(embed=embed)
         else:
-            await ctx.respond(
-                embed=EtherEmbeds.error(
-                    'Could not find any definition of **"{term}"**!'
-                ),
+            await interaction.response.send_message(
+                embed=Embed.error('Could not find any definition of **"{term}"**!'),
                 delete_after=5,
             )
 
-    @utils.command(name="howlongtobeat")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def howlongtobeat(self, ctx: ApplicationContext, game: str):
+    @app_commands.command(name="howlongtobeat")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def howlongtobeat(self, interaction: discord.Interaction, game: str):
         """Get the time to beat a game"""
         results_list = await HowLongToBeat().async_search(game_name=game)
         if results_list and len(results_list) > 0:
             data = max(results_list, key=lambda element: element.similarity)
         else:
-            return await ctx.respond(
-                embed=EtherEmbeds.error("Sorry, we could not find your game."),
+            return await interaction.response.send_message(
+                embed=Embed.error(description="Sorry, we could not find your game."),
                 ephemeral=True,
             )
 
@@ -273,39 +280,36 @@ class Utils(commands.Cog, name="utils"):
             icon_url="https://pbs.twimg.com/profile_images/433503450404368384/tdnd53zT_400x400.png",
         )
 
-        await ctx.respond(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
-    @utils.command(name="rocket_launches")
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.command(name="rocket_launches")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.choices(
+        timezone=[
+            Choice(name="UTC-7", value="ETC/GMT-7"),
+            Choice(name="UTC-6", value="ETC/GMT-6"),
+            Choice(name="UTC-5", value="ETC/GMT-5"),
+            Choice(name="UTC-4", value="ETC/GMT-4"),
+            Choice(name="UTC-3", value="ETC/GMT-3"),
+            Choice(name="UTC", value="ETC/UTC"),
+            Choice(name="UTC+1", value="ETC/GMT+1"),
+            Choice(name="UTC+2", value="ETC/GMT+2"),
+            Choice(name="UTC+3", value="ETC/GMT+3"),
+            Choice(name="UTC+4", value="ETC/GMT+4"),
+            Choice(name="UTC+5", value="ETC/GMT+5"),
+            Choice(name="UTC+8", value="ETC/GMT+8"),
+            Choice(name="UTC+9", value="ETC/GMT+9"),
+            Choice(name="UTC+10", value="ETC/GMT+10"),
+            Choice(name="UTC+12", value="ETC/GMT+12"),
+        ]
+    )
     async def rocket_launches(
         self,
-        ctx: ApplicationContext,
-        timezone: Option(
-            str,
-            name="timezone",
-            description="Pick your timezone",
-            default="UTC",
-            choices=[
-                OptionChoice(name="UTC-7", value="ETC/GMT-7"),
-                OptionChoice(name="UTC-6", value="ETC/GMT-6"),
-                OptionChoice(name="UTC-5", value="ETC/GMT-5"),
-                OptionChoice(name="UTC-4", value="ETC/GMT-4"),
-                OptionChoice(name="UTC-3", value="ETC/GMT-3"),
-                OptionChoice(name="UTC", value="ETC/UTC"),
-                OptionChoice(name="UTC+1", value="ETC/GMT+1"),
-                OptionChoice(name="UTC+2", value="ETC/GMT+2"),
-                OptionChoice(name="UTC+3", value="ETC/GMT+3"),
-                OptionChoice(name="UTC+4", value="ETC/GMT+4"),
-                OptionChoice(name="UTC+5", value="ETC/GMT+5"),
-                OptionChoice(name="UTC+8", value="ETC/GMT+8"),
-                OptionChoice(name="UTC+9", value="ETC/GMT+9"),
-                OptionChoice(name="UTC+10", value="ETC/GMT+10"),
-                OptionChoice(name="UTC+12", value="ETC/GMT+12"),
-            ],
-        ),
+        interaction: discord.Interaction,
+        timezone: Choice[str],
     ):
         """Get the next rocket launches"""
-        timezone = pytz.timezone(timezone)
+        timezone = pytz.timezone(timezone.value)
 
         r = requests.get("https://fdo.rocketlaunch.live/json/launches/next/5")
         res = r.json()
@@ -339,4 +343,17 @@ class Utils(commands.Cog, name="utils"):
                 inline=False,
             )
 
-        await ctx.respond(embed=embed)
+        await interaction.response.send_message(embed=embed)
+
+    @app_commands.command(name="uptime")
+    @app_commands.checks.cooldown(1, 15.0, key=lambda i: (i.guild_id, i.user.id))
+    async def uptime(self, interaction: discord.Interaction):
+        """Get the uptime statistics of Ether"""
+        if not self.monitors_card:
+            return await interaction.response.send_message(
+                embed=Embed.error(description="Sorry, uptime cards are not available yet, retry later.")
+            )
+
+        await interaction.response.send_message(
+            file=self.monitors_card
+        )

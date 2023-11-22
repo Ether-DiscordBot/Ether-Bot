@@ -1,54 +1,135 @@
 from typing import Optional
-import requests
 
-from discord import ApplicationContext, Embed, Option, OptionChoice, SlashCommandGroup
+import discord
+import requests
+from discord import app_commands
+from discord.app_commands import Choice
 from discord.ext import commands
 
-from ether.core.utils import EtherEmbeds
 from ether.core.constants import Emoji
+from ether.core.embed import Embed
+from ether.core.views import AlphabetSelect
 
 
-class DnD(commands.Cog, name="dnd"):
+class DnD(commands.GroupCog, name="dnd"):
     DND_API_URL = "https://www.dnd5eapi.co/api/"
 
     def __init__(self, client) -> None:
         self.help_icon = Emoji.DND
         self.client = client
 
-    dnd = SlashCommandGroup("dnd", "Dungeon & Dragons commands!")
+    _class = app_commands.Group(
+        name="class", description="DnD class related commands"
+    )
 
-    _class = dnd.create_subgroup("class", "Class commands!")
+    @app_commands.command(name="spells")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def spells(
+        self, interaction: discord.Interaction, spell: Optional[str] = None
+    ): # FIXME
+        """Get information about a spell or a list of all spells"""
+        if not spell:
+            r = requests.get(f"{DnD.DND_API_URL}spells")
+            if not r.ok:
+                return await interaction.response.send_message(
+                    embed=Embed.error(description="Sorry, an error was occurred!")
+                )
+
+            spells_data = r.json()
+            spells_list = [
+                f"[{s['name']}](https://dndbeyond.com/spells{s['index']})"
+                for s in spells_data['results']
+            ]
+
+            embed = Embed(title="Spells list")
+            embed.description = f"List of the 50 first spells: \n\n {', '.join(spells_list[:50])}"
+
+            async def callback(c_interaction: discord.Interaction, select: discord.ui.Select):
+                letters = tuple([*select.values[0]])
+
+                c_spells = [
+                    f"[{s['name']}](https://dndbeyond.com/spells{s['index']})"
+                    for s in filter(lambda s: s['index'].startswith(letters), spells_data['results'])
+                ]
+                c_embed = Embed(
+                    title=f"{letters[0].upper()}-{letters[1].upper()} spells list",
+                    description=", ".join(c_spells)
+                    )
+
+                return await c_interaction.edit_original_response(
+                    embed=c_embed
+                )
+
+            view = AlphabetSelect(callback=callback)
+
+            return await interaction.response.send_message(embed=embed, view=view)
+
+        spell = spell.lower().replace(" ", "-")
+        r = requests.get(f"{DnD.DND_API_URL}spells/{spell}")
+
+        if r.status_code == 404:
+            return await interaction.response.send_message(
+                embed=Embed.error(description="Sorry, I don't found your spell!")
+            )
+        elif not r.ok:
+            return await interaction.response.send_message(
+                embed=Embed.error(description="Sorry, an error was occurred!")
+            )
+
+        spell_data = r.json()
+
+        embed = Embed(
+            title=f"{spell_data['name']} spell",
+            url=f"https://www.dndbeyond.com/spells/{spell_data['index']}",
+        )
+        embed.description = f"{spell_data['desc'][0]}\n**Level:** {spell_data['level']}\n**Duration:** {spell_data['duration']}\n **Range/Area:** {spell_data['range']}\n **Casting Time:** {spell_data['casting_time']}"
+
+        classes = [c["name"] for c in spell_data["classes"]]
+        embed.add_field(name="🎓 Classes", value=f"{', '.join(classes)}", inline=False)
+        sub_classes = [sub["name"] for sub in spell_data["subclasses"]]
+        embed.add_field(
+            name="🗂️ Sub classes", value=f"{', '.join(sub_classes)}", inline=False
+        )
+
+        embed.set_footer(
+            text="Powered by D&D",
+            icon_url="https://img.icons8.com/color/452/dungeons-and-dragons.png",
+        )
+
+        return await interaction.response.send_message(embed=embed)
 
     @_class.command(name="infos")
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.describe(_class="Pick a class")
+    @app_commands.rename(_class="class")
+    @app_commands.choices(
+        _class=[
+            Choice(name="Barbarian", value="barbarian"),
+            Choice(name="Bard", value="bard"),
+            Choice(name="Cleric", value="cleric"),
+            Choice(name="Druid", value="druid"),
+            Choice(name="Fighter", value="fighter"),
+            Choice(name="Monk", value="monk"),
+            Choice(name="Paladin", value="paladin"),
+            Choice(name="Ranger", value="ranger"),
+            Choice(name="Rogue", value="rogue"),
+            Choice(name="Sorcerer", value="sorcerer"),
+            Choice(name="Warlock", value="warlock"),
+            Choice(name="Wizard", value="wizard"),
+        ]
+    )
     async def class_infos(
         self,
-        ctx: ApplicationContext,
-        _class: Option(
-            str,
-            name="class",
-            description="Pick a class",
-            choices=[
-                OptionChoice("Barbarian", value="barbarian"),
-                OptionChoice("Bard", value="bard"),
-                OptionChoice("Cleric", value="cleric"),
-                OptionChoice("Druid", value="druid"),
-                OptionChoice("Fighter", value="fighter"),
-                OptionChoice("Monk", value="monk"),
-                OptionChoice("Paladin", value="paladin"),
-                OptionChoice("Ranger", value="ranger"),
-                OptionChoice("Rogue", value="rogue"),
-                OptionChoice("Sorcerer", value="sorcerer"),
-                OptionChoice("Warlock", value="warlock"),
-                OptionChoice("Wizard", value="wizard"),
-            ],
-        ),
+        interaction: discord.Interaction,
+        _class: Choice[str],
     ):
         """Get information about a class"""
+        _class = _class.value
+
         r = requests.get(f"{DnD.DND_API_URL}classes/{_class}")
         if not r.ok:
-            return await ctx.respond(
-                embed=EtherEmbeds.error("Sorry, an error was occured!")
+            return await interaction.response.send_message(
+                embed=Embed.error(description="Sorry, an error was occurred!")
             )
 
         class_data = r.json()
@@ -150,38 +231,41 @@ class DnD(commands.Cog, name="dnd"):
             inline=False,
         )
 
-        return await ctx.respond(embed=embed)
+        return await interaction.response.send_message(embed=embed)
 
     @_class.command(name="levels")
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.describe(_class="Pick a class")
+    @app_commands.rename(_class="class")
+    @app_commands.choices(
+        _class=[
+            Choice(name="Barbarian", value="barbarian"),
+            Choice(name="Bard", value="bard"),
+            Choice(name="Cleric", value="cleric"),
+            Choice(name="Druid", value="druid"),
+            Choice(name="Fighter", value="fighter"),
+            Choice(name="Monk", value="monk"),
+            Choice(name="Paladin", value="paladin"),
+            Choice(name="Ranger", value="ranger"),
+            Choice(name="Rogue", value="rogue"),
+            Choice(name="Sorcerer", value="sorcerer"),
+            Choice(name="Warlock", value="warlock"),
+            Choice(name="Wizard", value="wizard"),
+        ]
+    )
     async def class_levels(
         self,
-        ctx: ApplicationContext,
-        _class: Option(
-            str,
-            name="class",
-            description="Pick a class",
-            choices=[
-                OptionChoice("Barbarian", value="barbarian"),
-                OptionChoice("Bard", value="bard"),
-                OptionChoice("Cleric", value="cleric"),
-                OptionChoice("Druid", value="druid"),
-                OptionChoice("Fighter", value="fighter"),
-                OptionChoice("Monk", value="monk"),
-                OptionChoice("Paladin", value="paladin"),
-                OptionChoice("Ranger", value="ranger"),
-                OptionChoice("Rogue", value="rogue"),
-                OptionChoice("Sorcerer", value="sorcerer"),
-                OptionChoice("Warlock", value="warlock"),
-                OptionChoice("Wizard", value="wizard"),
-            ],
-        ),
+        interaction: discord.Interaction,
+        _class: Choice[str],
         level: Optional[int] = -1,
     ):
+        """Get the level table of a class"""
+        _class = _class.value
+
         r = requests.get(f"{DnD.DND_API_URL}classes/{_class}/levels")
         if not r.ok:
-            return await ctx.respond(
-                embed=EtherEmbeds.error("Sorry, an error was occured!")
+            return await interaction.response.send_message(
+                embed=Embed.error(description="Sorry, an error was occurred!")
             )
 
         levels_data = r.json()
@@ -193,8 +277,8 @@ class DnD(commands.Cog, name="dnd"):
 
         if level >= 0:
             if len(levels_data) < level:
-                return await ctx.respond(
-                    embed=EtherEmbeds.error(
+                return await interaction.response.send_message(
+                    embed=Embed.error(
                         "Sorry, there is no information about this level!"
                     )
                 )
@@ -239,38 +323,42 @@ class DnD(commands.Cog, name="dnd"):
                 inline=False,
             )
 
-        return await ctx.respond(embed=embed, ephemeral=len(levels_data) >= 0)
+        return await interaction.response.send_message(
+            embed=embed, ephemeral=len(levels_data) >= 0
+        )
 
     @_class.command(name="spells")
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.describe(_class="Pick a class")
+    @app_commands.rename(_class="class")
+    @app_commands.choices(
+        _class=[
+            Choice(name="Barbarian", value="barbarian"),
+            Choice(name="Bard", value="bard"),
+            Choice(name="Cleric", value="cleric"),
+            Choice(name="Druid", value="druid"),
+            Choice(name="Fighter", value="fighter"),
+            Choice(name="Monk", value="monk"),
+            Choice(name="Paladin", value="paladin"),
+            Choice(name="Ranger", value="ranger"),
+            Choice(name="Rogue", value="rogue"),
+            Choice(name="Sorcerer", value="sorcerer"),
+            Choice(name="Warlock", value="warlock"),
+            Choice(name="Wizard", value="wizard"),
+        ]
+    )
     async def class_spells(
         self,
-        ctx: ApplicationContext,
-        _class: Option(
-            str,
-            name="class",
-            description="Pick a class",
-            choices=[
-                OptionChoice("Barbarian", value="barbarian"),
-                OptionChoice("Bard", value="bard"),
-                OptionChoice("Cleric", value="cleric"),
-                OptionChoice("Druid", value="druid"),
-                OptionChoice("Fighter", value="fighter"),
-                OptionChoice("Monk", value="monk"),
-                OptionChoice("Paladin", value="paladin"),
-                OptionChoice("Ranger", value="ranger"),
-                OptionChoice("Rogue", value="rogue"),
-                OptionChoice("Sorcerer", value="sorcerer"),
-                OptionChoice("Warlock", value="warlock"),
-                OptionChoice("Wizard", value="wizard"),
-            ],
-        ),
+        interaction: discord.Interaction,
+        _class: Choice[str],
     ):
         """Get information about spell from a class"""
+        _class = _class.value
+
         r = requests.get(f"{DnD.DND_API_URL}classes/{_class}/spells")
         if not r.ok:
-            return await ctx.respond(
-                embed=EtherEmbeds.error("Sorry, an error was occured!")
+            return await interaction.response.send_message(
+                embed=Embed.error(description="Sorry, an error was occurred!")
             )
 
         spells_data = r.json()
@@ -292,68 +380,11 @@ class DnD(commands.Cog, name="dnd"):
             icon_url="https://img.icons8.com/color/452/dungeons-and-dragons.png",
         )
 
-        return await ctx.respond(embed=embed)
-
-    @dnd.command(name="spells")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def spells(self, ctx: ApplicationContext, spell: Optional[str] = None):
-        """Get informations about a spell or a list of all spells"""
-        if not spell:
-            r = requests.get(f"{DnD.DND_API_URL}spells")
-            if not r.ok:
-                return await ctx.respond(
-                    embed=EtherEmbeds.error("Sorry, an error was occured!")
-                )
-
-            spells_data = r.json()
-            spells_list = [
-                f"[{s['name']}](https://dndbeyond.com/spells/{s['index']})"
-                for s in spells_data["results"]
-            ]
-
-            embed = Embed("Spells list")
-            embed.description = f"List of all spells: \n\n {', '.join(spells_list[:100])}{'...' if len(spells_list) > 100 else '.'}"
-
-            return await ctx.respond(embed=embed)
-
-        spell = spell.lower().replace(" ", "-")
-
-        r = requests.get(f"{DnD.DND_API_URL}spells/{spell}")
-
-        if r.status_code == 404:
-            return await ctx.respond(
-                embed=EtherEmbeds.error("Sorry, I don't found your spell!")
-            )
-        elif not r.ok:
-            return await ctx.respond(
-                embed=EtherEmbeds.error("Sorry, an error was occured!")
-            )
-
-        spell_data = r.json()
-
-        embed = Embed(
-            title=f"{spell_data['name']} spell",
-            url=f"https://www.dndbeyond.com/spells/{spell_data['index']}",
-        )
-        embed.description = f"{spell_data['desc'][0]}\n**Level:** {spell_data['level']}\n**Duration:** {spell_data['duration']}\n **Range/Area:** {spell_data['range']}\n **Casting Time:** {spell_data['casting_time']}"
-
-        classes = [c["name"] for c in spell_data["classes"]]
-        embed.add_field(name="🎓 Classes", value=f"{', '.join(classes)}", inline=False)
-        sub_classes = [sub["name"] for sub in spell_data["subclasses"]]
-        embed.add_field(
-            name="🗂️ Sub classes", value=f"{', '.join(sub_classes)}", inline=False
-        )
-
-        embed.set_footer(
-            text="Powered by D&D",
-            icon_url="https://img.icons8.com/color/452/dungeons-and-dragons.png",
-        )
-
-        return await ctx.respond(embed=embed)
+        return await interaction.response.send_message(embed=embed, ephemeral=True, delete_after=5.0)
 
     @commands.is_owner()
-    @dnd.command(name="test")
-    async def test(self, ctx: ApplicationContext):
+    @app_commands.command(name="test")
+    async def test(self, interaction: discord.Interaction):
         cls = [
             "barbarian",
             "bard",
@@ -370,8 +401,9 @@ class DnD(commands.Cog, name="dnd"):
         ]
 
         for cl in cls:
-            await ctx.invoke(self.class_infos, cl)
-            await ctx.invoke(self.class_levels, cl)
-            await ctx.invoke(self.class_spells, cl)
+            # FIXME: Invoke doesn't work with interaction
+            # await ctx.invoke(self.class_levels, cl)
+            # await ctx.invoke(self.class_spells, cl)
+            continue
 
-        await ctx.invoke(self.spells, "acid-arrow")
+        self.spells(interaction, "acid-arrow")

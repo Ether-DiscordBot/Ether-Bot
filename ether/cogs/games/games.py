@@ -2,12 +2,13 @@ import random
 from typing import Literal, Optional
 
 import discord
-from discord import ApplicationContext, Member, SlashCommandGroup
+from discord import Member, app_commands
 from discord.ext import commands
-from ether.core.i18n import _
+from discord.ext.commands import Context
 
-from ether.core.utils import EtherEmbeds
 from ether.core.constants import Emoji
+from ether.core.embed import Embed
+from ether.core.i18n import _
 
 
 class TicTacToe:
@@ -59,7 +60,7 @@ class TicTacToe:
             return 0
 
 
-class Games(commands.Cog, name="games"):
+class Games(commands.GroupCog, name="games"):
     def __init__(
         self,
         client,
@@ -67,12 +68,10 @@ class Games(commands.Cog, name="games"):
         self.help_icon = Emoji.GAMES
         self.client = client
 
-    games = SlashCommandGroup("games", "Games commands!")
-
-    @games.command(name="tictactoe")
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.command(name="tictactoe")
+    @app_commands.checks.cooldown(1, 60.0, key=lambda i: (i.guild_id, i.user.id))
     async def tictactoe(
-        self, ctx: ApplicationContext, opponent: Optional[Member] = None
+        self, interaction: discord.Interaction, opponent: Optional[Member] = None
     ):
         """Play a game of Tic-Tac-Toe with a friend or the bot!"""
         vs_ai: bool = (
@@ -83,20 +82,20 @@ class Games(commands.Cog, name="games"):
         opponent = opponent if opponent else self.client.user
 
         if not vs_ai and opponent.bot:
-            return await ctx.respond(
-                embed=EtherEmbeds.error("You can't play with this person!"),
+            return await interaction.response.send_message(
+                embed=Embed.error(description="You can't play with this person!"),
                 delete_after=5,
             )
 
         board: list[int] = [0 for _ in range(9)]
 
-        players = {1: opponent, 2: ctx.author}
+        players = {1: opponent, 2: interaction.user}
         # 1 => "X", 2 => "O"
 
         for sign, player in players.items():
             if player.id == opponent.id:
                 opponent_sign = sign
-            elif player.id == ctx.author.id:
+            elif player.id == interaction.user.id:
                 author_sign = sign
 
         global turn
@@ -117,20 +116,23 @@ class Games(commands.Cog, name="games"):
                 discord.ButtonStyle.green if turn == 1 else discord.ButtonStyle.red
             )
 
+            def finish():
+                for item in view.children:
+                    item.disabled = True
+                button.view.stop()
+
             if TicTacToe.check_win(board, turn):
                 content = f"<@{players[turn].id}> won!"
-                button.view.disable_all_items()
-                button.view.stop()
+                finish()
             elif not TicTacToe.empty_indexies(board):
                 content = "Tie!"
-                button.view.disable_all_items()
-                button.view.stop()
+                finish()
             else:
                 turn = 2 if turn == 1 else 1
-                content = f"<@{ctx.author.id}> VS <@{self.client.user.id if vs_ai else opponent.id}>\nIt's the turn of {players[turn]}! *(you have 30 sec)*"
+                content = f"<@{interaction.user.id}> VS <@{self.client.user.id if vs_ai else opponent.id}>\nIt's the turn of {players[turn]}! *(you have 30 sec)*"
 
             if interaction.response.is_done():
-                await interaction.edit_original_message(
+                await interaction.edit_original_response(
                     content=content, view=button.view
                 )
             else:
@@ -148,7 +150,7 @@ class Games(commands.Cog, name="games"):
 
         async def timeout() -> None:
             view.disable_all_items()
-            await ctx.edit(content="Too late...", view=view)
+            await interaction.message.edit(content="Too late...", view=view)
             view.stop()
 
         view.on_timeout = timeout
@@ -185,17 +187,10 @@ class Games(commands.Cog, name="games"):
 
             await callback(button, interaction)
 
-        await ctx.respond(
-            f"<@{ctx.author.id}> VS <@{self.client.user.id if vs_ai else opponent.id}>\nIt's the turn of {players[turn]}! *(you have 30 sec)*",
+        await interaction.response.send_message(
+            f"<@{interaction.user.id}> VS <@{self.client.user.id if vs_ai else opponent.id}>\nIt's the turn of {players[turn]}! *(you have 30 sec)*",
             view=view,
         )
 
         if players[turn].id == self.client.user.id:
-            await ai_play(ctx.interaction)
-
-    @games.command(name="rps")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def rps(self, ctx: ApplicationContext, opponent: Member):
-        """Play a game of Rock-Paper-Scissors with a friend!"""
-        # TODO Rock/Paper/Scissors
-        pass
+            await ai_play(interaction)

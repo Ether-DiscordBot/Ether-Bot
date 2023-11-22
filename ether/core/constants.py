@@ -1,6 +1,7 @@
 # COLORS
 import random
-from typing import Optional, List
+from enum import IntEnum
+from typing import List, Optional
 
 
 class Colors:
@@ -64,6 +65,19 @@ class Other:
 
     AUTHOR_ID = 398763512052056064
     MAIN_CLIENT_ID = 985100792270819389
+
+
+class ExitCodes(IntEnum):
+    #: Clean shutdown (through signals, keyboard interrupt, [p]shutdown, etc.).
+    SHUTDOWN = 0
+    #: An unrecoverable error occurred during application's runtime.
+    CRITICAL = 1
+    #: The CLI command was used incorrectly, such as when the wrong number of arguments are given.
+    INVALID_CLI_USAGE = 2
+    #: Restart was requested by the bot owner (probably through [p]restart command).
+    RESTART = 26
+    #: Some kind of configuration error occurred.
+    CONFIGURATION_ERROR = 78  # Exit code borrowed from os.EX_CONFIG.
 
 
 class NODE_CODE_NAME:

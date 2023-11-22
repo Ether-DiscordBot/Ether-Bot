@@ -1,3 +1,32 @@
+## 1.0.0b4
+- Fix command prefix error
+- Some little changes on the `utils` cog
+- Remove some useless/boring or empty commands
+- Fix things
+
+## 1.0.0b3
+- Command usage statistic
+- Remove `ether/core/reddit.py` file
+- New `utils uptime` command and `Utils.monitor_card_builder` task
+
+## 1.0.0b2
+- Again, a lot of technical changes
+    - Update the logging system
+    - Update pre-commit
+    - Ctrl+C close the bot "properly"
+    - A lot of other changes
+- Music cogs is now functional (in theory)
+- Add a new `auto_play` parameter to the `music play` command that is set to `true` by default
+- New `music loop_all`, `music history` and `music back` commands
+
+## 1.0.0b1
+- A lot of technical changes
+    - Ether is now using discord.py (instead of py-cord)
+    - Ether is now using wevelink (instead of mafic)
+    - The above changes result in a rewriting of the bot
+    - Rewrite parts like the base client and some events
+- Rename the `Image` cog to `Remix`
+
 ## 0.20.3
 - HotFix
 

@@ -1,5 +1,5 @@
 from .steam import Steam
 
 
-def setup(bot):
-    bot.add_cog(Steam(bot))
+async def setup(bot):
+    await bot.add_cog(Steam(bot))

@@ -1,20 +1,20 @@
+import discord
 import requests
-
-from discord import ApplicationContext, Embed, SlashCommandGroup
+from discord import app_commands
 from discord.ext import commands, tasks
-from ether.core.i18n import _
+from discord.ext.commands import Context
 
-from ether.core.logging import log
 from ether.core.constants import Emoji
+from ether.core.embed import Embed
+from ether.core.i18n import _
+from ether.core.logging import log
 
 
-class Steam(commands.Cog, name="steam"):
+class Steam(commands.GroupCog, name="steam"):
     def __init__(self, client) -> None:
         self.help_icon = Emoji.STEAM
         self.client = client
         self.fetch_app_list.start()
-
-    steam = SlashCommandGroup("steam", "Steam commands!")
 
     def search(self, game: str):
         """Search a game in the steam store"""
@@ -38,13 +38,13 @@ class Steam(commands.Cog, name="steam"):
 
         self.steam_app_list = r["applist"]["apps"]
 
-    @steam.command(name="game")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def get_game(self, ctx: ApplicationContext, query: str):
+    @app_commands.command(name="game")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def get_game(self, interaction: discord.Interaction, query: str):
         """Get infos about a game"""
         app = self.search(query)
         if not app:
-            await ctx.respond(
+            await interaction.response.send_message(
                 "Could not find any game with that query, please provide the exact game name."
             )
 
@@ -56,7 +56,9 @@ class Steam(commands.Cog, name="steam"):
         )
         data = r.json()
         if not r.ok or not data[str(appid)]["success"]:
-            await ctx.respond("Sorry, we could not find any data with this game.")
+            await interaction.response.send_message(
+                "Sorry, we could not find any data with this game."
+            )
         data = data[str(appid)]["data"]
 
         embed = Embed(title=data["name"])
@@ -100,15 +102,15 @@ class Steam(commands.Cog, name="steam"):
 
         embed.description = description
 
-        await ctx.respond(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
-    @steam.command(name="specials")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def specials(self, ctx: ApplicationContext):
+    @app_commands.command(name="specials")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def specials(self, interaction: discord.Interaction):
         """Get the current steam specials"""
         r = requests.get("https://store.steampowered.com/api/featuredcategories")
         if not r.ok:
-            await ctx.respond("Sorry, an error was occured!")
+            await interaction.response.send_message("Sorry, an error was occurred!")
 
         r = r.json()
         data = r["specials"]
@@ -121,15 +123,15 @@ class Steam(commands.Cog, name="steam"):
 
         embed.description = description
 
-        await ctx.respond(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
-    @steam.command(name="top")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def top(self, ctx: ApplicationContext):
+    @app_commands.command(name="top")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def top(self, interaction: discord.Interaction):
         """Get the current steam top sellers"""
         r = requests.get("https://store.steampowered.com/api/featuredcategories")
         if not r.ok:
-            await ctx.respond("Sorry, an error was occured!")
+            await interaction.response.send_message("Sorry, an error was occurred!")
 
         r = r.json()
         data = r["top_sellers"]
@@ -144,15 +146,15 @@ class Steam(commands.Cog, name="steam"):
 
         embed.description = description
 
-        await ctx.respond(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
-    @steam.command(name="new")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def new(self, ctx: ApplicationContext):
+    @app_commands.command(name="new")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def new(self, interaction: discord.Interaction):
         """Get the current steam new releases"""
         r = requests.get("https://store.steampowered.com/api/featuredcategories")
         if not r.ok:
-            await ctx.respond("Sorry, an error was occured!")
+            await interaction.response.send_message("Sorry, an error was occurred!")
 
         r = r.json()
         data = r["new_releases"]
@@ -167,4 +169,4 @@ class Steam(commands.Cog, name="steam"):
 
         embed.description = description
 
-        await ctx.respond(embed=embed)
+        await interaction.response.send_message(embed=embed)

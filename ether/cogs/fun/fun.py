@@ -1,26 +1,21 @@
+import urllib.parse
 from random import choice, randint, seed
 from typing import Optional
-from requests import get, request
-import os
-import urllib.parse
 
-from discord import (
-    ApplicationContext,
-    Embed,
-    ApplicationContext,
-    Member,
-    Option,
-    OptionChoice,
-    SlashCommandGroup,
-)
+import discord
+from discord import Member, app_commands
+from discord.app_commands import Choice
 from discord.ext import commands
+from discord.ext.commands import Context
+from requests import get, request
 
-from ether.core.i18n import _
-from ether.core.utils import EtherEmbeds, NerglishTranslator
 from ether.core.constants import Emoji
+from ether.core.embed import Embed
+from ether.core.i18n import _
+from ether.core.utils import NerglishTranslator
 
 
-class Fun(commands.Cog, name="fun"):
+class Fun(commands.GroupCog, name="fun"):
     SUPPORTED_EMBED_FORMAT = ("jpg", "jpeg", "JPG", "JPEG", "png", "PNG", "gif", "gifv")
     HEIGHT_BALL_ANSWERS = [
         [
@@ -55,130 +50,105 @@ class Fun(commands.Cog, name="fun"):
         self.help_icon = Emoji.FUN
         self.client = client
 
-        self.giphy_api_key = os.getenv("GIPHY_API_KEY")
-
-    fun = SlashCommandGroup("fun", "Fun commands!")
-
-    @fun.command(name="gif")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def gif(self, ctx: ApplicationContext, *, query):
-        """Search a gif on giphy"""
-        r = get(
-            f"https://api.giphy.com/v1/gifs/random?tag={query}&api_key={self.giphy_api_key}"
-        )
-
-        r = r.json()
-        if not r["data"]:
-            await ctx.respond(
-                embed=EtherEmbeds.error(
-                    "Sorry, I could not find any gifs with this query.", delete_after=5
-                )
-            )
-            return
-        gif_url = r["data"]["url"]
-
-        await ctx.respond(gif_url)
-
-    @fun.command(name="sticker")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def sticker(self, ctx: ApplicationContext, *, query):
-        """Search a sticker on giphy"""
-        r = get(
-            f"https://api.giphy.com/v1/stickers/random?tag={query}&api_key={self.giphy_api_key}"
-        )
-
-        r = r.json()
-        if not r["data"]:
-            await ctx.respond(
-                embed=EtherEmbeds.error(
-                    "Sorry, I could not find any gifs with this query.", delete_after=5
-                )
-            )
-            return
-        sticker_url = r["data"]["images"]["original"]["url"]
-
-        await ctx.respond(sticker_url)
-
-    @fun.command(name="8-ball")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def height_ball(self, ctx: ApplicationContext, question: str):
+    @app_commands.command(name="8-ball")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def height_ball(self, interaction: discord.Interaction, question: str):
         """Ask the magic 8-ball a question!"""
 
-        await ctx.respond(f"🎱 {choice(choice(self.HEIGHT_BALL_ANSWERS))}")
+        await interaction.response.send_message(
+            f"🎱 {choice(choice(self.HEIGHT_BALL_ANSWERS))}"
+        )
 
-    @fun.command(name="say")
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.command(name="say")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def say(
         self,
-        ctx: ApplicationContext,
+        interaction: discord.Interaction,
         message: str,
-        hide: Option(bool, "Hide ?", default=False),
+        hide: bool,
     ):
         """Make the bot say something"""
 
         if hide:
-            await ctx.respond(
+            await interaction.response.send_message(
                 "👌 Done! (only you can see this message)",
                 ephemeral=True,
                 delete_after=5,
             )
-            await ctx.channel.send(message)
+            await interaction.channel.send(message)
             return
 
-        await ctx.respond(message)
+        await interaction.response.send_message(message)
 
-    @fun.command(name="howgay")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def howgay(self, ctx: ApplicationContext, user: Optional[Member] = None):
+    @app_commands.command(name="howgay")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def howgay(
+        self, interaction: discord.Interaction, user: Optional[Member] = None
+    ):
         """The bot guesses how gay your are"""
 
-        user = ctx.author if not user else user
+        user = interaction.user if not user else user
 
         seed(user.id / 1782)
         gaymeter = randint(0, 100)
 
-        if user == ctx.author:
-            return await ctx.respond(f"You are gay at `{gaymeter}%` !")
-        await ctx.respond(f"{user.mention} is gay at `{gaymeter}%` !")
+        if user == interaction.user:
+            return await interaction.response.send_message(
+                f"You are gay at `{gaymeter}%` !"
+            )
+        await interaction.response.send_message(
+            f"{user.mention} is gay at `{gaymeter}%` !"
+        )
 
-    @fun.command(name="howattractive")
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.command(name="howattractive")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def howattractive(
-        self, ctx: ApplicationContext, user: Optional[Member] = None
+        self, interaction: discord.Interaction, user: Optional[Member] = None
     ):
         """The bot tells you how attractive you are"""
 
-        user = ctx.author if not user else user
+        user = interaction.user if not user else user
 
         seed(user.id / 294)
         attractivemeter = randint(0, 100)
 
-        if user == ctx.author:
-            return await ctx.respond(f"You are `{attractivemeter}%` attractive!")
-        await ctx.respond(f"{user.mention} is `{attractivemeter}%` attractive!")
+        if user == interaction.user:
+            return await interaction.response.send_message(
+                f"You are `{attractivemeter}%` attractive!"
+            )
+        await interaction.response.send_message(
+            f"{user.mention} is `{attractivemeter}%` attractive!"
+        )
 
-    @fun.command(name="howhot")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def howhot(self, ctx: ApplicationContext, user: Optional[Member] = None):
+    @app_commands.command(name="howhot")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def howhot(
+        self, interaction: discord.Interaction, user: Optional[Member] = None
+    ):
         """The bot guesses how hot you are"""
 
-        user = ctx.author if not user else user
+        user = interaction.user if not user else user
 
         seed(user.id / 15)
         hotmeter = randint(0, 100)
 
-        if user == ctx.author:
-            return await ctx.respond(f"You are `{hotmeter}%` hot!")
-        await ctx.respond(f"{user.mention} is `{hotmeter}%` hot!")
+        if user == interaction.user:
+            return await interaction.response.send_message(
+                f"You are `{hotmeter}%` hot!"
+            )
+        await interaction.response.send_message(f"{user.mention} is `{hotmeter}%` hot!")
 
-    @fun.command(name="lovecalc")
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.command(name="lovecalc")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def howhot(
-        self, ctx: ApplicationContext, user1: Member, user2: Optional[Member] = None
+        self,
+        interaction: discord.Interaction,
+        user1: Member,
+        user2: Optional[Member] = None,
     ):
         """The bot guesses how hot you are"""
 
-        user2 = ctx.author if not user2 else user2
+        user2 = interaction.user if not user2 else user2
 
         seed((user1.id + user2.id) / 144)
         lovecalc = randint(0, 100)
@@ -193,51 +163,50 @@ class Fun(commands.Cog, name="fun"):
             else "💔"
         )
 
-        await ctx.respond(
+        await interaction.response.send_message(
             f"{user1.mention} and {user2.mention} are compatible at `{lovecalc}%` {love_emoji} !"
         )
 
-    @fun.command(name="useless_facts")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def useless_facts(self, ctx: ApplicationContext):
+    @app_commands.command(name="useless_facts")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def useless_facts(self, interaction: discord.Interaction):
         r = request("GET", "https://uselessfacts.jsph.pl/random.json?language=en")
         if not r.ok:
-            return await ctx.respond(
-                embed=EtherEmbeds.error(
-                    "Sorry, I could not fetch any facts.", delete_after=5
-                )
+            return await interaction.response.send_message(
+                embed=Embed.error(description="Sorry, I could not fetch any facts.", delete_after=5)
             )
 
         embed = Embed(title="Useless facts", description=r.json()["text"])
-        await ctx.respond(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
-    @fun.command(name="horoscope")
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.command(name="horoscope")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.describe(sign="Pick a class")
+    @app_commands.choices(
+        sign=[
+            Choice(name="♈ Aries", value="aries"),
+            Choice(name="♉ Taurus", value="taurus"),
+            Choice(name="♊ Gemini", value="gemini"),
+            Choice(name="♋ Cancer", value="cancer"),
+            Choice(name="♌ Leo", value="leo"),
+            Choice(name="♍ Virgo", value="virgo"),
+            Choice(name="♎ Libra", value="libra"),
+            Choice(name="♏ Scorpius", value="scorpio"),
+            Choice(name="♐ Sagittarius", value="sagittarius"),
+            Choice(name="♑ Capricorn", value="capricorn"),
+            Choice(name="♒ Aquarius", value="aquarius"),
+            Choice(name="♓ Pisces", value="pisces"),
+        ]
+    )
     async def horoscope(
         self,
-        ctx: ApplicationContext,
-        sign: Option(
-            str,
-            "choose an astrological sign",
-            required=True,
-            choices=[
-                OptionChoice("♈ Aries", value="aries"),
-                OptionChoice("♉ Taurus", value="taurus"),
-                OptionChoice("♊ Gemini", value="gemini"),
-                OptionChoice("♋ Cancer", value="cancer"),
-                OptionChoice("♌ Leo", value="leo"),
-                OptionChoice("♍ Virgo", value="virgo"),
-                OptionChoice("♎ Libra", value="libra"),
-                OptionChoice("♏ Scorpius", value="scorpio"),
-                OptionChoice("♐ Sagittarius", value="sagittarius"),
-                OptionChoice("♑ Capricorn", value="capricorn"),
-                OptionChoice("♒ Aquarius", value="aquarius"),
-                OptionChoice("♓ Pisces", value="pisces"),
-            ],
-        ),
+        interaction: discord.Interaction,
+        sign: Choice[str],
     ):
         """Get your daily horoscope"""
+        sign = sign.value
         url = f"https://ohmanda.com/api/horoscope/{sign}"
+
 
         response = request("POST", url)
         r = response.json()
@@ -246,19 +215,19 @@ class Fun(commands.Cog, name="fun"):
             title=f":{sign.lower()}: Horoscope", description=f"{r['horoscope']}\n\n"
         )
 
-        await ctx.respond(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
-    @fun.command(name="nerglish")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def nerglish(self, ctx: ApplicationContext, text: str):
+    @app_commands.command(name="nerglish")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def nerglish(self, interaction: discord.Interaction, text: str):
         """Translate text to nerglish"""
         translated = NerglishTranslator.translate(text)
-        await ctx.respond(translated)
+        await interaction.response.send_message(translated)
 
-    @fun.command(name="lmgtfy")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def lmgtfy(self, ctx: ApplicationContext, text: str):
+    @app_commands.command(name="lmgtfy")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def lmgtfy(self, interaction: discord.Interaction, text: str):
         """Let me google that for you"""
-        await ctx.respond(
+        await interaction.response.send_message(
             f"https://letmegooglethat.com/?q={urllib.parse.quote_plus(text)}"
         )

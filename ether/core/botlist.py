@@ -1,10 +1,11 @@
 from discord import SlashCommandGroup
+
 from ether.core.config import config
 
 
 # protected decorator for recusrion functions with a max depth
 def recursion(*args, **kwargs):
-    __all__ = ["max_depth"]
+    pass
 
     max_depth = kwargs.get("max_depth", 10)
 

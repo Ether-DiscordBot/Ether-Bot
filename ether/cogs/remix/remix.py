@@ -2,67 +2,79 @@ import io
 import os
 import re
 
-from discord import ApplicationContext, File, SlashCommandGroup
+import discord
+from discord import File, app_commands
 from discord.ext import commands
-from PIL import Image as Img, ImageDraw, ImageFont
-from ether.core.i18n import _
+from discord.ext.commands import Context
+from PIL import Image as Img
+from PIL import ImageDraw, ImageFont
 
 from ether.core.constants import Emoji
+from ether.core.i18n import _
+
+ASSETS_FOLDER_PATH = "ether/cogs/remix/assets/"
 
 
-ASSETS_FOLDER_PATH = "ether/cogs/image/assets/"
-
-
-class Image(commands.Cog, name="image"):
+class Remix(commands.GroupCog, name="remix"):
     def __init__(self, client) -> None:
         self.help_icon = Emoji.IMAGE
         self.client = client
 
-    image = SlashCommandGroup("image", "Image commands!")
-
-    @image.command(name="hold_up")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def hold_up(self, ctx: ApplicationContext, text: str):
+    @app_commands.command(name="hold_up")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def hold_up(self, interaction: discord.Interaction, text: str):
         """Hold up!"""
         image = ImageModifier("hold-up.png")
         image.write(text, (10, 10), 30, 4)
 
-        await ctx.respond(file=File(fp=image.bytes, filename="hold-up.png"))
+        await interaction.response.send_message(
+            file=File(fp=image.bytes, filename="hold-up.png")
+        )
 
-    @image.command(name="vault-boy")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def vault_boy(self, ctx: ApplicationContext, up: str, bottom: str):
+    @app_commands.command(name="vault-boy")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def vault_boy(self, interaction: discord.Interaction, up: str, bottom: str):
         """Vault boy meme"""
         image = ImageModifier("vault-boy.jpg")
         image.write(up, (200, 33), 25, 2, "mm")
         image.write(bottom, (200, 333), 25, 2, "mm")
 
-        await ctx.respond(file=File(fp=image.bytes, filename="vault_boy.jpg"))
+        await interaction.response.send_message(
+            file=File(fp=image.bytes, filename="vault_boy.jpg")
+        )
 
-    @image.command(name="mr_incredible")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def mr_incredible(self, ctx: ApplicationContext, left: str, right: str):
+    @app_commands.command(name="mr_incredible")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def mr_incredible(
+        self, interaction: discord.Interaction, left: str, right: str
+    ):
         """Mr Incredible meme"""
         image = ImageModifier("mr-incredible.png")
         image.write(left, (178, 365), 20, 1, "mm", fill=(255, 255, 255))
         image.write(right, (533, 365), 20, 1, "mm", fill=(255, 255, 255))
 
-        await ctx.respond(file=File(fp=image.bytes, filename="mr_incredible.png"))
+        await interaction.response.send_message(
+            file=File(fp=image.bytes, filename="mr_incredible.png")
+        )
 
-    @image.command(name="philosoraptor")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def philosoraptor(self, ctx: ApplicationContext, top: str, bottom: str):
+    @app_commands.command(name="philosoraptor")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def philosoraptor(
+        self, interaction: discord.Interaction, top: str, bottom: str
+    ):
         """Philosoraptor meme"""
         image = ImageModifier("philosoraptor.png")
         image.write(top, (200, 33), 28, 2, "mm", fill=(255, 255, 255))
         image.write(bottom, (200, 333), 28, 2, "mm", fill=(255, 255, 255))
 
-        await ctx.respond(file=File(fp=image.bytes, filename="philosoraptor.png"))
+        await interaction.response.send_message(
+            file=File(fp=image.bytes, filename="philosoraptor.png")
+        )
 
-    @image.command(name="never_again")
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.command(name="never_again")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def never_again(
-        self, ctx: ApplicationContext, first: str, second: str, third: str
+        self, interaction: discord.Interaction, first: str, second: str, third: str
     ):
         """Never again meme"""
         image = ImageModifier("never_again.png")
@@ -70,16 +82,20 @@ class Image(commands.Cog, name="image"):
         image.write(second, (350, 200), 15, 3, "mm", fill=(0, 0, 0))
         image.write(third, (100, 480), 15, 3, "mm", fill=(0, 0, 0))
 
-        await ctx.respond(file=File(fp=image.bytes, filename="never_again.png"))
+        await interaction.response.send_message(
+            file=File(fp=image.bytes, filename="never_again.png")
+        )
 
-    @image.command(name="doom_bonked_zombie")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def doom_bonked_zombie(self, ctx: ApplicationContext, text: str):
+    @app_commands.command(name="doom_bonked_zombie")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def doom_bonked_zombie(self, interaction: discord.Interaction, text: str):
         """Doom bonked zombie meme"""
         image = ImageModifier("doom_bonked_zombie.jpg")
         image.write(text, (400, 10), 30, 4, "ma", fill=(255, 255, 255))
 
-        await ctx.respond(file=File(fp=image.bytes, filename="doom_bonked_zombie.jpg"))
+        await interaction.response.send_message(
+            file=File(fp=image.bytes, filename="doom_bonked_zombie.jpg")
+        )
 
 
 class ImageModifier:
@@ -106,8 +122,8 @@ class ImageModifier:
         height = draw.textlength(text, ImageModifier.FONT, "ttb") + 5
         i = 0
         for match in sentences:
-            splitted = match.group().split("\\n")
-            for subs in splitted:
+            split = match.group().split("\\n")
+            for subs in split:
                 if max_lines > 0 and i >= max_lines:
                     break
                 draw.text(

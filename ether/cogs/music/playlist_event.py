@@ -1,11 +1,10 @@
 import random
-import discord
 
+import discord
 from discord.ext import commands
 
 from ether.core.constants import Other
 from ether.core.db.client import Playlist
-from ether.core.voice_client import EtherPlayer
 
 
 class PlaylistEvent(commands.Cog):
@@ -18,12 +17,12 @@ class PlaylistEvent(commands.Cog):
             return
 
         guild = self.client.get_guild(payload.guild_id)
-        player: EtherPlayer = guild.voice_client
+        player = guild.voice_client
 
         if not player:
-            await payload.member.voice.channel.connect(cls=EtherPlayer)
+            await payload.member.voice.channel.connect()
 
-            player: EtherPlayer = guild.voice_client
+            player = guild.voice_client
             setattr(player, "channel", payload.channel_id)
 
     @commands.Cog.listener()
@@ -50,7 +49,7 @@ class PlaylistEvent(commands.Cog):
             if not payload.member.voice:
                 return
 
-            player: EtherPlayer = payload.member.guild.voice_client
+            player = payload.member.guild.voice_client
             if not player:
                 return
 

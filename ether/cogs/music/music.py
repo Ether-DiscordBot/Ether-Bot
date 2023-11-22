@@ -1,27 +1,20 @@
 import datetime
+import random
 import re
-from typing import List, Optional
+from typing import Optional, cast
 
+import discord
 import requests
-import mafic
-import humanize
+import wavelink
+from discord import app_commands
+from discord.app_commands import Choice
 from discord.ext import commands
-from discord import (
-    ApplicationContext,
-    Embed,
-    Member,
-    Option,
-    SlashCommandGroup,
-    OptionChoice,
-)
 
-from ether.core.i18n import _
-from ether.core.constants import Colors
-from ether.core.db.client import Database
-from ether.core.utils import EtherEmbeds
 from ether.core.config import config
-from ether.core.constants import Emoji
-from ether.core.voice_client import EtherPlayer
+from ether.core.constants import Colors, Emoji
+from ether.core.db.client import Database
+from ether.core.embed import Embed
+from ether.core.i18n import _
 from ether.core.logging import log
 
 PLAYLIST_REG = re.compile(
@@ -33,7 +26,8 @@ URL_REG = re.compile(
 )
 
 
-class Music(commands.Cog, name="music"):
+# FIXME: I think it's because GroupCog is in conflict with Group
+class Music(commands.GroupCog, group_name="music"):
     def __init__(self, client):
         self.client = client
         self.help_icon = Emoji.MUSIC
@@ -41,217 +35,209 @@ class Music(commands.Cog, name="music"):
 
         self.tape_in = open("ether/assets/sfx/tape_in.mp3", "rb").read()
 
-    music = SlashCommandGroup("music", "Music commands!")
-    music_filter = music.create_subgroup(
-        "filter", "Manage filters for your music player"
+    filter = app_commands.Group(
+        name="filter", description="Music filters related commands"
     )
 
-    async def cog_before_invoke(self, ctx):
+    async def interaction_check(self, interaction: discord.Interaction):
         """Command before-invoke handler."""
-        execeptions = ("playlist", "lavalinkinfo")
-        if ctx.command.name in execeptions:
+
+        exceptions = ("playlist", "lavalinkinfo")
+        if interaction.command.name in exceptions:
             return
 
-        guild_check = ctx.guild is not None
+        guild_check = interaction.guild != None
 
         if guild_check:
-            await self.ensure_voice(ctx)
+            return await self.ensure_voice(interaction)
 
         return guild_check
 
-    async def ensure_voice(self, ctx: ApplicationContext):
+    async def ensure_voice(self, interaction: discord.Interaction) -> bool:
         """This check ensures that the bot and command author are in the same voicechannel."""
-        player: EtherPlayer = ctx.guild.voice_client
 
-        exceptions = ctx.command.name in ("playlist", "queue", "lavalinkinfo")
-        should_connect = ctx.command.name in ("play", "join")
+        exceptions = interaction.command.name in ("playlist", "queue", "lavalinkinfo")
+        should_connect = interaction.command.name in ("play", "join")
 
-        if not exceptions and not ctx.author.voice or not ctx.author.voice.channel:
-            return await ctx.respond(
-                embed=EtherEmbeds.error("Join a voicechannel first."),
+        if (
+            not exceptions
+            and not interaction.user.voice
+            or not interaction.user.voice.channel
+        ):
+            await interaction.response.send_message(
+                embed=Embed.error(description="Join a voicechannel first."),
                 ephemeral=True,
                 delete_after=5,
             )
+            return False
 
-        if not player:
+        player: wavelink.Player
+        player = cast(wavelink.Player, interaction.guild.voice_client)  # type: ignore
+
+        if not player or not player.connected:
             if not should_connect:
-                await ctx.respond(
-                    embed=EtherEmbeds.error("Humm... There is no music."),
+                await interaction.response.send_message(
+                    embed=Embed.error(description="There is no music."),
                     ephemeral=True,
                     delete_after=5,
                 )
+                return False
 
             permissions = (
-                ctx.author.voice.channel.permissions_for(ctx.me)
-                if ctx.author.voice
+                interaction.user.voice.channel.permissions_for(
+                    interaction.guild.me
+                )
+                if interaction.user.voice
                 else None
             )
 
             if permissions and (not permissions.connect or not permissions.speak):
-                await ctx.respond(
-                    embed=EtherEmbeds.error(
-                        "I need the `CONNECT` and `SPEAK` permissions."
-                    )
+                await interaction.response.send_message(
+                    embed=Embed.error(description="I need the `CONNECT` and `SPEAK` permissions.")
                 )
+                return False
 
             # Join
-            if not isinstance(ctx.user, Member):
-                return
-
             try:
-                await ctx.user.voice.channel.connect(cls=EtherPlayer)
-            except mafic.NoNodesAvailable:
-                await ctx.respond(
-                    embed=EtherEmbeds.error(
-                        "Sorry, the bot isn't ready yet, please retry later!"
+                await interaction.user.voice.channel.connect(cls=wavelink.Player, self_deaf=True)
+            except wavelink.WavelinkException:
+                await interaction.response.send_message(
+                    embed=Embed.error(
+                        description="Sorry, an error occurred. Please retry later or report the issue."
                     )
                 )
 
                 return False
-
-            player: EtherPlayer = ctx.guild.voice_client
-
-            if player:
-                setattr(player, "text_channel", ctx.channel)
-        elif not ctx.author.voice or (player.channel.id != ctx.author.voice.channel.id):
-            await ctx.respond(
-                embed=EtherEmbeds.error("You need to be in my voicechannel."),
+        elif not interaction.user.voice or (
+            player.channel.id != interaction.user.voice.channel.id
+        ):
+            await interaction.response.send_message(
+                embed=Embed.error(description="You need to be in my voicechannel."),
                 ephemeral=True,
                 delete_after=5,
             )
+            return False
 
-    @commands.slash_command(name="play")
+        player: wavelink.Player
+        player = cast(wavelink.Player, interaction.guild.voice_client)  # type: ignore
+
+        # Lock the player to this channel...
+        if player and not hasattr(player, "home"):
+            player.home = interaction.channel
+        elif player and player.home != interaction.channel:
+            await interaction.response.send_message(Embed.error(description=f"You can only play songs in {player.home.mention}, as the player has already started there."), ephemeral=True, delete_after=5)
+
+        return True
+
+    @app_commands.command(name="play")
     @commands.guild_only()
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def _play(
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.choices(
+        source=[
+            Choice(name="YouTube", value=0),
+            Choice(name="YouTube Music", value=1),
+            Choice(name="SoundCloud", value=2),
+        ]
+    )
+    async def play(
         self,
-        ctx: ApplicationContext,
+        interaction: discord.Interaction,
         *,
         query: str,
         shuffle: bool = False,
-        search_type=Option(
-            name="search_type",
-            choices=[
-                OptionChoice("YouTube", value="ytsearch"),
-                OptionChoice("YouTube Music", value="ytmsearch"),
-                OptionChoice("SoundCloud", value="scsearch"),
-            ],
-            default="ytsearch",
-        ),
+        source: Choice[int] = 0,
+        auto_play: bool = False,
     ):
         """Play a song from YouTube
 
         query:
             The song to search or play
         """
-        await ctx.invoke(
-            self.play, query=query, shuffle=shuffle, search_type=search_type
-        )
 
-    @music.command(name="play")
+        return await self._play(interaction, query=query, shuffle=shuffle, source=source, auto_play=auto_play)
+
+
+    @app_commands.command(name="play")
     @commands.guild_only()
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def play(
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.choices(
+        source=[
+            Choice(name="YouTube", value=0),
+            Choice(name="YouTube Music", value=1),
+            Choice(name="SoundCloud", value=2),
+        ]
+    )
+    async def music_play(
         self,
-        ctx: ApplicationContext,
+        interaction: discord.Interaction,
         *,
         query: str,
         shuffle: bool = False,
-        search_type=Option(
-            name="search_type",
-            choices=[
-                OptionChoice("YouTube", value="ytsearch"),
-                OptionChoice("YouTube Music", value="ytmsearch"),
-                OptionChoice("SoundCloud", value="scsearch"),
-            ],
-            default="ytsearch",
-        ),
+        source: Choice[int] = 0,
+        auto_play: bool = True,
     ):
-        """Play a song from YouTube (the same as /play)
+        player: wavelink.Player
+        player = cast(wavelink.Player, interaction.guild.voice_client)  # type: ignore
 
-        query:
-            The song to search or play
-        """
-
-        player: EtherPlayer = ctx.guild.voice_client
         if not player:
             return
 
-        await ctx.defer()
+        if auto_play:
+            player.autoplay = wavelink.AutoPlayMode.enabled
 
-        if not player.node.available:
-            await ctx.respond(
-                embed=EtherEmbeds.error(
-                    f"Sorry, the node ({player.node.label}) is not available, please retry later!"
-                )
-            )
-            await player.node.close()
-            log.warning(
-                f"Node {player.node.label} is not available, so it'll be replaced"
-            )
-            self.client.start_lavalink_node()
-            return
+        if hasattr(source, "value"):
+            source = source.value
 
-        try:
-            tracks = await player.fetch_tracks(query, search_type=search_type)
-        except mafic.errors.TrackLoadException:
-            return await ctx.respond(
-                embed=EtherEmbeds.error(
-                    "Sorry, I can't play this track (can be copyight or blocked)"
-                )
-            )
-
+        tracks = await wavelink.Playable.search(query, source=wavelink.TrackSource(source))
         if not tracks:
-            return await ctx.respond(embed=EtherEmbeds.error("Nothing found!"))
+            return await interaction.response.send_message(
+                embed=Embed.error(description="No tracks were found!")
+            )
 
-        if isinstance(tracks, mafic.Playlist):
+        if isinstance(tracks, wavelink.Playlist):
             playlist_tracks = tracks.tracks
-            player.queue.extend(playlist_tracks)
-
             if shuffle:
-                player.queue.shuffle()
+                random.shuffle(playlist_tracks)
 
-            await ctx.respond(
+            added: int = await player.queue.put_wait(playlist_tracks)
+
+            await interaction.response.send_message(
                 embed=Embed(
-                    description=f"**[{tracks.name}]({query})** - {len(playlist_tracks)} tracks",
+                    description=f"**[{tracks.name}]({query})** - {len(added)} tracks",
                     color=Colors.DEFAULT,
                 )
             )
-
-            track = tracks.tracks[0]
         else:
-            track = tracks[0]
-
-            if not hasattr(player, "queue"):
-                await player.disconnect()
-                return await ctx.respond(
-                    embed=EtherEmbeds.error("Please retry."), ephemeral=True
-                )
-
-            player.queue.append(track)
-            await ctx.respond(
+            track: wavelink.Playable = tracks[0]
+            await player.queue.put_wait(track)
+            await interaction.response.send_message(
                 embed=Embed(
                     description=f"Track added to queue: **[{track.title}]({track.uri})**",
                     color=Colors.DEFAULT,
                 )
             )
 
-        if not player.current:
-            track = player.queue.get()
-            await player.play(track)
+        if not player.playing:
+            await player.play(player.queue.get())
 
-    @music.command(name="stop")
+
+    @app_commands.command(name="stop")
     @commands.guild_only()
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def stop(self, ctx: ApplicationContext):
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def stop(self, interaction: discord.Interaction):
         """Stop the current song"""
-        player: EtherPlayer = ctx.guild.voice_client
+        player: wavelink.Player = interaction.guild.voice_client
         if not player:
-            return
+            return await interaction.response.send_message(
+                embed=Embed.error(
+                    description="Player is not connected to a voice channel"
+                ),
+                delete_after=5,
+            )
 
         if not player.connected:
-            await ctx.respond(
-                embed=EtherEmbeds.error(
+            await interaction.response.send_message(
+                embed=Embed.error(
                     description="Player is not connected to a voice channel"
                 ),
                 delete_after=5,
@@ -261,77 +247,86 @@ class Music(commands.Cog, name="music"):
         player.queue.clear()
         await player.stop()
 
-        await ctx.respond(embed=Embed(description="🛑 Stopped"), delete_after=5)
+        await interaction.response.send_message(
+            embed=Embed(description="🛑 Stopped"), delete_after=5
+        )
         await player.disconnect()
 
-    @music.command(name="pause")
+    @app_commands.command(name="pause")
     @commands.guild_only()
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def pause(self, ctx: ApplicationContext):
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def pause(self, interaction: discord.Interaction):
         """Pause the current song"""
-        player: EtherPlayer = ctx.guild.voice_client
+        player: wavelink.Player = interaction.guild.voice_client
         if not player:
             return
 
         if not player.current:
-            await ctx.respond(
-                embed=EtherEmbeds.error("I am not currently playing anything!"),
+            await interaction.response.send_message(
+                embed=Embed.error(description="I am not currently playing anything!"),
                 delete_after=5,
             )
             return
 
         await player.pause(not player.paused)
         action = "▶️ Paused" if player.paused else "⏸️ Resume"
-        await ctx.respond(embed=Embed(description=action), delete_after=5)
+        await interaction.response.send_message(
+            embed=Embed(description=action), delete_after=5
+        )
 
-    @music.command(name="resume")
+    @app_commands.command(name="resume")
     @commands.guild_only()
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def resume(self, ctx: ApplicationContext):
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def resume(self, interaction: discord.Interaction):
         """Resume the current song"""
-        player: EtherPlayer = ctx.guild.voice_client
+        player: wavelink.Player = interaction.guild.voice_client
         if not player:
             return
 
         if not player.paused:
-            await ctx.respond(
-                embed=EtherEmbeds.error("I am not paused!"), delete_after=5
+            await interaction.response.send_message(
+                embed=Embed.error(description="I am not paused!"), delete_after=5
             )
             return
 
         await player.resume()
-        await ctx.respond(embed=Embed(description="⏸️ Resume"), delete_after=5)
+        await interaction.response.send_message(
+            embed=Embed(description="⏸️ Resume"), delete_after=5
+        )
 
-    @music.command(name="skip")
+    @app_commands.command(name="skip")
     @commands.guild_only()
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def skip(self, ctx: ApplicationContext):
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def skip(self, interaction: discord.Interaction):
         """Skip the current song"""
-        player: EtherPlayer = ctx.guild.voice_client
+        player: wavelink.Player = interaction.guild.voice_client
         if not player:
             return
 
-        if not len(player.queue):
-            return await ctx.respond(
-                embed=EtherEmbeds.error(description="There's nothing to skip"),
+        skipped = await player.skip(force=True)
+
+        if not skipped:
+            return await interaction.response.send_message(
+                embed=Embed.error(description="There's nothing to skip"),
                 delete_after=5,
             )
 
-        await player.play(player.queue.get())
-        return await ctx.respond(embed=Embed(description="⏭️ Skip"), delete_after=5)
+        return await interaction.response.send_message(
+            embed=Embed(description="⏭️ Skip"), delete_after=5
+        )
 
-    @music.command(name="shuffle")
+    @app_commands.command(name="shuffle")
     @commands.guild_only()
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def shuffle(self, ctx: ApplicationContext):
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def shuffle(self, interaction: discord.Interaction):
         """Shuffle the queue"""
-        player: EtherPlayer = ctx.guild.voice_client
+        player: wavelink.Player = interaction.guild.voice_client
         if not player:
             return
 
         player.queue.shuffle()
 
-        await ctx.respond(
+        await interaction.response.send_message(
             embed=Embed(
                 description="The queue has been shuffled!", color=Colors.DEFAULT
             ),
@@ -339,95 +334,219 @@ class Music(commands.Cog, name="music"):
         )
         return player.queue
 
-    @music.command(name="queue")
+    @app_commands.command(name="queue")
     @commands.guild_only()
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def queue(self, ctx: ApplicationContext):
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def queue(self, interaction: discord.Interaction):
         """Show the current queue"""
-        player: EtherPlayer = ctx.guild.voice_client
-
-        if not player.current:
-            return await ctx.respond(
-                embed=EtherEmbeds.error(
-                    "There are no tracks in the queue or currently playing!"
-                ),
-                ephemeral=True,
-            )
+        player: wavelink.Player = interaction.guild.voice_client
 
         embed = Embed(title=":notes: Queue:")
-        if player.current:
-            first_track = player.current
-            embed.add_field(
-                name="Now Playing:",
-                value=f'`1.` [{first_track.title}]({first_track.uri}) | `{"🔴 Stream" if first_track.stream else datetime.timedelta(milliseconds=first_track.length)}`',
-                inline=False,
-            )
 
-        queue = player.queue.copy()
+        if player.current:
+            if player.current:
+                first_track: wavelink.Playable = player.current
+                embed.add_field(
+                    name="Now Playing:",
+                    value=f'`1.` [{first_track.title}]({first_track.uri}) | `{"🔴 Stream" if first_track.is_stream else datetime.timedelta(milliseconds=first_track.length)}`',
+                    inline=False,
+                )
+
 
         next_track_label = []
-        for _ in range(10):
-            if queue.is_empty:
-                break
-            track = queue.get()
+
+        # Classic queue tracks
+        for idx, track in enumerate(player.queue[:9]):
             title = track.title
             if len(track.title) > 35:
                 title = f"{title[:32]} ..."
             next_track_label.append(
-                f"`{player.queue.index(track) + 2}.` [{title}]({track.uri}) | "
-                f"`{'🔴 Stream' if track.stream else datetime.timedelta(milliseconds=track.length)}`"
+                f"`{idx + 2}.` [{title}]({track.uri}) | "
+                f"`{'🔴 Stream' if track.is_stream else datetime.timedelta(milliseconds=track.length)}`"
             )
+
+
+        # Auto queue tracks
+        if len(player.auto_queue) > 0 and len(next_track_label) < 9:
+            next_track_label.append(
+                "↓ The following tracks come from the `autoplay` mode. ↓"
+            )
+            for idx, track in enumerate(player.auto_queue[:9]):
+                title = track.title
+                if len(track.title) > 35:
+                    title = f"{title[:32]} ..."
+                next_track_label.append(
+                    f"*`{idx + 1}.` [{title}]({track.uri}) | "
+                    f"`{'🔴 Stream' if track.is_stream else datetime.timedelta(milliseconds=track.length)}`*"
+                )
+
 
         if next_track_label:
             embed.add_field(
-                name="Next 10 Tracks:", value="\n".join(next_track_label), inline=False
+                name=f"Next {len(next_track_label)} Tracks:", value="\n".join(next_track_label[:9]), inline=False
             )
 
-        return await ctx.respond(embed=embed)
 
-    @music.command(name="loop")
+        return await interaction.response.send_message(embed=embed)
+
+    @app_commands.command(name="autoplay")
     @commands.guild_only()
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def loop(self, ctx: ApplicationContext):
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def autoplay(self, interaction: discord.Interaction, *, enabled: bool = None):
+        "Toggle the auto play"
+        player: wavelink.Player = interaction.guild.voice_client
+
+        if enabled is None:
+            enabled = not player.autoplay == wavelink.AutoPlayMode.enabled
+
+        if enabled:
+            player.autoplay = wavelink.AutoPlayMode.enabled
+            return await interaction.response.send_message(Embed(description="✅ Auto play enabled"))
+
+        player.autoplay = wavelink.AutoPlayMode.disabled
+        return await interaction.response.send_message(Embed(description="✅ Auto play disabled"))
+
+    @app_commands.command(name="back")
+    @commands.guild_only()
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def back(self, interaction: discord.Interaction):
+        "Play the previous track (works approximately)"
+        player: wavelink.Player = interaction.guild.voice_client
+
+        try:
+            if not player.current:
+                raise wavelink.QueueEmpty()
+
+            track: wavelink.Playable
+            if player.current.recommended and len(player.auto_queue.history) > 1:
+                t_idx = len(player.auto_queue.history) - 2
+
+                track = player.auto_queue.history[t_idx]
+                await player.auto_queue.history.delete(t_idx)
+            else:
+                t_idx = len(player.queue.history) - 2
+
+                track = player.queue.history[t_idx]
+                await player.queue.history.delete(t_idx)
+        except (wavelink.QueueEmpty, ValueError):
+            return await interaction.response.send_message(Embed.error(description="There is no previous track"), ephemeral=True, delete_after=5.0)
+
+        await player.play(track, replace=True)
+
+        return await interaction.response.send_message(Embed(description="⏮️ Playing previous track"), delete_after=5.0)
+
+    @app_commands.command(name="history")
+    @commands.guild_only()
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def history(self, interaction: discord.Interaction):
+        """Show the current queue"""
+        player: wavelink.Player = interaction.guild.voice_client
+
+        embed = Embed(title=":clock: History:")
+
+
+        prev_track_label = []
+        def enumerate_history_queue(queue):
+            for idx, track in enumerate(queue[:9]):
+                title = track.title
+                if len(track.title) > 35:
+                    title = f"{title[:32]} ..."
+                prev_track_label.append(
+                    f" [{title}]({track.uri}) | "
+                    f"`{'🔴 Stream' if track.is_stream else datetime.timedelta(milliseconds=track.length)}`*"
+                )
+
+        enumerate_history_queue(player.queue.history)
+        enumerate_history_queue(player.auto_queue.history)
+
+        prl_len = len(prev_track_label)
+        for idx, track in enumerate(prev_track_label):
+            prev_track_label[idx] = f"*`{prl_len - idx + 1}.`" + track
+
+        if prev_track_label:
+            embed.add_field(
+                name=f"Previous {len(prev_track_label)} Tracks:", value="\n".join(prev_track_label[:9]), inline=False
+            )
+
+        if player.current:
+            if player.current:
+                first_track: wavelink.Playable = player.current
+                embed.add_field(
+                    name="Now Playing:",
+                    value=f'`1.` [{first_track.title}]({first_track.uri}) | `{"🔴 Stream" if first_track.is_stream else datetime.timedelta(milliseconds=first_track.length)}`',
+                    inline=False,
+                )
+
+        return await interaction.response.send_message(embed=embed)
+
+    @app_commands.command(name="loop")
+    @commands.guild_only()
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def loop(self, interaction: discord.Interaction):
         """Loop the current song"""
 
-        player: EtherPlayer = ctx.guild.voice_client
+        player: wavelink.Player = interaction.guild.voice_client
 
         if not player:
             return
 
-        if not player.loop:
-            player.loop = True
-            await ctx.respond(embed=Embed(description="🔁 Loop enabled"), delete_after=5)
+        if not player.queue.mode == wavelink.QueueMode.loop:
+            player.loop = wavelink.QueueMode.loop
+            await interaction.response.send_message(
+                embed=Embed(description="🔁 Track loop enabled"), delete_after=5
+            )
         else:
-            player.loop = False
-            await ctx.respond(
-                embed=Embed(description="🔁 Loop disabled"), delete_after=5
+            player.loop = wavelink.QueueMode.normal
+            await interaction.response.send_message(
+                embed=Embed(description="🔁 Track Loop disabled"), delete_after=5
             )
 
-    @music.command(name="playlist")
+
+    @app_commands.command(name="loop_all")
     @commands.guild_only()
-    @commands.has_permissions(administrator=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def playlist(self, ctx: ApplicationContext, playlist_link: str):
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def loop_all(self, interaction: discord.Interaction):
+        """Loop the all queue"""
+
+        player: wavelink.Player = interaction.guild.voice_client
+
+        if not player:
+            return
+
+        if not player.queue.mode == wavelink.QueueMode.loop_all:
+            player.loop = wavelink.QueueMode.loop_all
+            await interaction.response.send_message(
+                embed=Embed(description="🔁 Queue loop enabled"), delete_after=5
+            )
+        else:
+            player.loop = wavelink.QueueMode.normal
+            await interaction.response.send_message(
+                embed=Embed(description="🔁 Queue loop disabled"), delete_after=5
+            )
+
+    @app_commands.command(name="playlist")
+    @commands.guild_only()
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def playlist(self, interaction: discord.Interaction, playlist_link: str):
         """Setup a playlist player for a YouTube playlist"""
 
-        if not ctx.channel.permissions_for(self.user).send_messages:
-            return await ctx.respond(
-                embed=EtherEmbeds.error("Please allow me to send messages!"),
+        if not interaction.channel.permissions_for(self.user).send_messages:
+            return await interaction.response.send_message(
+                embed=Embed.error(description="Please allow me to send messages!"),
                 ephemeral=True,
                 delete_after=5,
             )
 
         # Check if the guild can have a new playlist
-        if not await Database.Playlist.guild_limit(ctx.guild.id):
-            return await ctx.respond(
-                embed=EtherEmbeds.error("You can't have more than 10 playlists!")
+        if not await Database.Playlist.guild_limit(interaction.guild.id):
+            return await interaction.response.send_message(
+                embed=Embed.error(description="You can't have more than 10 playlists!")
             )
 
         if not re.match(PLAYLIST_REG, playlist_link):
-            return await ctx.respond(
-                embed=EtherEmbeds.error("The url is incorrect!"),
+            return await interaction.response.send_message(
+                embed=Embed.error(description="The url is incorrect!"),
                 ephemeral=True,
                 delete_after=5,
             )
@@ -440,14 +559,14 @@ class Music(commands.Cog, name="music"):
             f"https://www.googleapis.com/youtube/v3/playlists?part=snippet&part=contentDetails&id={playlist_id}&key={key}"
         )
         if not r.ok:
-            ctx.respond(
-                embed=EtherEmbeds.error("Could not find the playlist!"), delete_after=5
+            interaction.response.send_message(
+                embed=Embed.error(description="Could not find the playlist!"), delete_after=5
             )
 
         r = r.json()
         if not r["items"]:
-            return await ctx.respond(
-                embed=EtherEmbeds.error(
+            return await interaction.response.send_message(
+                embed=Embed.error(
                     "Could not find the playlist! Please make sure to put the playlist in public or not listed"
                 ),
                 delete_after=5,
@@ -464,7 +583,7 @@ class Music(commands.Cog, name="music"):
         )
         embed.set_footer(text=f"Created by {data['channelTitle']}")
 
-        message = await ctx.send(embed=embed)
+        message = await interaction.channel.send(embed=embed)
 
         await Database.Playlist.create(message.id, message.guild.id, playlist_id)
 
@@ -473,495 +592,459 @@ class Music(commands.Cog, name="music"):
         await message.add_reaction("<:next:990260522521858078>")
         await message.add_reaction("<:shuffle:990260524686139432>")
 
-        await ctx.respond(
-            "Playlist successfuly created!", ephemeral=True, delete_after=5
+        await interaction.response.send_message(
+            "Playlist successfully created!", ephemeral=True, delete_after=5
         )
 
-    @music.command(name="lavalinkinfo")
+    @app_commands.command(name="lavalinkinfo")
     @commands.guild_only()
     @commands.is_owner()
-    async def lavalink_info(self, ctx: ApplicationContext):
+    async def lavalink_info(self, interaction: discord.Interaction):
         """Show lavalink info"""
-        return  # FIXME: lavalink_info is not working
-        lavalink = None
-        embed = Embed(title=f"**Mafic:** `{mafic.__version__}`", color=Colors.DEFAULT)
+        embed = Embed(title=f"**Wavelink:** `{wavelink.__version__}`", color=Colors.DEFAULT)
 
         embed.add_field(
             name="Server",
-            value=f"Server Nodes: `{len(self.client.NodePool.nodes)}`\n"
+            value=f"Server Nodes: `{len(wavelink.Pool.nodes)}`\n"
             f"Voice Client Connected: `{len(self.client.voice_clients)}`\n",
             inline=False,
         )
 
-        for node in self.client.NodePool.nodes:
-            embed.add_field(
-                name=f"Node: {node.name}",
-                value=f"Node Memory: `{humanize.naturalsize(node.stats.memory_used)}/{humanize.naturalsize(node.stats.memory_allocated)}` | `({humanize.naturalsize(node.stats.memory_free)} free)`\n"
-                f"Node CPU: `{node.stats.cpu_cores}`\n"
-                f"Node Uptime: `{datetime.timedelta(milliseconds=node.stats.uptime)}`\n"
-                f"Node Players: `{len(node.players)}`\n",
-                inline=False,
-            )
-        await ctx.respond(embed=embed)
+        nodes = []
+        for identifier, node in wavelink.Pool.nodes.items():
+            nodes.append(f"`{identifier}`({len(node.players)})")
 
-    @music_filter.command(name="equalizer")
+        embed.add_field(
+            name=f"Nodes",
+            value=f"{', '.join(nodes)}",
+            inline=False
+        )
+        await interaction.response.send_message(embed=embed)
+
+    @filter.command(name="equalizer")
     @commands.guild_only()
-    @commands.has_permissions(administrator=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.describe(sub_bass="16 - 60Hz(must be between -0.25 and 1.0)")
+    @app_commands.describe(bass="60 - 250Hz (must be between -0.25 and 1.0)")
+    @app_commands.describe(low_mids="250 - 500Hz (must be between -0.25 and 1.0)")
+    @app_commands.describe(mids="500 - 2kHz (must be between -0.25 and 1.0)")
+    @app_commands.describe(high_mids="2 - 4kHz (must be between -0.25 and 1.0)")
+    @app_commands.describe(presence="4 - 6kHz (must be between -0.25 and 1.0)")
+    @app_commands.describe(brillance="6 - 16kHz (must be between -0.25 and 1.0)")
     async def equalizer(
         self,
-        ctx: ApplicationContext,
-        sub_bass: Option(
-            float,
-            required=False,
-            description="16 - 60Hz(must be between -0.25 and 1.0)",
-        ) = None,
-        bass: Option(
-            float,
-            required=False,
-            description="60 - 250Hz (must be between -0.25 and 1.0)",
-        ) = None,
-        low_mids: Option(
-            float,
-            required=False,
-            description="250 - 500Hz (must be between -0.25 and 1.0)",
-        ) = None,
-        mids: Option(
-            float,
-            required=False,
-            description="500 - 2kHz (must be between -0.25 and 1.0)",
-        ) = None,
-        high_mids: Option(
-            float,
-            required=False,
-            description=" 2 - 4kHz (must be between -0.25 and 1.0)",
-        ) = None,
-        presence: Option(
-            float,
-            required=False,
-            description="4 - 6kHz (must be between -0.25 and 1.0)",
-        ) = None,
-        brillance: Option(
-            float,
-            required=False,
-            description="6 - 16kHz (must be between -0.25 and 1.0)",
-        ) = None,
+        interaction: discord.Interaction,
+        sub_bass: float = None,
+        bass: float = None,
+        low_mids: float = None,
+        mids: float = None,
+        high_mids: float = None,
+        presence: float = None,
+        brillance: float = None,
+        reset: bool = False,
     ):
         """An equalizer with 6 bands for adjusting the volume of different frequency."""
-        player: EtherPlayer = ctx.guild.voice_client
+        player: wavelink.Player = interaction.guild.voice_client
 
         if not player:
             return
 
-        bands_value = {
-            0: sub_bass,
-            2: bass,
-            4: low_mids,
-            6: mids,
-            8: high_mids,
-            10: brillance,
-            12: presence,
-        }
-        bands = []
+        filters: wavelink.Filters = player.filters
+        if reset:
+            filters.equalizer.reset()
+        else:
+            bands_value = {
+                0: sub_bass,
+                2: bass,
+                4: low_mids,
+                6: mids,
+                8: high_mids,
+                10: brillance,
+                12: presence,
+            }
+            filters: wavelink.Filters = player.filters
+            equalizer = filters.equalizer
 
-        for band, gain in bands_value.items():
-            if not gain or not (gain >= -0.25 and gain <= 1.0):
-                return await ctx.respond(
-                    embed=EtherEmbeds.error(
-                        "Values must be between `-0.25` and `1.0`."
+            for band, gain in bands_value.items():
+                if not gain or not (gain >= -0.25 and gain <= 1.0):
+                    return await interaction.response.send_message(
+                        embed=Embed.error(description="Values must be between `-0.25` and `1.0`."),
+                        ephemeral=True,
+                        delete_after=5.0,
+                    )
+
+                equalizer.payload[band] = gain
+
+        await player.set_filters(filters)
+
+        await interaction.response.send_message(
+            embed=Embed(description="The filter will be applied in a few seconds!"),
+            delete_after=5.0,
+        )
+
+        @filter.command(name="karaoke")
+        @commands.guild_only()
+        @app_commands.checks.has_permissions(administrator=True)
+        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+        @app_commands.describe(level="The level of the effect (between 0.0 and 1.0).")
+        @app_commands.describe(
+            mono_level="The level of the mono effect (between 0.0 and 1.0)."
+        )
+        @app_commands.describe(
+            filter_band="The frequency of the filter band in Hz (this defaults to 220.0)."
+        )
+        @app_commands.describe(
+            filter_width="The width of the filter band (this defaults to 100.0)."
+        )
+        async def karaoke(
+            self,
+            interaction: discord.Interaction,
+            level: float = None,
+            mono_level: float = None,
+            filter_band: float = None,
+            filter_width: float = None,
+        ):
+            """Configure a Karaoke filter. This usually targets vocals, to sound like karaoke music."""
+            player: wavelink.Player = interaction.guild.voice_client
+
+            if not player:
+                return
+
+            if (level and not (level <= 1.0 and level >= 0.0)) or (
+                mono_level and not (mono_level <= 1.0 and mono_level >= 0.0)
+            ):
+                return await interaction.response.send_message(
+                    embed=Embed.error(
+                        "The level and mono_level values must be between `0.0` and `1.0`."
                     ),
                     ephemeral=True,
                     delete_after=5.0,
                 )
 
-            bands.append(mafic.EQBand(band, gain))
+            filters = player.filters
+            filters.karaoke.set(level, mono_level, filter_band, filter_width)
 
-        equalizer = mafic.Equalizer(bands)
-        filter = mafic.Filter(equalizer=equalizer)
+            await player.set_filters(filters)
 
-        await player.add_filter(filter, label="equalizer")
+            await interaction.response.send_message(
+                embed=Embed(description="The filter will be applied in a few seconds!"),
+                delete_after=5.0,
+            )
 
-        await ctx.respond(
-            embed=Embed(description="The filter will be applied in a few seconds!"),
-            delete_after=5.0,
-        )
-
-    @music_filter.command(name="karaoke")
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def karaoke(
-        self,
-        ctx: ApplicationContext,
-        level: Option(
-            float,
-            required=False,
-            description="The level of the effect (between 0.0 and 1.0).",
-        ) = None,
-        mono_level: Option(
-            float,
-            required=False,
-            description="The level of the mono effect (between 0.0 and 1.0).",
-        ) = None,
-        filter_band: Option(
-            float,
-            required=False,
-            description="The frequency of the filter band in Hz (this defaults to 220.0).",
-        ) = None,
-        filter_width: Option(
-            float,
-            required=False,
-            description="The width of the filter band (this defaults to 100.0).",
-        ) = None,
-    ):
-        """Configure a Karaoke filter. This usually targets vocals, to sound like karaoke music."""
-        player: EtherPlayer = ctx.guild.voice_client
-
-        if not player:
-            return
-
-        if (level and not (level <= 1.0 and level >= 0.0)) or (
-            mono_level and not (mono_level <= 1.0 and mono_level >= 0.0)
+        @filter.command(name="timescale")
+        @commands.guild_only()
+        @app_commands.checks.has_permissions(administrator=True)
+        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+        @app_commands.describe(speed="The speed of the audio (must be at least 0.0).")
+        @app_commands.describe(pitch="The pitch of the audio (must be at least 0.0).")
+        @app_commands.describe(rate="The rate of the audio (must be at least 0.0).")
+        async def timescale(
+            self,
+            interaction: discord.Interaction,
+            speed: float = None,
+            pitch: float = None,
+            rate: float = None,
         ):
-            return await ctx.respond(
-                embed=EtherEmbeds.error(
-                    "The level and mono_level values must be between `0.0` and `1.0`."
-                ),
-                ephemeral=True,
+            """Change the speed, pitch and rate of audio."""
+            player: wavelink.Player = interaction.guild.voice_client
+
+            if not player:
+                return
+
+            if (
+                (speed and not (speed <= 1.0 and speed >= 0.0))
+                or (pitch and not (pitch <= 1.0 and pitch >= 0.0))
+                or (rate and not (rate <= 1.0 and rate >= 0.0))
+            ):
+                return await interaction.response.send_message(
+                    embed=Embed.error(description="Values must be between`0.0` and `1.0`."),
+                    ephemeral=True,
+                    delete_after=5.0,
+                )
+
+            filters = player.filters
+            filters.timescale.set(speed, pitch, rate)
+
+            await player.set_filters(filters)
+
+            await interaction.response.send_message(
+                embed=Embed(description="The filter will be applied in a few seconds!"),
                 delete_after=5.0,
             )
 
-        karaoke = mafic.Karaoke(level, mono_level, filter_band, filter_width)
-        filter = mafic.Filter(karaoke=karaoke)
-
-        await player.add_filter(filter, label="karaoke")
-
-        await ctx.respond(
-            embed=Embed(description="The filter will be applied in a few seconds!"),
-            delete_after=5.0,
+        @filter.command(name="tremolo")
+        @commands.guild_only()
+        @app_commands.checks.has_permissions(administrator=True)
+        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+        @app_commands.describe(
+            frequency="The frequency of the tremolo effect (must be at least 0.0)."
         )
-
-    @music_filter.command(name="timescale")
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def timescale(
-        self,
-        ctx: ApplicationContext,
-        speed: Option(
-            float,
-            required=False,
-            description="The speed of ther audio (must be at least 0.0).",
-        ) = None,
-        pitch: Option(
-            float,
-            required=False,
-            description="The pitch of the audio (must be at least 0.0).",
-        ) = None,
-        rate: Option(
-            float,
-            required=False,
-            description="The rate of the audio (must be at least 0.0).",
-        ) = None,
-    ):
-        """Change the speed, pitch and rate of audio."""
-        player: EtherPlayer = ctx.guild.voice_client
-
-        if not player:
-            return
-
-        if (
-            (speed and not (speed <= 1.0 and speed >= 0.0))
-            or (pitch and not (pitch <= 1.0 and pitch >= 0.0))
-            or (rate and not (rate <= 1.0 and rate >= 0.0))
+        @app_commands.describe(
+            depth="The depth of the tremolo effect (between 0.0 and 1.0)."
+        )
+        async def tremolo(
+            self,
+            interaction: discord.Interaction,
+            frequency: float = None,
+            depth: float = None,
         ):
-            return await ctx.respond(
-                embed=EtherEmbeds.error("Values must be between`0.0` and `1.0`."),
-                ephemeral=True,
+            """Tremolo oscillates the volume of the audio."""
+            player: wavelink.Player = interaction.guild.voice_client
+
+            if not player:
+                return
+
+            if frequency and not (frequency >= 0.0 and frequency <= 2.0):
+                return await interaction.response.send_message(
+                    embed=Embed.error(
+                        "Frequency value must be between`0.0` and `2.0`."
+                    ),
+                    ephemeral=True,
+                    delete_after=5.0,
+                )
+
+            if depth and not (depth >= 0.0 and depth <= 1.0):
+                return await interaction.response.send_message(
+                    embed=Embed.error(
+                        "Frequency value must be between`0.0` and `1.0` (this defaults to 0.5)."
+                    ),
+                    ephemeral=True,
+                    delete_after=5.0,
+                )
+
+            filters = player.filters
+            filters.tremolo.set(frequency, depth)
+
+            await player.set_filters(filters)
+
+            await interaction.response.send_message(
+                embed=Embed(description="The filter will be applied in a few seconds!"),
                 delete_after=5.0,
             )
 
-        timescale = mafic.Timescale(speed, pitch, rate)
-        filter = mafic.Filter(timescale=timescale)
-
-        await player.add_filter(filter, label="timescale")
-
-        await ctx.respond(
-            embed=Embed(description="The filter will be applied in a few seconds!"),
-            delete_after=5.0,
+        @filter.command(name="vibrato")
+        @commands.guild_only()
+        @app_commands.checks.has_permissions(administrator=True)
+        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+        @app_commands.describe(
+            frequency="The frequency of the tremolo effect (must be at least 0.0)."
         )
+        @app_commands.describe(
+            depth="The depth of the tremolo effect (between 0.0 and 1.0)."
+        )
+        async def vibrato(
+            self,
+            interaction: discord.Interaction,
+            frequency: float = None,
+            depth: float = None,
+        ):
+            """Vibrato oscillates the pitch of the audio."""
+            player: wavelink.Player = interaction.guild.voice_client
 
-    @music_filter.command(name="tremolo")
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def tremolo(
-        self,
-        ctx: ApplicationContext,
-        frequency: Option(
-            float,
-            required=False,
-            description="The frequency of the tremolo effect (must be at least 0.0).",
-        ) = None,
-        depth: Option(
-            float,
-            required=False,
-            description="The depth of the tremolo effect (between 0.0 and 1.0).",
-        ) = None,
-    ):
-        """Tremolo oscillates the volume of the audio."""
-        player: EtherPlayer = ctx.guild.voice_client
+            if not player:
+                return
 
-        if not player:
-            return
+            if frequency and not (frequency >= 0.0 and frequency <= 2.0):
+                return await interaction.response.send_message(
+                    embed=Embed.error(
+                        "Frequency value must be between`0.0` and `2.0`."
+                    ),
+                    ephemeral=True,
+                    delete_after=5.0,
+                )
 
-        if frequency and not (frequency >= 0.0 and frequency <= 2.0):
-            return await ctx.respond(
-                embed=EtherEmbeds.error(
-                    "Frequency value must be between`0.0` and `2.0`."
-                ),
-                ephemeral=True,
+            if depth and not (depth >= 0.0 and depth <= 1.0):
+                return await interaction.response.send_message(
+                    embed=Embed.error(
+                        "Frequency value must be between`0.0` and `1.0` (this defaults to 0.5)."
+                    ),
+                    ephemeral=True,
+                    delete_after=5.0,
+                )
+
+            filters = player.filters
+            filters.vibrato.set(frequency, depth)
+
+            await player.set_filters(filters)
+
+            await interaction.response.send_message(
+                embed=Embed(description="The filter will be applied in a few seconds!"),
                 delete_after=5.0,
             )
 
-        if depth and not (depth >= 0.0 and depth <= 1.0):
-            return await ctx.respond(
-                embed=EtherEmbeds.error(
-                    "Frequency value must be between`0.0` and `1.0` (this defaults to 0.5)."
-                ),
-                ephemeral=True,
+        @filter.command(name="distortion")
+        @commands.guild_only()
+        @app_commands.checks.has_permissions(administrator=True)
+        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+        async def distortion(
+            self,
+            interaction: discord.Interaction,
+            sin_offset: Optional[float] = None,
+            sin_scale: Optional[float] = None,
+            cos_offset: Optional[float] = None,
+            cos_scale: Optional[float] = None,
+            tan_offset: Optional[float] = None,
+            tan_scale: Optional[float] = None,
+            offset: Optional[float] = None,
+            scale: Optional[float] = None,
+        ):
+            """This applies sine, cosine and tangent distortion to the audio. Pretty hard to use."""
+            player: wavelink.Player = interaction.guild.voice_client
+
+            if not player:
+                return
+
+            filters = player.filters
+            filters.distortion.set(
+                sin_offset,
+                sin_scale,
+                cos_offset,
+                cos_scale,
+                tan_offset,
+                tan_scale,
+                offset,
+                scale,
+            )
+
+            await player.set_filters(filters)
+
+            await interaction.response.send_message(
+                embed=Embed(description="The filter will be applied in a few seconds!"),
                 delete_after=5.0,
             )
 
-        timescale = mafic.Tremolo(frequency, depth)
-        filter = mafic.Filter(timescale=timescale)
-
-        await player.add_filter(filter, label="tremolo")
-
-        await ctx.respond(
-            embed=Embed(description="The filter will be applied in a few seconds!"),
-            delete_after=5.0,
+        @filter.command(name="channel_mix")
+        @commands.guild_only()
+        @app_commands.checks.has_permissions(administrator=True)
+        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+        @app_commands.describe(
+            left_to_left="The amount of the left channel to mix into the left channel."
         )
+        @app_commands.describe(
+            left_to_right="The amount of the left channel to mix into the right channel."
+        )
+        @app_commands.describe(
+            right_to_left="The amount of the right channel to mix into the left channel."
+        )
+        @app_commands.describe(
+            right_to_right="The amount of the right channel to mix into the right channel."
+        )
+        async def channel_mix(
+            self,
+            interaction: discord.Interaction,
+            left_to_left: float = None,
+            left_to_right: float = None,
+            right_to_left: float = None,
+            right_to_right: float = None,
+        ):
+            """Channel mix filter (all at 0.5 => mono, ll=1.0 and rr=1.0 => stereo)."""
+            player: wavelink.Player = interaction.guild.voice_client
 
-    @music_filter.command(name="vibrato")
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def vibrato(
-        self,
-        ctx: ApplicationContext,
-        frequency: Option(
-            float,
-            required=False,
-            description="The frequency of the vibrato effect (must be at least 0.0).",
-        ) = None,
-        depth: Option(
-            float,
-            required=False,
-            description="The depth of the vibrato effect (between 0.0 and 1.0).",
-        ) = None,
-    ):
-        """Vibrato oscillates the pitch of the audio."""
-        player: EtherPlayer = ctx.guild.voice_client
+            if not player:
+                return
 
-        if not player:
-            return
+            filters = player.filters
+            filters.channel_mix.set(
+                left_to_left, left_to_right, right_to_left, right_to_right
+            )
 
-        if frequency and not (frequency >= 0.0 and frequency <= 2.0):
-            return await ctx.respond(
-                embed=EtherEmbeds.error(
-                    "Frequency value must be between`0.0` and `2.0`."
-                ),
-                ephemeral=True,
+            await player.set_filters(filters)
+
+            await interaction.response.send_message(
+                embed=Embed(description="The filter will be applied in a few seconds!"),
                 delete_after=5.0,
             )
 
-        if depth and not (depth >= 0.0 and depth <= 1.0):
-            return await ctx.respond(
-                embed=EtherEmbeds.error(
-                    "Frequency value must be between`0.0` and `1.0` (this defaults to 0.5)."
-                ),
-                ephemeral=True,
+        @filter.command(name="low_pass")
+        @commands.guild_only()
+        @app_commands.checks.has_permissions(administrator=True)
+        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+        async def low_pass(self, interaction: discord.Interaction, smoothing: float):
+            """High frequencies are suppressed, while low frequencies are passed through. (this defaults is 0.0)"""
+            player: wavelink.Player = interaction.guild.voice_client
+
+            if not player:
+                return
+
+            filters = player.filters
+            filters.low_pass.set(smoothing)
+
+            await player.set_filters(filters)
+
+            await interaction.response.send_message(
+                embed=Embed(description="The filter will be applied in a few seconds!"),
                 delete_after=5.0,
             )
 
-        timescale = mafic.Vibrato(frequency, depth)
-        filter = mafic.Filter(timescale=timescale)
+        @filter.command(name="rotation")
+        @commands.guild_only()
+        @app_commands.checks.has_permissions(administrator=True)
+        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+        @app_commands.describe(rotation_hz="The rotation speed in Hz. (1.0 is fast)")
+        async def rotation(
+            self,
+            interaction: discord.Interaction,
+            rotation_hz: float = None,
+        ):
+            """Add a filter which can be used to add a rotating effect to audio."""
+            player: wavelink.Player = interaction.guild.voice_client
 
-        await player.add_filter(filter, label="vibrato")
+            if not player:
+                return
 
-        await ctx.respond(
-            embed=Embed(description="The filter will be applied in a few seconds!"),
-            delete_after=5.0,
-        )
+            if rotation_hz < 0.0:
+                return await interaction.response.send_message(
+                    embed=Embed.error(description="The rotation_hz value must be at least 0.0."),
+                    ephemeral=True,
+                    delete_after=5.0,
+                )
 
-    @music_filter.command(name="distortion")
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def distortion(
-        self,
-        ctx: ApplicationContext,
-        sin_offset: Optional[float] = None,
-        sin_scale: Optional[float] = None,
-        cos_offset: Optional[float] = None,
-        cos_scale: Optional[float] = None,
-        tan_offset: Optional[float] = None,
-        tan_scale: Optional[float] = None,
-        offset: Optional[float] = None,
-        scale: Optional[float] = None,
-    ):
-        """This applies sine, cosine and tangent distortion to the audio. Pretty hard to use."""
-        player: EtherPlayer = ctx.guild.voice_client
+            filters = player.filters
+            filters.low_pass.set(rotation_hz)
 
-        if not player:
-            return
+            await player.set_filters(filters)
 
-        distortion = mafic.Distortion(
-            sin_offset,
-            sin_scale,
-            cos_offset,
-            cos_scale,
-            tan_offset,
-            tan_scale,
-            offset,
-            scale,
-        )
-        filter = mafic.Filter(distortion=distortion)
-
-        await player.add_filter(filter, label="distortion")
-
-        await ctx.respond(
-            embed=Embed(description="The filter will be applied in a few seconds!"),
-            delete_after=5.0,
-        )
-
-    @music_filter.command(name="channel_mix")
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def channel_mix(
-        self,
-        ctx: ApplicationContext,
-        left_to_left: Option(
-            float,
-            required=False,
-            description="The amount of the left channel to mix into the left channel.",
-        ) = None,
-        left_to_right: Option(
-            float,
-            required=False,
-            description="The amount of the left channel to mix into the right channel.",
-        ) = None,
-        right_to_left: Option(
-            float,
-            required=False,
-            description="The amount of the right channel to mix into the left channel.",
-        ) = None,
-        right_to_right: Option(
-            float,
-            required=False,
-            description="The amount of the right channel to mix into the right channel.",
-        ) = None,
-    ):
-        """Channel mix filter (all at 0.5 => mono, ll=1.0 and rr=1.0 => stereo)."""
-        player: EtherPlayer = ctx.guild.voice_client
-
-        if not player:
-            return
-
-        channel_mix = mafic.ChannelMix(
-            left_to_left, left_to_right, right_to_left, right_to_right
-        )
-        filter = mafic.Filter(channel_mix=channel_mix)
-
-        await player.add_filter(filter, label="channel_mix")
-
-        await ctx.respond(
-            embed=Embed(description="The filter will be applied in a few seconds!"),
-            delete_after=5.0,
-        )
-
-    @music_filter.command(name="low_pass")
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def low_pass(self, ctx: ApplicationContext, smoothing: float):
-        """High frequencies are suppressed, while low frequencies are passed through. (this defaults is 0.0)"""
-        player: EtherPlayer = ctx.guild.voice_client
-
-        if not player:
-            return
-
-        low_pass = mafic.LowPass(smoothing)
-        filter = mafic.Filter(low_pass=low_pass)
-
-        await player.add_filter(filter, label="low_pass")
-
-        await ctx.respond(
-            embed=Embed(description="The filter will be applied in a few seconds!"),
-            delete_after=5.0,
-        )
-
-    @music_filter.command(name="rotation")
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def rotation(
-        self,
-        ctx: ApplicationContext,
-        rotation_hz: Option(
-            float, required=False, description="The rotation speed in Hz. (1.0 is fast)"
-        ) = None,
-    ):
-        """Add a filter which can be used to add a rotating effect to audio."""
-        player: EtherPlayer = ctx.guild.voice_client
-
-        if not player:
-            return
-
-        if rotation_hz < 0.0:
-            return await ctx.respond(
-                embed=EtherEmbeds.error("The rotation_hz value must be at least 0.0."),
-                ephemeral=True,
+            await interaction.response.send_message(
+                embed=Embed(description="The filter will be applied in a few seconds!"),
                 delete_after=5.0,
             )
 
-        rotation = mafic.Rotation(rotation_hz)
-        filter = mafic.Filter(rotation=rotation)
-
-        await player.add_filter(filter, label="rotation")
-
-        await ctx.respond(
-            embed=Embed(description="The filter will be applied in a few seconds!"),
-            delete_after=5.0,
+        @filter.command(name="volume")
+        @commands.guild_only()
+        @app_commands.checks.has_permissions(administrator=True)
+        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+        @app_commands.describe(
+            volume="This defaults to 100 on creation. If the volume is outside 0 to 1000 it will be clamped."
         )
+        async def volume(self, interaction: discord.Interaction, volume: int = 100):
+            """Change the volume of the audio. (this apply to all users)"""
+            player: wavelink.Player = interaction.guild.voice_client
 
-    @music_filter.command(name="volume")
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def volume(self, ctx: ApplicationContext, volume: int = 100):
-        """Change the volume of the audio. (this apply to all users)"""
-        player: EtherPlayer = ctx.guild.voice_client
+            if not player:
+                return
 
-        if not player:
-            return
+            await player.set_volume(volume)
 
-        await player.set_volume(volume)
+            await interaction.response.send_message(
+                embed=Embed(description="Volume updated!"), delete_after=5.0
+            )
 
-        await ctx.respond(embed=Embed(description="Volume updated!"), delete_after=5.0)
+        @filter.command(name="clear")
+        @commands.guild_only()
+        @app_commands.checks.has_permissions(administrator=True)
+        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+        async def volume(self, interaction: discord.Interaction):
+            player: wavelink.Player = interaction.guild.voice_client
 
-    @music_filter.command(name="clear")
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def volume(self, ctx: ApplicationContext):
-        player: EtherPlayer = ctx.guild.voice_client
+            if not player:
+                return
 
-        if not player:
-            return
+            filters = player.filters
+            filters.reset()
 
-        await player.clear_filters()
+            await player.set_filters(filters)
 
-        await ctx.respond(embed=Embed(description="Filters clear!"), delete_after=5.0)
+            await interaction.response.send_message(
+                embed=Embed(description="Filters clear!"), delete_after=5.0
+            )

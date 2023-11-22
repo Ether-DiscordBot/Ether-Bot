@@ -1,9 +1,11 @@
 import discord
-from discord import Embed, ApplicationContext, ComponentType, SelectOption
-from discord.ext import commands, pages
+from discord import app_commands
+from discord.ext import commands
+from discord.ext.commands import Context, Paginator
 
-from ether.core.i18n import _
 from ether.core.constants import Emoji, Links, Other
+from ether.core.embed import Embed
+from ether.core.i18n import _
 from ether.core.logging import log
 
 
@@ -25,22 +27,25 @@ class Help(commands.Cog):
         self.admin_cogs = ["Admin"]
         self.ignore_cogs = ["Help", "Event", "PlaylistEvent", "MusicEvent"]
 
-    @commands.slash_command(name="help")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def help(self, ctx: ApplicationContext):
+    @app_commands.command(name="help")
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def help(self, interaction: discord.Interaction):
         """Help command"""
         extensions, desc_array, options = [], [], []
+
+        app_info = await interaction.client.application_info()
 
         for ext in set(self.client.cogs.values()):
             if ext.qualified_name in self.ignore_cogs:
                 continue
-            if ext.qualified_name in self.owner_cogs and not await ctx.bot.is_owner(
-                ctx.author
+            if (
+                ext.qualified_name in self.owner_cogs
+                and not app_info.owner.id == interaction.user.id
             ):
                 continue
             if (
                 ext.qualified_name in self.admin_cogs
-                and not await ctx.author.guild_permissions.administrator
+                and not await interaction.user.guild_permissions.administrator
             ):
                 continue
             extensions.append(ext.qualified_name)
@@ -74,53 +79,52 @@ class Help(commands.Cog):
         embed.set_thumbnail(url=self.client.user.avatar.url)
         embed.add_field(name="Categories:", value="\n".join(desc_array) + "\n\u200b")
 
-        if ctx.guild:
+        if interaction.guild:
             embed.set_footer(
                 text="You can also navigate through the dropdown below to view commands in each category."
             )
 
         options.append(discord.SelectOption(label="Stop", emoji="🛑"))
         menu = discord.ui.Select(
-            select_type=discord.ComponentType.string_select,
             options=options,
             placeholder="Choose a category...",
         )
         menu.callback = self.callback
-        view = discord.ui.View(menu)
+        view = discord.ui.View()
+        view.add_item(menu)
 
-        return await ctx.respond(embed=embed, view=view)
+        return await interaction.response.send_message(embed=embed, view=view)
 
-    def build_cog_response(self, cog):
-        commands = []
-        cog = self.client.get_cog(cog)
+    def build_cog_response(self, cog_name):
+        cmds = []
+        cog: commands.Cog = self.client.get_cog(cog_name)
 
         if not cog:
             return
 
-        for cmd in cog.get_commands():
-            if isinstance(cmd, discord.commands.core.SlashCommandGroup):
+        for cmd in cog.walk_app_commands():
+            print(cmd.name)
+            if isinstance(cmd, app_commands.Group):
                 for sub_cmd in cmd.walk_commands():
                     brief = (
                         "No information."
                         if not sub_cmd.description
                         else sub_cmd.description
                     )
-                    commands.append(f"`/{sub_cmd.qualified_name}` - {brief}\n")
+                    cmds.append(f"`/{sub_cmd.qualified_name}` - {brief}\n")
 
         embeds = []
 
-        for i in range(0, len(commands), 25):
+        for i in range(0, len(cmds), 25):
             embeds.append(
                 Embed(
                     title=f"{cog.help_icon} {cog.qualified_name} commands",
-                    description="".join(commands[i : i + 25]),
+                    description="".join(cmds[i : i + 25]),
                 )
             )
 
         if len(embeds) > 1:
-            return pages.Paginator(
-                pages=embeds, show_disabled=False, show_indicator=True
-            )
+            return Paginator(pages=embeds, show_disabled=False, show_indicator=True)
 
         return embeds[0]
 

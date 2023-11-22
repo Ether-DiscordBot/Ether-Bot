@@ -23,7 +23,6 @@ config.validators.register(
         condition=lambda x: len(x) > 0,
     ),
     Validator(
-        "api.giphy.key",
         "api.youtube.key",
         "api.dbl.key",
         must_exist=None,

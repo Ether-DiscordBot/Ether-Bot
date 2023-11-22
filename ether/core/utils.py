@@ -1,10 +1,3 @@
-import math
-
-from discord import Embed, Member
-
-from ether.core.constants import Colors
-
-
 class LevelsHandler:
     @classmethod
     def get_next_level(cls, exp):
@@ -16,16 +9,6 @@ class Utils(object):
     def get_avatar_url(cls, user, format="png", size="64"):
         if user:
             return f"https://cdn.discordapp.com/avatars/{user.id}/{user.avatar}.{format}?size={size}"
-
-
-class EtherEmbeds:
-    @classmethod
-    def error(cls, description: str):
-        return Embed(description=description, colour=Colors.ERROR)
-
-    @classmethod
-    def success(cls, description: str):
-        return Embed(description=description, colour=Colors.SUCCESS)
 
 
 class NerglishTranslator:
