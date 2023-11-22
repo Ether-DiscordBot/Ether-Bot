@@ -1,3 +1,9 @@
+## 1.0.0b4
+- Fix command prefix error
+- Some little changes on the `utils` cog
+- Remove some useless/boring or empty commands
+- Fix things
+
 ## 1.0.0b3
 - Command usage statistic
 - Remove `ether/core/reddit.py` file

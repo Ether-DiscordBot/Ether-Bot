@@ -13,7 +13,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from ether.core.constants import Emoji
 from ether.core.db import Database, Guild, GuildUser, User
-from ether.core.embed import Embed, ErrorEmbed
+from ether.core.embed import Embed
 from ether.core.i18n import _
 from ether.core.utils import LevelsHandler
 
@@ -47,16 +47,9 @@ class Levels(commands.GroupCog, name="levels"):
         await db_guild.set({Guild.exp_mult: multiplier})
 
         await interaction.response.send_message(
-            embed=Embed.success(f"Experience multiplier set to `{multiplier}`!"),
+            embed=Embed.success(description=f"Experience multiplier set to `{multiplier}`!"),
             delete_after=5,
         )
-
-    @app_commands.command(name="xp")
-    @app_commands.checks.has_permissions(moderate_members=True)
-    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
-    async def xp(self, interaction: discord.Interaction, level: int = -1, xp: int = -1):
-        """Set the xp or the level"""
-        # TODO Set a user to a specific level or xp value
 
     @app_commands.command(name="leaderboard")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
@@ -102,10 +95,10 @@ class Levels(commands.GroupCog, name="levels"):
     ):
         """Set the background of your rank card"""
         db_user = await User.from_id(interaction.user.id)
-        await db_user.set({User.background: background})
+        await db_user.set({User.background: background.value})
 
         await interaction.response.send_message(
-            embed=Embed.success(_("✅ Your background has been changed!")),
+            embed=Embed.success(description=_(":white_check_mark: Your background has been changed!")),
             delete_after=5,
         )
 
@@ -121,7 +114,7 @@ class Levels(commands.GroupCog, name="levels"):
 
         if not db_guild_user or not db_user:
             return await interaction.response.send_message(
-                embed=ErrorEmbed("Error when trying to get your profile!")
+                embed=Embed.error(description="Error when trying to get your profile!")
             )
         card = CardHandler.create_card(user, db_user, db_guild_user)
         image = io.BytesIO(base64.b64decode(card))
@@ -162,10 +155,11 @@ class CardHandler:
         pp = pp.resize(CardHandler.MASK.size)
 
         # Advancement
-        exp_advancement = (
+        exp_advancement = max(
             CardHandler.MAX_SIZE_BAR
             * db_guild_user.exp
-            / LevelsHandler.get_next_level(db_guild_user.levels)
+            / LevelsHandler.get_next_level(db_guild_user.levels),
+            4
         )
 
         img.paste(pp, (34, 56), CardHandler.MASK)

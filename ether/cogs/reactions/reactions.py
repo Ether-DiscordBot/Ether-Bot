@@ -1,5 +1,5 @@
 import discord
-from discord import Message, NotFound, Role, app_commands
+from discord import Message, NotFound, Role, TextChannel, app_commands
 from discord.app_commands import Choice
 from discord.errors import HTTPException
 from discord.ext import commands
@@ -7,7 +7,7 @@ from discord.ext.commands import Context
 
 from ether.core.constants import Emoji, Other
 from ether.core.db.client import Database, ReactionRole
-from ether.core.embed import Embed, ErrorEmbed
+from ether.core.embed import Embed
 from ether.core.i18n import _
 
 
@@ -29,7 +29,7 @@ class Reactions(commands.GroupCog, name="reaction"):
             matchs_emojis = [e for e in reaction.options if e.reaction == emoji]
             if matchs_emojis:
                 role = payload.member.guild.get_role(matchs_emojis[0].role_id)
-                channel = payload.member.guild.get_channel(payload.channel_id)
+                channel: TextChannel = payload.member.guild.get_channel(payload.channel_id)
                 message = await channel.fetch_message(message_id)
                 msg_reaction = [
                     r
@@ -38,25 +38,33 @@ class Reactions(commands.GroupCog, name="reaction"):
                     or (r.is_custom_emoji() and r.emoji.name == payload.emoji.name)
                 ][0]
 
-                match reaction._type:
-                    case 0:  # normal
-                        await payload.member.add_roles(role)
-                    case 1:  # unique
-                        for r in message.reactions:
-                            users = await r.users().flatten()
-                            member_matchs = [
-                                m for m in users if m.id == payload.member.id
-                            ]
-                            if member_matchs:
-                                for m in member_matchs:
-                                    if r.emoji != msg_reaction.emoji:
-                                        await r.remove(m)
-                        await payload.member.add_roles(role)
-                    case 2:  # verify
-                        await msg_reaction.remove(payload.member)
-                        await payload.member.add_roles(role)
-                    case 3:  # drop
-                        await payload.member.remove_roles(role)
+                try:
+                    match reaction._type:
+                        case 0:  # normal
+                            await payload.member.add_roles(role)
+                        case 1:  # unique
+                            for r in message.reactions:
+                                users = await r.users().flatten()
+                                member_matchs = [
+                                    m for m in users if m.id == payload.member.id
+                                ]
+                                if member_matchs:
+                                    for m in member_matchs:
+                                        if r.emoji != msg_reaction.emoji:
+                                            await r.remove(m)
+                            await payload.member.add_roles(role)
+                        case 2:  # verify
+                            await msg_reaction.remove(payload.member)
+                            await payload.member.add_roles(role)
+                        case 3:  # drop
+                            await payload.member.remove_roles(role)
+                except discord.errors.Forbidden:
+                    if not channel.permissions_for(
+                        channel.guild.me
+                    ).send_messages:
+                        channel.send(embed=Embed.error(
+                            description="Sorry but I'm missing some permissions."
+                        ), delete_after=5)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
@@ -102,6 +110,7 @@ class Reactions(commands.GroupCog, name="reaction"):
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.rename(_type="type")
     @app_commands.describe(_type="Reaction type")
+    @app_commands.guild_only()
     @app_commands.choices(
         _type=[
             Choice(name="normal", value=0),  # Add or remove role
@@ -120,13 +129,24 @@ class Reactions(commands.GroupCog, name="reaction"):
     ):
         """Add a reaction role to a message"""
 
+        if isinstance(_type, Choice):
+            _type = _type.value
+
         try:
             msg: Message = await interaction.channel.fetch_message(message_id)
         except NotFound:
             return await interaction.response.send_message(
-                embed=ErrorEmbed(_("Message not found!")),
+                embed=Embed.error(_("Message not found!")),
                 ephemeral=True,
                 delete_after=5,
+            )
+
+        if not msg.channel.permissions_for(
+            msg.guild.me
+        ).manage_roles:
+            return await interaction.response.send_message(
+                embed=Embed.error(_("Can't do that because I don't have the `Manage Roles` permission.")),
+                ephemeral=True,
             )
 
         try:
@@ -136,7 +156,6 @@ class Reactions(commands.GroupCog, name="reaction"):
             )
             await Database.ReactionRole.update_or_create(
                 message_id=msg.id,
-                guild_id=interaction.guild.id,
                 option=option,
                 _type=_type,
             )
@@ -146,7 +165,7 @@ class Reactions(commands.GroupCog, name="reaction"):
             )
         except HTTPException:
             await interaction.response.send_message(
-                embed=ErrorEmbed(_("Emoji not found!")),
+                embed=Embed.error(_("Emoji not found!")),
                 ephemeral=True,
                 delete_after=5,
             )

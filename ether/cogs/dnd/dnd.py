@@ -7,7 +7,8 @@ from discord.app_commands import Choice
 from discord.ext import commands
 
 from ether.core.constants import Emoji
-from ether.core.embed import Embed, ErrorEmbed
+from ether.core.embed import Embed
+from ether.core.views import AlphabetSelect
 
 
 class DnD(commands.GroupCog, name="dnd"):
@@ -25,37 +26,54 @@ class DnD(commands.GroupCog, name="dnd"):
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def spells(
         self, interaction: discord.Interaction, spell: Optional[str] = None
-    ):
+    ): # FIXME
         """Get information about a spell or a list of all spells"""
         if not spell:
             r = requests.get(f"{DnD.DND_API_URL}spells")
             if not r.ok:
                 return await interaction.response.send_message(
-                    embed=ErrorEmbed("Sorry, an error was occurred!")
+                    embed=Embed.error(description="Sorry, an error was occurred!")
                 )
 
             spells_data = r.json()
             spells_list = [
-                f"[{s['name']}](https://dndbeyond.com/spells/{s['index']})"
-                for s in spells_data["results"]
+                f"[{s['name']}](https://dndbeyond.com/spells{s['index']})"
+                for s in spells_data['results']
             ]
 
-            embed = Embed("Spells list")
-            embed.description = f"List of all spells: \n\n {', '.join(spells_list[:100])}{'...' if len(spells_list) > 100 else '.'}"
+            embed = Embed(title="Spells list")
+            embed.description = f"List of the 50 first spells: \n\n {', '.join(spells_list[:50])}"
 
-            return await interaction.response.send_message(embed=embed)
+            async def callback(c_interaction: discord.Interaction, select: discord.ui.Select):
+                letters = tuple([*select.values[0]])
+
+                c_spells = [
+                    f"[{s['name']}](https://dndbeyond.com/spells{s['index']})"
+                    for s in filter(lambda s: s['index'].startswith(letters), spells_data['results'])
+                ]
+                c_embed = Embed(
+                    title=f"{letters[0].upper()}-{letters[1].upper()} spells list",
+                    description=", ".join(c_spells)
+                    )
+
+                return await c_interaction.edit_original_response(
+                    embed=c_embed
+                )
+
+            view = AlphabetSelect(callback=callback)
+
+            return await interaction.response.send_message(embed=embed, view=view)
 
         spell = spell.lower().replace(" ", "-")
-
         r = requests.get(f"{DnD.DND_API_URL}spells/{spell}")
 
         if r.status_code == 404:
             return await interaction.response.send_message(
-                embed=ErrorEmbed("Sorry, I don't found your spell!")
+                embed=Embed.error(description="Sorry, I don't found your spell!")
             )
         elif not r.ok:
             return await interaction.response.send_message(
-                embed=ErrorEmbed("Sorry, an error was occurred!")
+                embed=Embed.error(description="Sorry, an error was occurred!")
             )
 
         spell_data = r.json()
@@ -83,6 +101,7 @@ class DnD(commands.GroupCog, name="dnd"):
     @_class.command(name="infos")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.describe(_class="Pick a class")
+    @app_commands.rename(_class="class")
     @app_commands.choices(
         _class=[
             Choice(name="Barbarian", value="barbarian"),
@@ -105,10 +124,12 @@ class DnD(commands.GroupCog, name="dnd"):
         _class: Choice[str],
     ):
         """Get information about a class"""
+        _class = _class.value
+
         r = requests.get(f"{DnD.DND_API_URL}classes/{_class}")
         if not r.ok:
             return await interaction.response.send_message(
-                embed=ErrorEmbed("Sorry, an error was occurred!")
+                embed=Embed.error(description="Sorry, an error was occurred!")
             )
 
         class_data = r.json()
@@ -215,6 +236,7 @@ class DnD(commands.GroupCog, name="dnd"):
     @_class.command(name="levels")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.describe(_class="Pick a class")
+    @app_commands.rename(_class="class")
     @app_commands.choices(
         _class=[
             Choice(name="Barbarian", value="barbarian"),
@@ -237,10 +259,13 @@ class DnD(commands.GroupCog, name="dnd"):
         _class: Choice[str],
         level: Optional[int] = -1,
     ):
+        """Get the level table of a class"""
+        _class = _class.value
+
         r = requests.get(f"{DnD.DND_API_URL}classes/{_class}/levels")
         if not r.ok:
             return await interaction.response.send_message(
-                embed=ErrorEmbed("Sorry, an error was occurred!")
+                embed=Embed.error(description="Sorry, an error was occurred!")
             )
 
         levels_data = r.json()
@@ -253,7 +278,7 @@ class DnD(commands.GroupCog, name="dnd"):
         if level >= 0:
             if len(levels_data) < level:
                 return await interaction.response.send_message(
-                    embed=ErrorEmbed(
+                    embed=Embed.error(
                         "Sorry, there is no information about this level!"
                     )
                 )
@@ -305,6 +330,7 @@ class DnD(commands.GroupCog, name="dnd"):
     @_class.command(name="spells")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.describe(_class="Pick a class")
+    @app_commands.rename(_class="class")
     @app_commands.choices(
         _class=[
             Choice(name="Barbarian", value="barbarian"),
@@ -327,10 +353,12 @@ class DnD(commands.GroupCog, name="dnd"):
         _class: Choice[str],
     ):
         """Get information about spell from a class"""
+        _class = _class.value
+
         r = requests.get(f"{DnD.DND_API_URL}classes/{_class}/spells")
         if not r.ok:
             return await interaction.response.send_message(
-                embed=ErrorEmbed("Sorry, an error was occurred!")
+                embed=Embed.error(description="Sorry, an error was occurred!")
             )
 
         spells_data = r.json()
@@ -352,7 +380,7 @@ class DnD(commands.GroupCog, name="dnd"):
             icon_url="https://img.icons8.com/color/452/dungeons-and-dragons.png",
         )
 
-        return await interaction.response.send_message(embed=embed)
+        return await interaction.response.send_message(embed=embed, ephemeral=True, delete_after=5.0)
 
     @commands.is_owner()
     @app_commands.command(name="test")

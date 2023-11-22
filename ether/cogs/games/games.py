@@ -7,7 +7,7 @@ from discord.ext import commands
 from discord.ext.commands import Context
 
 from ether.core.constants import Emoji
-from ether.core.embed import Embed, ErrorEmbed
+from ether.core.embed import Embed
 from ether.core.i18n import _
 
 
@@ -69,7 +69,7 @@ class Games(commands.GroupCog, name="games"):
         self.client = client
 
     @app_commands.command(name="tictactoe")
-    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.checks.cooldown(1, 60.0, key=lambda i: (i.guild_id, i.user.id))
     async def tictactoe(
         self, interaction: discord.Interaction, opponent: Optional[Member] = None
     ):
@@ -83,7 +83,7 @@ class Games(commands.GroupCog, name="games"):
 
         if not vs_ai and opponent.bot:
             return await interaction.response.send_message(
-                embed=ErrorEmbed("You can't play with this person!"),
+                embed=Embed.error(description="You can't play with this person!"),
                 delete_after=5,
             )
 
@@ -116,20 +116,23 @@ class Games(commands.GroupCog, name="games"):
                 discord.ButtonStyle.green if turn == 1 else discord.ButtonStyle.red
             )
 
+            def finish():
+                for item in view.children:
+                    item.disabled = True
+                button.view.stop()
+
             if TicTacToe.check_win(board, turn):
                 content = f"<@{players[turn].id}> won!"
-                button.view.disable_all_items()
-                button.view.stop()
+                finish()
             elif not TicTacToe.empty_indexies(board):
                 content = "Tie!"
-                button.view.disable_all_items()
-                button.view.stop()
+                finish()
             else:
                 turn = 2 if turn == 1 else 1
                 content = f"<@{interaction.user.id}> VS <@{self.client.user.id if vs_ai else opponent.id}>\nIt's the turn of {players[turn]}! *(you have 30 sec)*"
 
             if interaction.response.is_done():
-                await interaction.edit_original_message(
+                await interaction.edit_original_response(
                     content=content, view=button.view
                 )
             else:
@@ -191,9 +194,3 @@ class Games(commands.GroupCog, name="games"):
 
         if players[turn].id == self.client.user.id:
             await ai_play(interaction)
-
-    @app_commands.command(name="rps")
-    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
-    async def rps(self, interaction: discord.Interaction, opponent: Member):
-        """Play a game of Rock-Paper-Scissors with a friend!"""
-        # TODO Rock/Paper/Scissors

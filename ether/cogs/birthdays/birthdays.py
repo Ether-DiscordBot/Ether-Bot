@@ -11,7 +11,7 @@ from discord.ext.commands import Context
 from ether.core.constants import Emoji
 from ether.core.db import Guild, GuildUser
 from ether.core.db.client import Date
-from ether.core.embed import Embed, ErrorEmbed
+from ether.core.embed import Embed
 from ether.core.logging import log
 
 
@@ -39,6 +39,8 @@ class Birthday(commands.GroupCog, name="birthday"):
     )
 
     async def birthdays_loop(self):
+        await self.client.wait_until_ready()
+
         log.debug("Checking birthdays...")
         now = datetime.datetime.now()
         guilds = (
@@ -98,7 +100,7 @@ class Birthday(commands.GroupCog, name="birthday"):
                 raise ValueError("Invalid date format")
         except ValueError:
             return await interaction.response.send_message(
-                embed=ErrorEmbed("Invalid date format! (dd/mm/yyyy) or (dd/mm)")
+                embed=Embed.error(description="Invalid date format! (dd/mm/yyyy) or (dd/mm)")
             )
 
         db_user = await GuildUser.from_id(
@@ -127,7 +129,7 @@ class Birthday(commands.GroupCog, name="birthday"):
         await db_user.set({GuildUser.birthday: None})
 
         await interaction.response.send_message(
-            embed=Embed.success(f"I won't remember {user.mention}'s birthday anymore!")
+            embed=Embed.success(description=f"I won't remember {user.mention}'s birthday anymore!")
         )
 
     @app_commands.command(name="show")
@@ -138,7 +140,7 @@ class Birthday(commands.GroupCog, name="birthday"):
 
         if not db_user.birthday:
             return await interaction.response.send_message(
-                embed=ErrorEmbed("This user doesn't have a birthday set!")
+                embed=Embed.error(description="This user doesn't have a birthday set!")
             )
 
         await interaction.response.send_message(
@@ -181,7 +183,7 @@ class Birthday(commands.GroupCog, name="birthday"):
 
         await interaction.response.send_message(
             embed=Embed.success(
-                "Birthdays are now enabled\n*(Don't forget to set the channel and the hour!)*"
+                description="Birthdays are now enabled\n*(Don't forget to set the channel and the hour!)*"
                 if enable
                 else "Birthdays are now disabled"
             )
@@ -200,7 +202,7 @@ class Birthday(commands.GroupCog, name="birthday"):
         await guild.set({Guild.birthday.channel_id: channel.id})
 
         await interaction.response.send_message(
-            embed=Embed.success(f"Set the birthday channel to {channel.mention}")
+            embed=Embed.success(description=f"Set the birthday channel to {channel.mention}")
         )
 
     @config.command(name="time")
@@ -221,5 +223,5 @@ class Birthday(commands.GroupCog, name="birthday"):
         await guild.set({Guild.birthday.hour: hour})
 
         await interaction.response.send_message(
-            embed=Embed.success(f"Birthdays will be posted at {hour}:00")
+            embed=Embed.success(description=f"Birthdays will be posted at {hour}:00")
         )

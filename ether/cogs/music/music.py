@@ -13,7 +13,7 @@ from discord.ext import commands
 from ether.core.config import config
 from ether.core.constants import Colors, Emoji
 from ether.core.db.client import Database
-from ether.core.embed import Embed, ErrorEmbed
+from ether.core.embed import Embed
 from ether.core.i18n import _
 from ether.core.logging import log
 
@@ -65,7 +65,7 @@ class Music(commands.GroupCog, group_name="music"):
             or not interaction.user.voice.channel
         ):
             await interaction.response.send_message(
-                embed=ErrorEmbed(description="Join a voicechannel first."),
+                embed=Embed.error(description="Join a voicechannel first."),
                 ephemeral=True,
                 delete_after=5,
             )
@@ -77,7 +77,7 @@ class Music(commands.GroupCog, group_name="music"):
         if not player or not player.connected:
             if not should_connect:
                 await interaction.response.send_message(
-                    embed=ErrorEmbed(description="There is no music."),
+                    embed=Embed.error(description="There is no music."),
                     ephemeral=True,
                     delete_after=5,
                 )
@@ -93,7 +93,7 @@ class Music(commands.GroupCog, group_name="music"):
 
             if permissions and (not permissions.connect or not permissions.speak):
                 await interaction.response.send_message(
-                    embed=ErrorEmbed(description="I need the `CONNECT` and `SPEAK` permissions.")
+                    embed=Embed.error(description="I need the `CONNECT` and `SPEAK` permissions.")
                 )
                 return False
 
@@ -102,7 +102,7 @@ class Music(commands.GroupCog, group_name="music"):
                 await interaction.user.voice.channel.connect(cls=wavelink.Player, self_deaf=True)
             except wavelink.WavelinkException:
                 await interaction.response.send_message(
-                    embed=ErrorEmbed(
+                    embed=Embed.error(
                         description="Sorry, an error occurred. Please retry later or report the issue."
                     )
                 )
@@ -112,7 +112,7 @@ class Music(commands.GroupCog, group_name="music"):
             player.channel.id != interaction.user.voice.channel.id
         ):
             await interaction.response.send_message(
-                embed=ErrorEmbed(description="You need to be in my voicechannel."),
+                embed=Embed.error(description="You need to be in my voicechannel."),
                 ephemeral=True,
                 delete_after=5,
             )
@@ -125,7 +125,7 @@ class Music(commands.GroupCog, group_name="music"):
         if player and not hasattr(player, "home"):
             player.home = interaction.channel
         elif player and player.home != interaction.channel:
-            await interaction.response.send_message(ErrorEmbed(description=f"You can only play songs in {player.home.mention}, as the player has already started there."), ephemeral=True, delete_after=5)
+            await interaction.response.send_message(Embed.error(description=f"You can only play songs in {player.home.mention}, as the player has already started there."), ephemeral=True, delete_after=5)
 
         return True
 
@@ -191,7 +191,7 @@ class Music(commands.GroupCog, group_name="music"):
         tracks = await wavelink.Playable.search(query, source=wavelink.TrackSource(source))
         if not tracks:
             return await interaction.response.send_message(
-                embed=ErrorEmbed(description="No tracks were found!")
+                embed=Embed.error(description="No tracks were found!")
             )
 
         if isinstance(tracks, wavelink.Playlist):
@@ -229,7 +229,7 @@ class Music(commands.GroupCog, group_name="music"):
         player: wavelink.Player = interaction.guild.voice_client
         if not player:
             return await interaction.response.send_message(
-                embed=ErrorEmbed(
+                embed=Embed.error(
                     description="Player is not connected to a voice channel"
                 ),
                 delete_after=5,
@@ -237,7 +237,7 @@ class Music(commands.GroupCog, group_name="music"):
 
         if not player.connected:
             await interaction.response.send_message(
-                embed=ErrorEmbed(
+                embed=Embed.error(
                     description="Player is not connected to a voice channel"
                 ),
                 delete_after=5,
@@ -263,7 +263,7 @@ class Music(commands.GroupCog, group_name="music"):
 
         if not player.current:
             await interaction.response.send_message(
-                embed=ErrorEmbed("I am not currently playing anything!"),
+                embed=Embed.error(description="I am not currently playing anything!"),
                 delete_after=5,
             )
             return
@@ -285,7 +285,7 @@ class Music(commands.GroupCog, group_name="music"):
 
         if not player.paused:
             await interaction.response.send_message(
-                embed=ErrorEmbed("I am not paused!"), delete_after=5
+                embed=Embed.error(description="I am not paused!"), delete_after=5
             )
             return
 
@@ -307,7 +307,7 @@ class Music(commands.GroupCog, group_name="music"):
 
         if not skipped:
             return await interaction.response.send_message(
-                embed=ErrorEmbed(description="There's nothing to skip"),
+                embed=Embed.error(description="There's nothing to skip"),
                 delete_after=5,
             )
 
@@ -429,7 +429,7 @@ class Music(commands.GroupCog, group_name="music"):
                 track = player.queue.history[t_idx]
                 await player.queue.history.delete(t_idx)
         except (wavelink.QueueEmpty, ValueError):
-            return await interaction.response.send_message(ErrorEmbed(description="There is no previous track"), ephemeral=True, delete_after=5.0)
+            return await interaction.response.send_message(Embed.error(description="There is no previous track"), ephemeral=True, delete_after=5.0)
 
         await player.play(track, replace=True)
 
@@ -533,7 +533,7 @@ class Music(commands.GroupCog, group_name="music"):
 
         if not interaction.channel.permissions_for(self.user).send_messages:
             return await interaction.response.send_message(
-                embed=ErrorEmbed("Please allow me to send messages!"),
+                embed=Embed.error(description="Please allow me to send messages!"),
                 ephemeral=True,
                 delete_after=5,
             )
@@ -541,12 +541,12 @@ class Music(commands.GroupCog, group_name="music"):
         # Check if the guild can have a new playlist
         if not await Database.Playlist.guild_limit(interaction.guild.id):
             return await interaction.response.send_message(
-                embed=ErrorEmbed("You can't have more than 10 playlists!")
+                embed=Embed.error(description="You can't have more than 10 playlists!")
             )
 
         if not re.match(PLAYLIST_REG, playlist_link):
             return await interaction.response.send_message(
-                embed=ErrorEmbed("The url is incorrect!"),
+                embed=Embed.error(description="The url is incorrect!"),
                 ephemeral=True,
                 delete_after=5,
             )
@@ -560,13 +560,13 @@ class Music(commands.GroupCog, group_name="music"):
         )
         if not r.ok:
             interaction.response.send_message(
-                embed=ErrorEmbed("Could not find the playlist!"), delete_after=5
+                embed=Embed.error(description="Could not find the playlist!"), delete_after=5
             )
 
         r = r.json()
         if not r["items"]:
             return await interaction.response.send_message(
-                embed=ErrorEmbed(
+                embed=Embed.error(
                     "Could not find the playlist! Please make sure to put the playlist in public or not listed"
                 ),
                 delete_after=5,
@@ -669,7 +669,7 @@ class Music(commands.GroupCog, group_name="music"):
             for band, gain in bands_value.items():
                 if not gain or not (gain >= -0.25 and gain <= 1.0):
                     return await interaction.response.send_message(
-                        embed=ErrorEmbed("Values must be between `-0.25` and `1.0`."),
+                        embed=Embed.error(description="Values must be between `-0.25` and `1.0`."),
                         ephemeral=True,
                         delete_after=5.0,
                     )
@@ -715,7 +715,7 @@ class Music(commands.GroupCog, group_name="music"):
                 mono_level and not (mono_level <= 1.0 and mono_level >= 0.0)
             ):
                 return await interaction.response.send_message(
-                    embed=ErrorEmbed(
+                    embed=Embed.error(
                         "The level and mono_level values must be between `0.0` and `1.0`."
                     ),
                     ephemeral=True,
@@ -758,7 +758,7 @@ class Music(commands.GroupCog, group_name="music"):
                 or (rate and not (rate <= 1.0 and rate >= 0.0))
             ):
                 return await interaction.response.send_message(
-                    embed=ErrorEmbed("Values must be between`0.0` and `1.0`."),
+                    embed=Embed.error(description="Values must be between`0.0` and `1.0`."),
                     ephemeral=True,
                     delete_after=5.0,
                 )
@@ -797,7 +797,7 @@ class Music(commands.GroupCog, group_name="music"):
 
             if frequency and not (frequency >= 0.0 and frequency <= 2.0):
                 return await interaction.response.send_message(
-                    embed=ErrorEmbed(
+                    embed=Embed.error(
                         "Frequency value must be between`0.0` and `2.0`."
                     ),
                     ephemeral=True,
@@ -806,7 +806,7 @@ class Music(commands.GroupCog, group_name="music"):
 
             if depth and not (depth >= 0.0 and depth <= 1.0):
                 return await interaction.response.send_message(
-                    embed=ErrorEmbed(
+                    embed=Embed.error(
                         "Frequency value must be between`0.0` and `1.0` (this defaults to 0.5)."
                     ),
                     ephemeral=True,
@@ -847,7 +847,7 @@ class Music(commands.GroupCog, group_name="music"):
 
             if frequency and not (frequency >= 0.0 and frequency <= 2.0):
                 return await interaction.response.send_message(
-                    embed=ErrorEmbed(
+                    embed=Embed.error(
                         "Frequency value must be between`0.0` and `2.0`."
                     ),
                     ephemeral=True,
@@ -856,7 +856,7 @@ class Music(commands.GroupCog, group_name="music"):
 
             if depth and not (depth >= 0.0 and depth <= 1.0):
                 return await interaction.response.send_message(
-                    embed=ErrorEmbed(
+                    embed=Embed.error(
                         "Frequency value must be between`0.0` and `1.0` (this defaults to 0.5)."
                     ),
                     ephemeral=True,
@@ -995,7 +995,7 @@ class Music(commands.GroupCog, group_name="music"):
 
             if rotation_hz < 0.0:
                 return await interaction.response.send_message(
-                    embed=ErrorEmbed("The rotation_hz value must be at least 0.0."),
+                    embed=Embed.error(description="The rotation_hz value must be at least 0.0."),
                     ephemeral=True,
                     delete_after=5.0,
                 )

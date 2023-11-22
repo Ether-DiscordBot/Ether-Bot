@@ -30,9 +30,8 @@ class Embed(discord.Embed):
             timestamp=timestamp,
         )
 
-
-class DefaultEmbed(Embed):
-    def __init__(
+    @classmethod
+    def success(
         cls,
         *,
         title: Any | None = None,
@@ -41,47 +40,7 @@ class DefaultEmbed(Embed):
         description: Any | None = None,
         timestamp: datetime | None = None
     ) -> Self:
-        return super().__init__(
-            colour=Colors.DEFAULT,
-            title=title,
-            type=type,
-            url=url,
-            description=description,
-            timestamp=timestamp,
-        )
-
-
-class ErrorEmbed(Embed):
-    def __init__(
-        cls,
-        *,
-        title: Any | None = None,
-        type: EmbedType = "rich",
-        url: Any | None = None,
-        description: Any | None = None,
-        timestamp: datetime | None = None
-    ) -> Self:
-        super().__init__(
-            colour=Colors.ERROR,
-            title=title,
-            type=type,
-            url=url,
-            description=description,
-            timestamp=timestamp,
-        )
-
-
-class SuccessEmbed(Embed):
-    def __init__(
-        cls,
-        *,
-        title: Any | None = None,
-        type: EmbedType = "rich",
-        url: Any | None = None,
-        description: Any | None = None,
-        timestamp: datetime | None = None
-    ) -> Self:
-        super().__init__(
+        return Embed(
             colour=Colors.SUCCESS,
             title=title,
             type=type,
@@ -90,9 +49,8 @@ class SuccessEmbed(Embed):
             timestamp=timestamp,
         )
 
-
-class BanEmbed(Embed):
-    def __init__(
+    @classmethod
+    def error(
         cls,
         *,
         title: Any | None = None,
@@ -101,128 +59,8 @@ class BanEmbed(Embed):
         description: Any | None = None,
         timestamp: datetime | None = None
     ) -> Self:
-        super().__init__(
-            colour=Colors.BAN,
-            title=title,
-            type=type,
-            url=url,
-            description=description,
-            timestamp=timestamp,
-        )
-
-
-class KickEmbed(Embed):
-    def __init__(
-        cls,
-        *,
-        title: Any | None = None,
-        type: EmbedType = "rich",
-        url: Any | None = None,
-        description: Any | None = None,
-        timestamp: datetime | None = None
-    ) -> Self:
-        super().__init__(
-            colour=Colors.KICK,
-            title=title,
-            type=type,
-            url=url,
-            description=description,
-            timestamp=timestamp,
-        )
-
-
-class WarnEmbed(Embed):
-    def __init__(
-        cls,
-        *,
-        title: Any | None = None,
-        type: EmbedType = "rich",
-        url: Any | None = None,
-        description: Any | None = None,
-        timestamp: datetime | None = None
-    ) -> Self:
-        super().__init__(
-            colour=Colors.WARN,
-            title=title,
-            type=type,
-            url=url,
-            description=description,
-            timestamp=timestamp,
-        )
-
-
-class MuteEmbed(Embed):
-    def __init__(
-        cls,
-        *,
-        title: Any | None = None,
-        type: EmbedType = "rich",
-        url: Any | None = None,
-        description: Any | None = None,
-        timestamp: datetime | None = None
-    ) -> Self:
-        super().__init__(
-            colour=Colors.MUTE,
-            title=title,
-            type=type,
-            url=url,
-            description=description,
-            timestamp=timestamp,
-        )
-
-
-class UnbanEmbed(Embed):
-    def __init__(
-        cls,
-        *,
-        title: Any | None = None,
-        type: EmbedType = "rich",
-        url: Any | None = None,
-        description: Any | None = None,
-        timestamp: datetime | None = None
-    ) -> Self:
-        super().__init__(
-            colour=Colors.UNBAN,
-            title=title,
-            type=type,
-            url=url,
-            description=description,
-            timestamp=timestamp,
-        )
-
-
-class UnmuteEmbed(Embed):
-    def __init__(
-        cls,
-        *,
-        title: Any | None = None,
-        type: EmbedType = "rich",
-        url: Any | None = None,
-        description: Any | None = None,
-        timestamp: datetime | None = None
-    ) -> Self:
-        super().__init__(
-            colour=Colors.UNMUTE,
-            title=title,
-            type=type,
-            url=url,
-            description=description,
-            timestamp=timestamp,
-        )
-
-
-class PruneEmbed(Embed):
-    def __init__(
-        cls,
-        *,
-        title: Any | None = None,
-        type: EmbedType = "rich",
-        url: Any | None = None,
-        description: Any | None = None,
-        timestamp: datetime | None = None
-    ) -> Self:
-        super().__init__(
-            colour=Colors.PRUNE,
+        return Embed(
+            colour=Colors.ERROR,
             title=title,
             type=type,
             url=url,

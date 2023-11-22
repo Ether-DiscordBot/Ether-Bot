@@ -3,11 +3,10 @@ from typing import Optional
 import discord
 from discord import Member, app_commands
 from discord.ext import commands
-from discord.ext.commands import Context
 from humanize import naturaldate, naturalsize
 
 from ether.core.constants import Emoji
-from ether.core.embed import Embed, ErrorEmbed
+from ether.core.embed import Embed
 from ether.core.i18n import _
 
 

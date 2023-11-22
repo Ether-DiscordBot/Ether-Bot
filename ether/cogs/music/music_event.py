@@ -6,7 +6,7 @@ import wavelink
 from discord.ext import commands, tasks
 
 from ether.core.constants import Links
-from ether.core.embed import Embed, ErrorEmbed
+from ether.core.embed import Embed
 from ether.core.logging import log
 
 
@@ -113,7 +113,7 @@ class MusicEvent(commands.Cog):
 
                 try:
                     await channel.send(
-                        embed=ErrorEmbed(
+                        embed=Embed.error(
                             description=error_message
                             + "\nIf the source is YouTube, try an other source because YouTube is blocking some videos"
                         )

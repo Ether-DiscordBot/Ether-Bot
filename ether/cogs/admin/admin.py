@@ -8,7 +8,7 @@ from humanize import precisedelta
 from ether.core.constants import Colors, Emoji
 from ether.core.db.client import (Database, Guild, JoinLog, LeaveLog, Logs,
                                   ModerationLog)
-from ether.core.embed import Embed, ErrorEmbed
+from ether.core.embed import Embed
 from ether.core.i18n import _
 from ether.core.logs import EtherLogs
 
@@ -33,7 +33,7 @@ class Admin(commands.GroupCog, name="admin"):
 
         if not guild:
             interaction.response.send_message(
-                embed=ErrorEmbed("Sorry, an unexpected error has occurred!"),
+                embed=Embed.error(description="Sorry, an unexpected error has occurred!"),
                 delete_after=5,
             )
 
@@ -55,7 +55,7 @@ class Admin(commands.GroupCog, name="admin"):
             return await interaction.response.send_message("✅ Done")
         except discord.errors.Forbidden:
             await interaction.response.send_message(
-                embed=ErrorEmbed(
+                embed=Embed.error(
                     "Can't do that. Probably because I don't have the permissions for."
                 )
             )
@@ -74,7 +74,7 @@ class Admin(commands.GroupCog, name="admin"):
 
         if not guild:
             interaction.response.send_message(
-                embed=ErrorEmbed("Sorry, an unexpected error has occurred!"),
+                embed=Embed.error(description="Sorry, an unexpected error has occurred!"),
                 delete_after=5,
             )
 
@@ -98,7 +98,7 @@ class Admin(commands.GroupCog, name="admin"):
             return await interaction.response.send_message("✅ Done")
         except discord.errors.Forbidden:
             await interaction.response.send_message(
-                embed=ErrorEmbed(
+                embed=Embed.error(
                     "Can't do that. Probably because I don't have the permissions for."
                 )
             )

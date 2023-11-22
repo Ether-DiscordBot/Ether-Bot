@@ -1,4 +1,3 @@
-import os
 import urllib.parse
 from random import choice, randint, seed
 from typing import Optional
@@ -11,7 +10,7 @@ from discord.ext.commands import Context
 from requests import get, request
 
 from ether.core.constants import Emoji
-from ether.core.embed import Embed, ErrorEmbed
+from ether.core.embed import Embed
 from ether.core.i18n import _
 from ether.core.utils import NerglishTranslator
 
@@ -50,48 +49,6 @@ class Fun(commands.GroupCog, name="fun"):
     def __init__(self, client):
         self.help_icon = Emoji.FUN
         self.client = client
-
-        self.giphy_api_key = os.getenv("GIPHY_API_KEY")
-
-    @app_commands.command(name="gif")
-    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
-    async def gif(self, interaction: discord.Interaction, *, query: str):
-        """Search a gif on giphy"""
-        r = get(
-            f"https://api.giphy.com/v1/gifs/random?tag={query}&api_key={self.giphy_api_key}"
-        )
-
-        r = r.json()
-        if not r["data"]:
-            await interaction.response.send_message(
-                embed=ErrorEmbed(
-                    "Sorry, I could not find any gifs with this query.", delete_after=5
-                )
-            )
-            return
-        gif_url = r["data"]["url"]
-
-        await interaction.response.send_message(gif_url)
-
-    @app_commands.command(name="sticker")
-    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
-    async def sticker(self, interaction: discord.Interaction, *, query: str):
-        """Search a sticker on giphy"""
-        r = get(
-            f"https://api.giphy.com/v1/stickers/random?tag={query}&api_key={self.giphy_api_key}"
-        )
-
-        r = r.json()
-        if not r["data"]:
-            await interaction.response.send_message(
-                embed=ErrorEmbed(
-                    "Sorry, I could not find any gifs with this query.", delete_after=5
-                )
-            )
-            return
-        sticker_url = r["data"]["images"]["original"]["url"]
-
-        await interaction.response.send_message(sticker_url)
 
     @app_commands.command(name="8-ball")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
@@ -216,7 +173,7 @@ class Fun(commands.GroupCog, name="fun"):
         r = request("GET", "https://uselessfacts.jsph.pl/random.json?language=en")
         if not r.ok:
             return await interaction.response.send_message(
-                embed=ErrorEmbed("Sorry, I could not fetch any facts.", delete_after=5)
+                embed=Embed.error(description="Sorry, I could not fetch any facts.", delete_after=5)
             )
 
         embed = Embed(title="Useless facts", description=r.json()["text"])
@@ -247,7 +204,9 @@ class Fun(commands.GroupCog, name="fun"):
         sign: Choice[str],
     ):
         """Get your daily horoscope"""
+        sign = sign.value
         url = f"https://ohmanda.com/api/horoscope/{sign}"
+
 
         response = request("POST", url)
         r = response.json()

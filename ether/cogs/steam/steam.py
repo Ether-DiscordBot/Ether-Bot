@@ -5,7 +5,7 @@ from discord.ext import commands, tasks
 from discord.ext.commands import Context
 
 from ether.core.constants import Emoji
-from ether.core.embed import Embed, ErrorEmbed
+from ether.core.embed import Embed
 from ether.core.i18n import _
 from ether.core.logging import log
 

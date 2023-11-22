@@ -6,7 +6,7 @@ from discord.ext import commands
 
 from ether.cogs.event.welcomecard import WelcomeCard
 from ether.core.constants import Emoji
-from ether.core.embed import Embed, ErrorEmbed
+from ether.core.embed import Embed
 
 
 class Owner(commands.GroupCog, name="owner"):

@@ -11,7 +11,7 @@ from ether import __version__
 from ether.cogs.event.welcomecard import WelcomeCard
 from ether.core.config import config
 from ether.core.db.client import Database, Guild, GuildUser
-from ether.core.embed import Embed, ErrorEmbed
+from ether.core.embed import Embed
 from ether.core.i18n import init_i18n
 from ether.core.logging import log
 
@@ -150,7 +150,6 @@ class Event(commands.GroupCog):
             commands.CommandNotFound,
             commands.UserInputError,
             HTTPException,
-            errors.NotFound,
         )
         error = getattr(error, "original", error)
 
@@ -159,7 +158,7 @@ class Event(commands.GroupCog):
 
         if isinstance(error, commands.errors.CommandOnCooldown):
             return await interaction.response.send_message(
-                embed=ErrorEmbed(
+                embed=Embed.error(
                     f"This command is on cooldown, please retry in `{error.retry_after:.2f}s`."
                 ),
                 ephemeral=True,
@@ -180,7 +179,7 @@ class Event(commands.GroupCog):
                 log.error(f"\t => Uptime: {player.node.stats.uptime}")
 
         await interaction.response.send_message(
-            embed=ErrorEmbed(
+            embed=Embed.error(
                 description=f"An error occurred while executing this command, please retry later.\n If the problem persist, please contact the support.\n\n Error: `{error.__class__.__name__}({error})`"
             ),
             ephemeral=True,

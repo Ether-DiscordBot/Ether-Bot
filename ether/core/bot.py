@@ -19,7 +19,7 @@ class Ether(commands.bot.AutoShardedBot):
     def __init__(self, *, cli_flags=None, **kwargs) -> None:
         intents = Intents.all()
         super().__init__(
-            command_prefix=None, intents=intents, help_command=None, tree_cls=Tree, **kwargs
+            command_prefix="", intents=intents, help_command=None, tree_cls=Tree, **kwargs
         )
 
     async def add_cog(self, cog: commands.Cog) -> None:

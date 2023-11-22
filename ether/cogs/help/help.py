@@ -4,12 +4,12 @@ from discord.ext import commands
 from discord.ext.commands import Context, Paginator
 
 from ether.core.constants import Emoji, Links, Other
-from ether.core.embed import Embed, ErrorEmbed
+from ether.core.embed import Embed
 from ether.core.i18n import _
 from ether.core.logging import log
 
 
-class Help(commands.GroupCog):
+class Help(commands.Cog):
     def __init__(self, client):
         self.client = client
 
@@ -27,7 +27,7 @@ class Help(commands.GroupCog):
         self.admin_cogs = ["Admin"]
         self.ignore_cogs = ["Help", "Event", "PlaylistEvent", "MusicEvent"]
 
-    @commands.command(name="help")
+    @app_commands.command(name="help")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def help(self, interaction: discord.Interaction):
         """Help command"""
@@ -86,39 +86,40 @@ class Help(commands.GroupCog):
 
         options.append(discord.SelectOption(label="Stop", emoji="🛑"))
         menu = discord.ui.Select(
-            select_type=discord.ComponentType.string_select,
             options=options,
             placeholder="Choose a category...",
         )
         menu.callback = self.callback
-        view = discord.ui.View(menu)
+        view = discord.ui.View()
+        view.add_item(menu)
 
         return await interaction.response.send_message(embed=embed, view=view)
 
-    def build_cog_response(self, cog):
-        commands = []
-        cog = self.client.get_cog(cog)
+    def build_cog_response(self, cog_name):
+        cmds = []
+        cog: commands.Cog = self.client.get_cog(cog_name)
 
         if not cog:
             return
 
-        for cmd in cog.get_commands():
-            if isinstance(cmd, discord.commands.core.SlashCommandGroup):
+        for cmd in cog.walk_app_commands():
+            print(cmd.name)
+            if isinstance(cmd, app_commands.Group):
                 for sub_cmd in cmd.walk_commands():
                     brief = (
                         "No information."
                         if not sub_cmd.description
                         else sub_cmd.description
                     )
-                    commands.append(f"`/{sub_cmd.qualified_name}` - {brief}\n")
+                    cmds.append(f"`/{sub_cmd.qualified_name}` - {brief}\n")
 
         embeds = []
 
-        for i in range(0, len(commands), 25):
+        for i in range(0, len(cmds), 25):
             embeds.append(
                 Embed(
                     title=f"{cog.help_icon} {cog.qualified_name} commands",
-                    description="".join(commands[i : i + 25]),
+                    description="".join(cmds[i : i + 25]),
                 )
             )
 
