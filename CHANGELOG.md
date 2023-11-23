@@ -1,3 +1,7 @@
+## 1.0.0b5
+- Fix the `help` command
+- Add the latest change from the changelog to the `help` command
+
 ## 1.0.0b4
 - Fix command prefix error
 - Some little changes on the `utils` cog

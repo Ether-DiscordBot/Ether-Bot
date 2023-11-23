@@ -84,6 +84,22 @@ class Help(commands.Cog):
                 text="You can also navigate through the dropdown below to view commands in each category."
             )
 
+        # Changelog field
+        with open("CHANGELOG.md", "r") as f:
+            lines = f.readlines()
+
+            content = "".join(lines)
+            content = content.split("##", 2)[1]
+
+            split = content.strip().split('\n', 1)
+
+            title = f"New in version {split[0]}"
+            description = split[1]
+
+
+        embed.add_field(name=title, value=description)
+
+
         options.append(discord.SelectOption(label="Stop", emoji="🛑"))
         menu = discord.ui.Select(
             options=options,
@@ -102,16 +118,20 @@ class Help(commands.Cog):
         if not cog:
             return
 
+        def get_brief(cmd: app_commands.Command):
+            return (
+                "No information."
+                if not cmd.description
+                else cmd.description
+            )
+
         for cmd in cog.walk_app_commands():
-            print(cmd.name)
             if isinstance(cmd, app_commands.Group):
                 for sub_cmd in cmd.walk_commands():
-                    brief = (
-                        "No information."
-                        if not sub_cmd.description
-                        else sub_cmd.description
-                    )
-                    cmds.append(f"`/{sub_cmd.qualified_name}` - {brief}\n")
+                    cmds.append(f"`/{sub_cmd.qualified_name}` - {get_brief(sub_cmd)}\n")
+                continue
+
+            cmds.append(f"`/{cmd.qualified_name}` - {get_brief(cmd)}\n")
 
         embeds = []
 
