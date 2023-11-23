@@ -7,8 +7,8 @@ ascii_upper = string.ascii_uppercase
 
 AlphabetSelectOptions = [
     discord.SelectOption(
-        label=ascii_upper[i] + '-' + ascii_upper[i+1],
-        value=(ascii_upper[i] + ascii_upper[i+1]).lower()
+        label=f'{ascii_upper[i]}-{ascii_upper[i + 1]}',
+        value=(ascii_upper[i] + ascii_upper[i + 1]).lower(),
     )
     for i in range(0, 26, 2)
 ]

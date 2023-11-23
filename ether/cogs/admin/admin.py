@@ -153,7 +153,7 @@ class Admin(commands.GroupCog, name="admin"):
         )
         if enabled == False:
             return await interaction.response.send_message(
-                embed=Embed.success(description=f"Welcome channel disabled"),
+                embed=Embed.success(description="Welcome channel disabled"),
                 ephemeral=True,
                 delete_after=5,
             )

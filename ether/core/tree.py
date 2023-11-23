@@ -36,10 +36,8 @@ class Tree(app_commands.CommandTree):
             ephemeral=True,
         )
 
-        parameters_display = []
         if interaction.command:
-            for p in interaction.command.parameters: parameters_display.append(p.display_name)
-
+            parameters_display = [p.display_name for p in interaction.command.parameters]
             log.error(f"Error on command {interaction.command.name}")
             log.error(f" => Selected parameters: {', '.join(parameters_display)}")
         log.exception(error)

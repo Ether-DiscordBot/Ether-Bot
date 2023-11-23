@@ -164,7 +164,7 @@ class Birthday(commands.GroupCog, name="birthday"):
 
         users = sorted(users, key=date_time_left)[:10]
 
-        embed = Embed(title=f"🎂 Upcoming birthdays")
+        embed = Embed(title="🎂 Upcoming birthdays")
         for user in users:
             embed.add_field(
                 name=user.birthday, value=f"<@{user.user_id}>", inline=False

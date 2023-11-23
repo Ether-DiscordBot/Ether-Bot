@@ -40,7 +40,7 @@ class Help(commands.Cog):
                 continue
             if (
                 ext.qualified_name in self.owner_cogs
-                and not app_info.owner.id == interaction.user.id
+                and app_info.owner.id != interaction.user.id
             ):
                 continue
             if (
@@ -133,16 +133,13 @@ class Help(commands.Cog):
 
             cmds.append(f"`/{cmd.qualified_name}` - {get_brief(cmd)}\n")
 
-        embeds = []
-
-        for i in range(0, len(cmds), 25):
-            embeds.append(
-                Embed(
-                    title=f"{cog.help_icon} {cog.qualified_name} commands",
-                    description="".join(cmds[i : i + 25]),
-                )
+        embeds = [
+            Embed(
+                title=f"{cog.help_icon} {cog.qualified_name} commands",
+                description="".join(cmds[i : i + 25]),
             )
-
+            for i in range(0, len(cmds), 25)
+        ]
         if len(embeds) > 1:
             return Paginator(pages=embeds, show_disabled=False, show_indicator=True)
 
@@ -150,9 +147,7 @@ class Help(commands.Cog):
 
     async def callback(self, interaction: discord.Interaction):
         category = interaction.data["values"][0]
-        paginator = self.build_cog_response(category)
-
-        if paginator:
+        if paginator := self.build_cog_response(category):
             return await interaction.response.edit_message(embed=paginator)
         return await interaction.response.edit_message(
             embed=Embed(description="Interaction closed."), delete_after=5

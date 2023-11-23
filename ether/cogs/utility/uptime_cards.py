@@ -11,10 +11,10 @@ class UptimeCards():
 
         data = self._get_data()
 
-        cards = []
-        for monitor in data['psp']['monitors']:
-            cards.append(self._build_card(monitor, data['days']))
-
+        cards = [
+            self._build_card(monitor, data['days'])
+            for monitor in data['psp']['monitors']
+        ]
         final_card = Image.new("RGB", (1000, 150*len(cards)))
         for idx, card in enumerate(cards):
             final_card.paste(card, (0, 150*idx))
@@ -24,9 +24,7 @@ class UptimeCards():
         final_card.save(img_byte_arr, format='PNG', optimize=True)
         img_byte_arr.seek(0)
 
-        self.card = discord.File(
-            fp=img_byte_arr, filename=f"monitors_card.png"
-        )
+        self.card = discord.File(fp=img_byte_arr, filename="monitors_card.png")
 
     def _get_data(self, monitor_id: int | None = None):
         uri = "https://stats.uptimerobot.com/api/getMonitorList/yxDgrt60O3"
@@ -35,10 +33,7 @@ class UptimeCards():
 
         r = requests.get(uri)
 
-        if not r.ok:
-            return None
-
-        return r.json()
+        return None if not r.ok else r.json()
 
     def _build_card(self, monitor, days):
         b_font = ImageFont.truetype("ether/cogs/utility/assets/IBMPlexMono-Bold.ttf", size=14)
