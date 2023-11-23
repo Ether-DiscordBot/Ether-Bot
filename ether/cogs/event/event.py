@@ -169,9 +169,7 @@ class Event(commands.GroupCog):
             and error.args[0]
             == "Websocket is not connected but attempted to listen, report this."
         ):
-            player: wavelink.Player = interaction.guild.voice_client
-
-            if player:
+            if player := interaction.guild.voice_client:
                 log.error(
                     f"Lavalink Runtime error with node {player.node.label}({player.node.host}:{player.node.port})"
                 )

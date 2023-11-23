@@ -26,8 +26,9 @@ class Reactions(commands.GroupCog, name="reaction"):
 
         reaction = await ReactionRole.from_id(message_id)
         if reaction:
-            matchs_emojis = [e for e in reaction.options if e.reaction == emoji]
-            if matchs_emojis:
+            if matchs_emojis := [
+                e for e in reaction.options if e.reaction == emoji
+            ]:
                 role = payload.member.guild.get_role(matchs_emojis[0].role_id)
                 channel: TextChannel = payload.member.guild.get_channel(payload.channel_id)
                 message = await channel.fetch_message(message_id)
@@ -45,10 +46,9 @@ class Reactions(commands.GroupCog, name="reaction"):
                         case 1:  # unique
                             for r in message.reactions:
                                 users = await r.users().flatten()
-                                member_matchs = [
+                                if member_matchs := [
                                     m for m in users if m.id == payload.member.id
-                                ]
-                                if member_matchs:
+                                ]:
                                     for m in member_matchs:
                                         if r.emoji != msg_reaction.emoji:
                                             await r.remove(m)
@@ -73,8 +73,9 @@ class Reactions(commands.GroupCog, name="reaction"):
 
         reaction = await ReactionRole.from_id(message_id)
         if reaction:
-            matchs_emojis = [e for e in reaction.options if e.reaction == emoji]
-            if matchs_emojis:
+            if matchs_emojis := [
+                e for e in reaction.options if e.reaction == emoji
+            ]:
                 guild = self.client.get_guild(payload.guild_id)
                 role = guild.get_role(matchs_emojis[0].role_id)
 
@@ -101,8 +102,7 @@ class Reactions(commands.GroupCog, name="reaction"):
         if self.client.user.id != Other.MAIN_CLIENT_ID:
             return
 
-        reactions = ReactionRole.from_guild(guild.id)
-        if reactions:
+        if reactions := ReactionRole.from_guild(guild.id):
             await reactions.delete()
 
     @app_commands.command(name="add")

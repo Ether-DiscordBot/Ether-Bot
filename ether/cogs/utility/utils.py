@@ -163,7 +163,7 @@ class Utils(commands.GroupCog, name="utils"):
 
         def _roll(match):
             a, b = match.group(1).split("d")
-            return str(sum([randint(1, int(b)) for _ in range(int(a))]))
+            return str(sum(randint(1, int(b)) for _ in range(int(a))))
 
         try:
             details = [r.lstrip() for r in re.sub("(\d+d\d+)", _roll, dice).split(",")]
@@ -180,7 +180,7 @@ class Utils(commands.GroupCog, name="utils"):
 
         most_larger_dice_str = len(max(dice.split(","), key=len))
         most_details_dice_str = len(max(details, key=len))
-        most_larger_result_str = len(max([str(r) for r in result], key=len))
+        most_larger_result_str = len(max((str(r) for r in result), key=len))
 
         result = "\n".join(
             f"║ {str(t).lstrip().ljust(max(10, most_larger_dice_str))} ║ {str(d).lstrip().ljust(max(7, most_details_dice_str))} ║ {str(r).lstrip().ljust(max(4, most_larger_result_str))} ║"
