@@ -1,20 +1,23 @@
 import logging
 
 import wavelink
+from colorama import just_fix_windows_console
+
+just_fix_windows_console()
 
 from ether.core.config import config
 
 
 class EtherFormatter(logging.Formatter):
 
-    pink = "\x1b[35;20m"
-    blue = "\x1b[34;20m"
-    grey = "\x1b[38;20m"
-    yellow = "\x1b[33;20m"
-    red = "\x1b[31;20m"
-    bold_red = "\x1b[31;1m"
-    reset = "\x1b[0m"
-    bold = "\x1b[1m"
+    pink = "\033[35;20m"
+    blue = "\033[34;20m"
+    grey = "\033[38;20m"
+    yellow = "\033[33;20m"
+    red = "\033[31;20m"
+    bold_red = "\033[31;1m"
+    reset = "\033[0m"
+    bold = "\033[1m"
 
     @classmethod
     def format_string(cls, color):

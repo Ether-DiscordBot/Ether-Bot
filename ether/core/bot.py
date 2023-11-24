@@ -49,7 +49,7 @@ class Ether(commands.bot.AutoShardedBot):
         await init_database(config.database.mongodb.get("uri"))
 
         node_sessions = await Database.LavalinkNodeSessions.get_or_none(self.user.id)
-        if len(node_sessions.sessions) > 0:
+        if node_sessions and len(node_sessions.sessions) > 0:
             for session_id in node_sessions.sessions:
                 await self.create_lavalink_node(session_id=session_id)
 
