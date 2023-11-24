@@ -3,6 +3,7 @@
 - Fix the `help` command (again)
 - Support root command in cogs
 - Update requirements.txt
+- Logging color changes
 
 ## 1.0.0b5
 - Fix the `help` command
