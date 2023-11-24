@@ -26,7 +26,7 @@ class DnD(commands.GroupCog, name="dnd"):
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def spells(
         self, interaction: discord.Interaction, spell: Optional[str] = None
-    ): # FIXME
+    ):    # FIXME
         """Get information about a spell or a list of all spells"""
         if not spell:
             r = requests.get(f"{DnD.DND_API_URL}spells")
@@ -45,7 +45,7 @@ class DnD(commands.GroupCog, name="dnd"):
             embed.description = f"List of the 50 first spells: \n\n {', '.join(spells_list[:50])}"
 
             async def callback(c_interaction: discord.Interaction, select: discord.ui.Select):
-                letters = tuple([*select.values[0]])
+                letters = (*select.values[0], )
 
                 c_spells = [
                     f"[{s['name']}](https://dndbeyond.com/spells{s['index']})"
@@ -140,26 +140,21 @@ class DnD(commands.GroupCog, name="dnd"):
 
         embed.description = f"Hit die: {class_data['hit_die']}"
 
-        # Proficiency choices
-        proficiency_choices_desc = ""
-
-        for prof_choice in class_data["proficiency_choices"]:
-            proficiency_choices_desc += "- " + prof_choice["desc"] + "\n"
-
+        proficiency_choices_desc = "".join(
+            "- " + prof_choice["desc"] + "\n"
+            for prof_choice in class_data["proficiency_choices"]
+        )
         embed.add_field(
             name="Proficiency choices",
             value=proficiency_choices_desc,
             inline=False,
         )
 
-        # Proficiencies
-
-        proficiencies = []
-        for proficiency in class_data["proficiencies"]:
-            if proficiency["index"].startswith("saving-throw"):
-                continue
-            proficiencies.append(proficiency["name"])
-
+        proficiencies = [
+            proficiency["name"]
+            for proficiency in class_data["proficiencies"]
+            if not proficiency["index"].startswith("saving-throw")
+        ]
         proficiencies_desc = ", ".join(proficiencies)
 
         embed.add_field(
@@ -168,11 +163,9 @@ class DnD(commands.GroupCog, name="dnd"):
             inline=False,
         )
 
-        # Saving throws
-        saving_throws = []
-        for saving_throw in class_data["saving_throws"]:
-            saving_throws.append(saving_throw["name"])
-
+        saving_throws = [
+            saving_throw["name"] for saving_throw in class_data["saving_throws"]
+        ]
         saving_throws_desc = ", ".join(saving_throws)
 
         embed.add_field(
@@ -183,12 +176,10 @@ class DnD(commands.GroupCog, name="dnd"):
 
         # Starting equipment
         if len(class_data["starting_equipment"]) > 0:
-            starting_equipment = []
-            for equipement in class_data["starting_equipment"]:
-                starting_equipment.append(
-                    f"- {equipement['quantity']} x **{equipement['equipment']['name']}**"
-                )
-
+            starting_equipment = [
+                f"- {equipement['quantity']} x **{equipement['equipment']['name']}**"
+                for equipement in class_data["starting_equipment"]
+            ]
             starting_equipment_desc = "\n".join(starting_equipment)
 
             embed.add_field(
@@ -199,12 +190,12 @@ class DnD(commands.GroupCog, name="dnd"):
 
         # Starting equipment options
         if len(class_data["starting_equipment_options"]) > 0:
-            starting_equipment_options = []
-            for starting_equipment_option in class_data["starting_equipment_options"]:
-                starting_equipment_options.append(
-                    "- " + starting_equipment_option["desc"]
-                )
-
+            starting_equipment_options = [
+                "- " + starting_equipment_option["desc"]
+                for starting_equipment_option in class_data[
+                    "starting_equipment_options"
+                ]
+            ]
             starting_equipment_options_desc = "\n".join(starting_equipment_options)
 
             embed.add_field(
@@ -218,11 +209,7 @@ class DnD(commands.GroupCog, name="dnd"):
             icon_url="https://img.icons8.com/color/452/dungeons-and-dragons.png",
         )
 
-        # Subclasses
-        subclasses = []
-        for subclass in class_data["subclasses"]:
-            subclasses.append(subclass["name"])
-
+        subclasses = [subclass["name"] for subclass in class_data["subclasses"]]
         subclasses_desc = ", ".join(subclasses)
 
         embed.add_field(
@@ -292,10 +279,7 @@ class DnD(commands.GroupCog, name="dnd"):
 
             # Features
             if len(level["features"]) > 0:
-                features = []
-                for feature in level["features"]:
-                    features.append(feature["name"])
-
+                features = [feature["name"] for feature in level["features"]]
                 features_desc = ", ".join(features)
                 level_desc += f"- Features: {features_desc}\n\n"
 
@@ -400,7 +384,7 @@ class DnD(commands.GroupCog, name="dnd"):
             "wizard",
         ]
 
-        for cl in cls:
+        for _ in cls:
             # FIXME: Invoke doesn't work with interaction
             # await ctx.invoke(self.class_levels, cl)
             # await ctx.invoke(self.class_spells, cl)

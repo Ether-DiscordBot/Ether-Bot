@@ -65,12 +65,10 @@ class ServerThread(threading.Thread):
     def get_current():
         guild_id = request.args.get("guild_id")
 
-        # Check if the guild exists
-        guild = app.bot.get_guild(int(guild_id))
-        if not guild:
+        if guild := app.bot.get_guild(int(guild_id)):
+            return make_response(jsonify({"current": guild.voice_client.is_playing()}), 200)
+        else:
             return make_response(jsonify({"error": "Could not find the guild"}), 404)
-
-        return make_response(jsonify({"current": guild.voice_client.is_playing()}), 200)
 
     @app.route("/api/music/play", methods=["POST"])
     @login_required

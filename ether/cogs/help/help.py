@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from discord.ext.commands import Context, Paginator
+from discord.ext.commands import Paginator
 
 from ether.core.constants import Emoji, Links, Other
 from ether.core.embed import Embed
@@ -40,7 +40,7 @@ class Help(commands.Cog):
                 continue
             if (
                 ext.qualified_name in self.owner_cogs
-                and not app_info.owner.id == interaction.user.id
+                and app_info.owner.id != interaction.user.id
             ):
                 continue
             if (
@@ -84,6 +84,22 @@ class Help(commands.Cog):
                 text="You can also navigate through the dropdown below to view commands in each category."
             )
 
+        # Changelog field
+        with open("CHANGELOG.md", "r") as f:
+            lines = f.readlines()
+
+            content = "".join(lines)
+            content = content.split("##", 2)[1]
+
+            split = content.strip().split('\n', 1)
+
+            title = f"New in version {split[0]}"
+            description = split[1]
+
+
+        embed.add_field(name=title, value=description)
+
+
         options.append(discord.SelectOption(label="Stop", emoji="🛑"))
         menu = discord.ui.Select(
             options=options,
@@ -102,38 +118,39 @@ class Help(commands.Cog):
         if not cog:
             return
 
+        app_cmds = cog.walk_app_commands()
+
+        def sort_cmd(cmd):
+            return cmd.qualified_name
+        app_cmds = sorted(app_cmds, key=sort_cmd, reverse=True)
+
         for cmd in cog.walk_app_commands():
-            print(cmd.name)
             if isinstance(cmd, app_commands.Group):
                 for sub_cmd in cmd.walk_commands():
-                    brief = (
-                        "No information."
-                        if not sub_cmd.description
-                        else sub_cmd.description
-                    )
-                    cmds.append(f"`/{sub_cmd.qualified_name}` - {brief}\n")
+                    cmds.append(f"`/{sub_cmd.qualified_name}`\n")
+                continue
 
-        embeds = []
+            cmds.append(f"`/{cmd.qualified_name}`\n")
+
+
+        embed = Embed(title=f"{cog.help_icon} {cog.qualified_name} commands")
+
+        # TODO: Split the music cog between filters and music commands
 
         for i in range(0, len(cmds), 25):
-            embeds.append(
-                Embed(
-                    title=f"{cog.help_icon} {cog.qualified_name} commands",
-                    description="".join(cmds[i : i + 25]),
-                )
+            embed.add_field(
+                name="",
+                value="".join(cmds[i:i+25])
             )
 
-        if len(embeds) > 1:
-            return Paginator(pages=embeds, show_disabled=False, show_indicator=True)
-
-        return embeds[0]
+        return [embed]
 
     async def callback(self, interaction: discord.Interaction):
         category = interaction.data["values"][0]
-        paginator = self.build_cog_response(category)
+        embeds = self.build_cog_response(category)
 
-        if paginator:
-            return await interaction.response.edit_message(embed=paginator)
+        if embeds:
+            return await interaction.response.edit_message(embeds=embeds)
         return await interaction.response.edit_message(
             embed=Embed(description="Interaction closed."), delete_after=5
         )

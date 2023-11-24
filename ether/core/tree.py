@@ -1,6 +1,5 @@
 import discord
-import wavelink
-from discord import HTTPException, app_commands
+from discord import app_commands
 
 from ether.core.embed import Embed
 from ether.core.logging import log
@@ -22,7 +21,7 @@ class Tree(app_commands.CommandTree):
             app_commands.CheckFailure,
             app_commands.CommandNotFound,
             # app_commands.UserInputError,
-            HTTPException,
+            discord.errors.HTTPException,
         )
         error = getattr(error, "original", error)
 
@@ -36,10 +35,8 @@ class Tree(app_commands.CommandTree):
             ephemeral=True,
         )
 
-        parameters_display = []
         if interaction.command:
-            for p in interaction.command.parameters: parameters_display.append(p.display_name)
-
+            parameters_display = [p.display_name for p in interaction.command.parameters]
             log.error(f"Error on command {interaction.command.name}")
             log.error(f" => Selected parameters: {', '.join(parameters_display)}")
         log.exception(error)

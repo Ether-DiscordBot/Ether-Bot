@@ -101,9 +101,8 @@ class MusicEvent(commands.Cog):
         if not player:
             log.warning(f"Track from an unknown Player stopped for the reason: {reason}")
 
-        if reason not in ("replaced", "finished", "stopped"):
-            if hasattr(player, "home"):
-                channel = player.home
+        if hasattr(player, "home"):
+            if reason not in ("replaced", "finished", "stopped"):
                 error_message = f"Track finished for reason `{reason}` with node `{player.node.identifier}`"
 
                 if reason == "loadFailed":
@@ -111,6 +110,7 @@ class MusicEvent(commands.Cog):
 
                 log.warning(error_message)
 
+                channel = player.home
                 try:
                     await channel.send(
                         embed=Embed.error(

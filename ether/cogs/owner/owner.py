@@ -24,12 +24,11 @@ class Owner(commands.GroupCog, name="owner"):
             return await interaction.response.send_message(
                 file=File(Owner.LOGS_FILE_PATH), ephemeral=True
             )
-        else:
-            with open(Owner.LOGS_FILE_PATH, "r") as f:
-                text = f.read()
-                return await interaction.response.send_message(
-                    f"```{text[len(text)-1994:]}```", ephemeral=True
-                )
+        with open(Owner.LOGS_FILE_PATH, "r") as f:
+            text = f.read()
+            return await interaction.response.send_message(
+                f"```{text[len(text)-1994:]}```", ephemeral=True
+            )
 
     @app_commands.command(name="clear_logs")
     @commands.is_owner()

@@ -29,13 +29,15 @@ def hltb_time(time: float) -> str:
 
     return f"{''.join(time)} Hours"
 
-class Utils(commands.GroupCog, name="utils"):
+class Utils(commands.Cog, name="utils"):
     def __init__(self, client):
         self.client = client
         self.help_icon = Emoji.UTILITY
 
         self.monitors_card: discord.File | None = None
         self.monitor_card_builder.start()
+
+    utils = app_commands.Group(name="utils", description="Utility related commands.")
 
     @tasks.loop(minutes=30.0)
     async def monitor_card_builder(self):
@@ -99,14 +101,14 @@ class Utils(commands.GroupCog, name="utils"):
             )
         )
 
-    @app_commands.command(name="flipcoin")
+    @utils.command(name="flipcoin")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def flip_coin(self, interaction: discord.Interaction) -> None:
         """Flip a coin"""
         result = _("Heads") if round(random()) else _("Tails")
         await interaction.response.send_message(result)
 
-    @app_commands.command(name="choose")
+    @utils.command(name="choose")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def choose(
         self,
@@ -138,7 +140,7 @@ class Utils(commands.GroupCog, name="utils"):
         list = [i for i in items if i]
         return await interaction.response.send_message(choice(list))
 
-    @app_commands.command(name="roll")
+    @utils.command(name="roll")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.describe(dice="Dices to roll. (syntax: `1d6, 2d20+2`)")
     async def roll(
@@ -163,7 +165,7 @@ class Utils(commands.GroupCog, name="utils"):
 
         def _roll(match):
             a, b = match.group(1).split("d")
-            return str(sum([randint(1, int(b)) for _ in range(int(a))]))
+            return str(sum(randint(1, int(b)) for _ in range(int(a))))
 
         try:
             details = [r.lstrip() for r in re.sub("(\d+d\d+)", _roll, dice).split(",")]
@@ -180,7 +182,7 @@ class Utils(commands.GroupCog, name="utils"):
 
         most_larger_dice_str = len(max(dice.split(","), key=len))
         most_details_dice_str = len(max(details, key=len))
-        most_larger_result_str = len(max([str(r) for r in result], key=len))
+        most_larger_result_str = len(max((str(r) for r in result), key=len))
 
         result = "\n".join(
             f"║ {str(t).lstrip().ljust(max(10, most_larger_dice_str))} ║ {str(d).lstrip().ljust(max(7, most_details_dice_str))} ║ {str(r).lstrip().ljust(max(4, most_larger_result_str))} ║"
@@ -194,7 +196,7 @@ class Utils(commands.GroupCog, name="utils"):
             f"\n╚══════{'═' * max(6, most_larger_dice_str-4)}╩═════════{'═' * max(0, most_details_dice_str-7)}╩═════{'═' * max(1, most_larger_result_str-5)}╝```"
         )
 
-    @app_commands.command(name="urban")
+    @utils.command(name="urban")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def urban(self, interaction: discord.Interaction, term: str):
         """Search for a term on Urban Dictionary"""
@@ -239,7 +241,7 @@ class Utils(commands.GroupCog, name="utils"):
                 delete_after=5,
             )
 
-    @app_commands.command(name="howlongtobeat")
+    @utils.command(name="howlongtobeat")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def howlongtobeat(self, interaction: discord.Interaction, game: str):
         """Get the time to beat a game"""
@@ -282,7 +284,7 @@ class Utils(commands.GroupCog, name="utils"):
 
         await interaction.response.send_message(embed=embed)
 
-    @app_commands.command(name="rocket_launches")
+    @utils.command(name="rocket_launches")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.choices(
         timezone=[

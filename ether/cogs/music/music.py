@@ -26,8 +26,7 @@ URL_REG = re.compile(
 )
 
 
-# FIXME: I think it's because GroupCog is in conflict with Group
-class Music(commands.GroupCog, group_name="music"):
+class Music(commands.Cog, group_name="music"):
     def __init__(self, client):
         self.client = client
         self.help_icon = Emoji.MUSIC
@@ -35,8 +34,11 @@ class Music(commands.GroupCog, group_name="music"):
 
         self.tape_in = open("ether/assets/sfx/tape_in.mp3", "rb").read()
 
+    music = app_commands.Group(
+        name="music", description="Tthhee Ppaarrttyy"
+    )
     filter = app_commands.Group(
-        name="filter", description="Music filters related commands"
+        name="filter", description="Music filters related commands", parent=music
     )
 
     async def interaction_check(self, interaction: discord.Interaction):
@@ -48,10 +50,7 @@ class Music(commands.GroupCog, group_name="music"):
 
         guild_check = interaction.guild != None
 
-        if guild_check:
-            return await self.ensure_voice(interaction)
-
-        return guild_check
+        return await self.ensure_voice(interaction) if guild_check else guild_check
 
     async def ensure_voice(self, interaction: discord.Interaction) -> bool:
         """This check ensures that the bot and command author are in the same voicechannel."""
@@ -119,13 +118,11 @@ class Music(commands.GroupCog, group_name="music"):
             return False
 
         player: wavelink.Player
-        player = cast(wavelink.Player, interaction.guild.voice_client)  # type: ignore
-
-        # Lock the player to this channel...
-        if player and not hasattr(player, "home"):
-            player.home = interaction.channel
-        elif player and player.home != interaction.channel:
-            await interaction.response.send_message(Embed.error(description=f"You can only play songs in {player.home.mention}, as the player has already started there."), ephemeral=True, delete_after=5)
+        if player := cast(wavelink.Player, interaction.guild.voice_client):
+            if not hasattr(player, "home"):
+                player.home = interaction.channel
+            elif player.home != interaction.channel:
+                await interaction.response.send_message(Embed.error(description=f"You can only play songs in {player.home.mention}, as the player has already started there."), ephemeral=True, delete_after=5)
 
         return True
 
@@ -146,7 +143,7 @@ class Music(commands.GroupCog, group_name="music"):
         query: str,
         shuffle: bool = False,
         source: Choice[int] = 0,
-        auto_play: bool = False,
+        auto_play: bool = True,
     ):
         """Play a song from YouTube
 
@@ -154,10 +151,11 @@ class Music(commands.GroupCog, group_name="music"):
             The song to search or play
         """
 
-        return await self._play(interaction, query=query, shuffle=shuffle, source=source, auto_play=auto_play)
+        return await self.music_play(interaction, query=query, shuffle=shuffle, source=source, auto_play=auto_play)
 
 
-    @app_commands.command(name="play")
+
+    @music.command(name="play")
     @commands.guild_only()
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.choices(
@@ -221,7 +219,7 @@ class Music(commands.GroupCog, group_name="music"):
             await player.play(player.queue.get())
 
 
-    @app_commands.command(name="stop")
+    @music.command(name="stop")
     @commands.guild_only()
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def stop(self, interaction: discord.Interaction):
@@ -252,7 +250,7 @@ class Music(commands.GroupCog, group_name="music"):
         )
         await player.disconnect()
 
-    @app_commands.command(name="pause")
+    @music.command(name="pause")
     @commands.guild_only()
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def pause(self, interaction: discord.Interaction):
@@ -274,7 +272,7 @@ class Music(commands.GroupCog, group_name="music"):
             embed=Embed(description=action), delete_after=5
         )
 
-    @app_commands.command(name="resume")
+    @music.command(name="resume")
     @commands.guild_only()
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def resume(self, interaction: discord.Interaction):
@@ -294,7 +292,7 @@ class Music(commands.GroupCog, group_name="music"):
             embed=Embed(description="⏸️ Resume"), delete_after=5
         )
 
-    @app_commands.command(name="skip")
+    @music.command(name="skip")
     @commands.guild_only()
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def skip(self, interaction: discord.Interaction):
@@ -315,7 +313,7 @@ class Music(commands.GroupCog, group_name="music"):
             embed=Embed(description="⏭️ Skip"), delete_after=5
         )
 
-    @app_commands.command(name="shuffle")
+    @music.command(name="shuffle")
     @commands.guild_only()
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def shuffle(self, interaction: discord.Interaction):
@@ -334,7 +332,7 @@ class Music(commands.GroupCog, group_name="music"):
         )
         return player.queue
 
-    @app_commands.command(name="queue")
+    @music.command(name="queue")
     @commands.guild_only()
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def queue(self, interaction: discord.Interaction):
@@ -344,13 +342,12 @@ class Music(commands.GroupCog, group_name="music"):
         embed = Embed(title=":notes: Queue:")
 
         if player.current:
-            if player.current:
-                first_track: wavelink.Playable = player.current
-                embed.add_field(
-                    name="Now Playing:",
-                    value=f'`1.` [{first_track.title}]({first_track.uri}) | `{"🔴 Stream" if first_track.is_stream else datetime.timedelta(milliseconds=first_track.length)}`',
-                    inline=False,
-                )
+            first_track: wavelink.Playable = player.current
+            embed.add_field(
+                name="Now Playing:",
+                value=f'`1.` [{first_track.title}]({first_track.uri}) | `{"🔴 Stream" if first_track.is_stream else datetime.timedelta(milliseconds=first_track.length)}`',
+                inline=False,
+            )
 
 
         next_track_label = []
@@ -389,7 +386,7 @@ class Music(commands.GroupCog, group_name="music"):
 
         return await interaction.response.send_message(embed=embed)
 
-    @app_commands.command(name="autoplay")
+    @music.command(name="autoplay")
     @commands.guild_only()
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def autoplay(self, interaction: discord.Interaction, *, enabled: bool = None):
@@ -397,7 +394,7 @@ class Music(commands.GroupCog, group_name="music"):
         player: wavelink.Player = interaction.guild.voice_client
 
         if enabled is None:
-            enabled = not player.autoplay == wavelink.AutoPlayMode.enabled
+            enabled = player.autoplay != wavelink.AutoPlayMode.enabled
 
         if enabled:
             player.autoplay = wavelink.AutoPlayMode.enabled
@@ -406,7 +403,7 @@ class Music(commands.GroupCog, group_name="music"):
         player.autoplay = wavelink.AutoPlayMode.disabled
         return await interaction.response.send_message(Embed(description="✅ Auto play disabled"))
 
-    @app_commands.command(name="back")
+    @music.command(name="back")
     @commands.guild_only()
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def back(self, interaction: discord.Interaction):
@@ -435,7 +432,7 @@ class Music(commands.GroupCog, group_name="music"):
 
         return await interaction.response.send_message(Embed(description="⏮️ Playing previous track"), delete_after=5.0)
 
-    @app_commands.command(name="history")
+    @music.command(name="history")
     @commands.guild_only()
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def history(self, interaction: discord.Interaction):
@@ -461,7 +458,7 @@ class Music(commands.GroupCog, group_name="music"):
 
         prl_len = len(prev_track_label)
         for idx, track in enumerate(prev_track_label):
-            prev_track_label[idx] = f"*`{prl_len - idx + 1}.`" + track
+            prev_track_label[idx] = f"*`{prl_len - idx + 1}.`{track}"
 
         if prev_track_label:
             embed.add_field(
@@ -479,7 +476,7 @@ class Music(commands.GroupCog, group_name="music"):
 
         return await interaction.response.send_message(embed=embed)
 
-    @app_commands.command(name="loop")
+    @music.command(name="loop")
     @commands.guild_only()
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def loop(self, interaction: discord.Interaction):
@@ -490,7 +487,7 @@ class Music(commands.GroupCog, group_name="music"):
         if not player:
             return
 
-        if not player.queue.mode == wavelink.QueueMode.loop:
+        if player.queue.mode != wavelink.QueueMode.loop:
             player.loop = wavelink.QueueMode.loop
             await interaction.response.send_message(
                 embed=Embed(description="🔁 Track loop enabled"), delete_after=5
@@ -502,7 +499,7 @@ class Music(commands.GroupCog, group_name="music"):
             )
 
 
-    @app_commands.command(name="loop_all")
+    @music.command(name="loop_all")
     @commands.guild_only()
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def loop_all(self, interaction: discord.Interaction):
@@ -513,7 +510,7 @@ class Music(commands.GroupCog, group_name="music"):
         if not player:
             return
 
-        if not player.queue.mode == wavelink.QueueMode.loop_all:
+        if player.queue.mode != wavelink.QueueMode.loop_all:
             player.loop = wavelink.QueueMode.loop_all
             await interaction.response.send_message(
                 embed=Embed(description="🔁 Queue loop enabled"), delete_after=5
@@ -524,7 +521,7 @@ class Music(commands.GroupCog, group_name="music"):
                 embed=Embed(description="🔁 Queue loop disabled"), delete_after=5
             )
 
-    @app_commands.command(name="playlist")
+    @music.command(name="playlist")
     @commands.guild_only()
     @app_commands.checks.has_permissions(administrator=True)
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
@@ -596,7 +593,7 @@ class Music(commands.GroupCog, group_name="music"):
             "Playlist successfully created!", ephemeral=True, delete_after=5
         )
 
-    @app_commands.command(name="lavalinkinfo")
+    @music.command(name="lavalinkinfo")
     @commands.guild_only()
     @commands.is_owner()
     async def lavalink_info(self, interaction: discord.Interaction):
@@ -610,15 +607,11 @@ class Music(commands.GroupCog, group_name="music"):
             inline=False,
         )
 
-        nodes = []
-        for identifier, node in wavelink.Pool.nodes.items():
-            nodes.append(f"`{identifier}`({len(node.players)})")
-
-        embed.add_field(
-            name=f"Nodes",
-            value=f"{', '.join(nodes)}",
-            inline=False
-        )
+        nodes = [
+            f"`{identifier}`({len(node.players)})"
+            for identifier, node in wavelink.Pool.nodes.items()
+        ]
+        embed.add_field(name="Nodes", value=f"{', '.join(nodes)}", inline=False)
         await interaction.response.send_message(embed=embed)
 
     @filter.command(name="equalizer")
@@ -667,7 +660,7 @@ class Music(commands.GroupCog, group_name="music"):
             equalizer = filters.equalizer
 
             for band, gain in bands_value.items():
-                if not gain or not (gain >= -0.25 and gain <= 1.0):
+                if not gain or gain < -0.25 or gain > 1.0:
                     return await interaction.response.send_message(
                         embed=Embed.error(description="Values must be between `-0.25` and `1.0`."),
                         ephemeral=True,
@@ -683,368 +676,368 @@ class Music(commands.GroupCog, group_name="music"):
             delete_after=5.0,
         )
 
-        @filter.command(name="karaoke")
-        @commands.guild_only()
-        @app_commands.checks.has_permissions(administrator=True)
-        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
-        @app_commands.describe(level="The level of the effect (between 0.0 and 1.0).")
-        @app_commands.describe(
-            mono_level="The level of the mono effect (between 0.0 and 1.0)."
-        )
-        @app_commands.describe(
-            filter_band="The frequency of the filter band in Hz (this defaults to 220.0)."
-        )
-        @app_commands.describe(
-            filter_width="The width of the filter band (this defaults to 100.0)."
-        )
-        async def karaoke(
-            self,
-            interaction: discord.Interaction,
-            level: float = None,
-            mono_level: float = None,
-            filter_band: float = None,
-            filter_width: float = None,
+    @filter.command(name="karaoke")
+    @commands.guild_only()
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.describe(level="The level of the effect (between 0.0 and 1.0).")
+    @app_commands.describe(
+        mono_level="The level of the mono effect (between 0.0 and 1.0)."
+    )
+    @app_commands.describe(
+        filter_band="The frequency of the filter band in Hz (this defaults to 220.0)."
+    )
+    @app_commands.describe(
+        filter_width="The width of the filter band (this defaults to 100.0)."
+    )
+    async def karaoke(
+        self,
+        interaction: discord.Interaction,
+        level: float = None,
+        mono_level: float = None,
+        filter_band: float = None,
+        filter_width: float = None,
+    ):
+        """Configure a Karaoke filter. This usually targets vocals, to sound like karaoke music."""
+        player: wavelink.Player = interaction.guild.voice_client
+
+        if not player:
+            return
+
+        if (level and not (level <= 1.0 and level >= 0.0)) or (
+            mono_level and not (mono_level <= 1.0 and mono_level >= 0.0)
         ):
-            """Configure a Karaoke filter. This usually targets vocals, to sound like karaoke music."""
-            player: wavelink.Player = interaction.guild.voice_client
-
-            if not player:
-                return
-
-            if (level and not (level <= 1.0 and level >= 0.0)) or (
-                mono_level and not (mono_level <= 1.0 and mono_level >= 0.0)
-            ):
-                return await interaction.response.send_message(
-                    embed=Embed.error(
-                        "The level and mono_level values must be between `0.0` and `1.0`."
-                    ),
-                    ephemeral=True,
-                    delete_after=5.0,
-                )
-
-            filters = player.filters
-            filters.karaoke.set(level, mono_level, filter_band, filter_width)
-
-            await player.set_filters(filters)
-
-            await interaction.response.send_message(
-                embed=Embed(description="The filter will be applied in a few seconds!"),
+            return await interaction.response.send_message(
+                embed=Embed.error(
+                    "The level and mono_level values must be between `0.0` and `1.0`."
+                ),
+                ephemeral=True,
                 delete_after=5.0,
             )
 
-        @filter.command(name="timescale")
-        @commands.guild_only()
-        @app_commands.checks.has_permissions(administrator=True)
-        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
-        @app_commands.describe(speed="The speed of the audio (must be at least 0.0).")
-        @app_commands.describe(pitch="The pitch of the audio (must be at least 0.0).")
-        @app_commands.describe(rate="The rate of the audio (must be at least 0.0).")
-        async def timescale(
-            self,
-            interaction: discord.Interaction,
-            speed: float = None,
-            pitch: float = None,
-            rate: float = None,
+        filters = player.filters
+        filters.karaoke.set(level, mono_level, filter_band, filter_width)
+
+        await player.set_filters(filters)
+
+        await interaction.response.send_message(
+            embed=Embed(description="The filter will be applied in a few seconds!"),
+            delete_after=5.0,
+        )
+
+    @filter.command(name="timescale")
+    @commands.guild_only()
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.describe(speed="The speed of the audio (must be at least 0.0).")
+    @app_commands.describe(pitch="The pitch of the audio (must be at least 0.0).")
+    @app_commands.describe(rate="The rate of the audio (must be at least 0.0).")
+    async def timescale(
+        self,
+        interaction: discord.Interaction,
+        speed: float = None,
+        pitch: float = None,
+        rate: float = None,
+    ):
+        """Change the speed, pitch and rate of audio."""
+        player: wavelink.Player = interaction.guild.voice_client
+
+        if not player:
+            return
+
+        if (
+            (speed and not (speed <= 1.0 and speed >= 0.0))
+            or (pitch and not (pitch <= 1.0 and pitch >= 0.0))
+            or (rate and not (rate <= 1.0 and rate >= 0.0))
         ):
-            """Change the speed, pitch and rate of audio."""
-            player: wavelink.Player = interaction.guild.voice_client
-
-            if not player:
-                return
-
-            if (
-                (speed and not (speed <= 1.0 and speed >= 0.0))
-                or (pitch and not (pitch <= 1.0 and pitch >= 0.0))
-                or (rate and not (rate <= 1.0 and rate >= 0.0))
-            ):
-                return await interaction.response.send_message(
-                    embed=Embed.error(description="Values must be between`0.0` and `1.0`."),
-                    ephemeral=True,
-                    delete_after=5.0,
-                )
-
-            filters = player.filters
-            filters.timescale.set(speed, pitch, rate)
-
-            await player.set_filters(filters)
-
-            await interaction.response.send_message(
-                embed=Embed(description="The filter will be applied in a few seconds!"),
+            return await interaction.response.send_message(
+                embed=Embed.error(description="Values must be between`0.0` and `1.0`."),
+                ephemeral=True,
                 delete_after=5.0,
             )
 
-        @filter.command(name="tremolo")
-        @commands.guild_only()
-        @app_commands.checks.has_permissions(administrator=True)
-        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
-        @app_commands.describe(
-            frequency="The frequency of the tremolo effect (must be at least 0.0)."
+        filters = player.filters
+        filters.timescale.set(speed, pitch, rate)
+
+        await player.set_filters(filters)
+
+        await interaction.response.send_message(
+            embed=Embed(description="The filter will be applied in a few seconds!"),
+            delete_after=5.0,
         )
-        @app_commands.describe(
-            depth="The depth of the tremolo effect (between 0.0 and 1.0)."
-        )
-        async def tremolo(
-            self,
-            interaction: discord.Interaction,
-            frequency: float = None,
-            depth: float = None,
-        ):
-            """Tremolo oscillates the volume of the audio."""
-            player: wavelink.Player = interaction.guild.voice_client
 
-            if not player:
-                return
+    @filter.command(name="tremolo")
+    @commands.guild_only()
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.describe(
+        frequency="The frequency of the tremolo effect (must be at least 0.0)."
+    )
+    @app_commands.describe(
+        depth="The depth of the tremolo effect (between 0.0 and 1.0)."
+    )
+    async def tremolo(
+        self,
+        interaction: discord.Interaction,
+        frequency: float = None,
+        depth: float = None,
+    ):
+        """Tremolo oscillates the volume of the audio."""
+        player: wavelink.Player = interaction.guild.voice_client
 
-            if frequency and not (frequency >= 0.0 and frequency <= 2.0):
-                return await interaction.response.send_message(
-                    embed=Embed.error(
-                        "Frequency value must be between`0.0` and `2.0`."
-                    ),
-                    ephemeral=True,
-                    delete_after=5.0,
-                )
+        if not player:
+            return
 
-            if depth and not (depth >= 0.0 and depth <= 1.0):
-                return await interaction.response.send_message(
-                    embed=Embed.error(
-                        "Frequency value must be between`0.0` and `1.0` (this defaults to 0.5)."
-                    ),
-                    ephemeral=True,
-                    delete_after=5.0,
-                )
-
-            filters = player.filters
-            filters.tremolo.set(frequency, depth)
-
-            await player.set_filters(filters)
-
-            await interaction.response.send_message(
-                embed=Embed(description="The filter will be applied in a few seconds!"),
+        if frequency and not (frequency >= 0.0 and frequency <= 2.0):
+            return await interaction.response.send_message(
+                embed=Embed.error(
+                    "Frequency value must be between`0.0` and `2.0`."
+                ),
+                ephemeral=True,
                 delete_after=5.0,
             )
 
-        @filter.command(name="vibrato")
-        @commands.guild_only()
-        @app_commands.checks.has_permissions(administrator=True)
-        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
-        @app_commands.describe(
-            frequency="The frequency of the tremolo effect (must be at least 0.0)."
-        )
-        @app_commands.describe(
-            depth="The depth of the tremolo effect (between 0.0 and 1.0)."
-        )
-        async def vibrato(
-            self,
-            interaction: discord.Interaction,
-            frequency: float = None,
-            depth: float = None,
-        ):
-            """Vibrato oscillates the pitch of the audio."""
-            player: wavelink.Player = interaction.guild.voice_client
-
-            if not player:
-                return
-
-            if frequency and not (frequency >= 0.0 and frequency <= 2.0):
-                return await interaction.response.send_message(
-                    embed=Embed.error(
-                        "Frequency value must be between`0.0` and `2.0`."
-                    ),
-                    ephemeral=True,
-                    delete_after=5.0,
-                )
-
-            if depth and not (depth >= 0.0 and depth <= 1.0):
-                return await interaction.response.send_message(
-                    embed=Embed.error(
-                        "Frequency value must be between`0.0` and `1.0` (this defaults to 0.5)."
-                    ),
-                    ephemeral=True,
-                    delete_after=5.0,
-                )
-
-            filters = player.filters
-            filters.vibrato.set(frequency, depth)
-
-            await player.set_filters(filters)
-
-            await interaction.response.send_message(
-                embed=Embed(description="The filter will be applied in a few seconds!"),
+        if depth and not (depth >= 0.0 and depth <= 1.0):
+            return await interaction.response.send_message(
+                embed=Embed.error(
+                    "Frequency value must be between`0.0` and `1.0` (this defaults to 0.5)."
+                ),
+                ephemeral=True,
                 delete_after=5.0,
             )
 
-        @filter.command(name="distortion")
-        @commands.guild_only()
-        @app_commands.checks.has_permissions(administrator=True)
-        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
-        async def distortion(
-            self,
-            interaction: discord.Interaction,
-            sin_offset: Optional[float] = None,
-            sin_scale: Optional[float] = None,
-            cos_offset: Optional[float] = None,
-            cos_scale: Optional[float] = None,
-            tan_offset: Optional[float] = None,
-            tan_scale: Optional[float] = None,
-            offset: Optional[float] = None,
-            scale: Optional[float] = None,
-        ):
-            """This applies sine, cosine and tangent distortion to the audio. Pretty hard to use."""
-            player: wavelink.Player = interaction.guild.voice_client
+        filters = player.filters
+        filters.tremolo.set(frequency, depth)
 
-            if not player:
-                return
+        await player.set_filters(filters)
 
-            filters = player.filters
-            filters.distortion.set(
-                sin_offset,
-                sin_scale,
-                cos_offset,
-                cos_scale,
-                tan_offset,
-                tan_scale,
-                offset,
-                scale,
-            )
+        await interaction.response.send_message(
+            embed=Embed(description="The filter will be applied in a few seconds!"),
+            delete_after=5.0,
+        )
 
-            await player.set_filters(filters)
+    @filter.command(name="vibrato")
+    @commands.guild_only()
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.describe(
+        frequency="The frequency of the tremolo effect (must be at least 0.0)."
+    )
+    @app_commands.describe(
+        depth="The depth of the tremolo effect (between 0.0 and 1.0)."
+    )
+    async def vibrato(
+        self,
+        interaction: discord.Interaction,
+        frequency: float = None,
+        depth: float = None,
+    ):
+        """Vibrato oscillates the pitch of the audio."""
+        player: wavelink.Player = interaction.guild.voice_client
 
-            await interaction.response.send_message(
-                embed=Embed(description="The filter will be applied in a few seconds!"),
+        if not player:
+            return
+
+        if frequency and not (frequency >= 0.0 and frequency <= 2.0):
+            return await interaction.response.send_message(
+                embed=Embed.error(
+                    "Frequency value must be between`0.0` and `2.0`."
+                ),
+                ephemeral=True,
                 delete_after=5.0,
             )
 
-        @filter.command(name="channel_mix")
-        @commands.guild_only()
-        @app_commands.checks.has_permissions(administrator=True)
-        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
-        @app_commands.describe(
-            left_to_left="The amount of the left channel to mix into the left channel."
-        )
-        @app_commands.describe(
-            left_to_right="The amount of the left channel to mix into the right channel."
-        )
-        @app_commands.describe(
-            right_to_left="The amount of the right channel to mix into the left channel."
-        )
-        @app_commands.describe(
-            right_to_right="The amount of the right channel to mix into the right channel."
-        )
-        async def channel_mix(
-            self,
-            interaction: discord.Interaction,
-            left_to_left: float = None,
-            left_to_right: float = None,
-            right_to_left: float = None,
-            right_to_right: float = None,
-        ):
-            """Channel mix filter (all at 0.5 => mono, ll=1.0 and rr=1.0 => stereo)."""
-            player: wavelink.Player = interaction.guild.voice_client
-
-            if not player:
-                return
-
-            filters = player.filters
-            filters.channel_mix.set(
-                left_to_left, left_to_right, right_to_left, right_to_right
-            )
-
-            await player.set_filters(filters)
-
-            await interaction.response.send_message(
-                embed=Embed(description="The filter will be applied in a few seconds!"),
+        if depth and not (depth >= 0.0 and depth <= 1.0):
+            return await interaction.response.send_message(
+                embed=Embed.error(
+                    "Frequency value must be between`0.0` and `1.0` (this defaults to 0.5)."
+                ),
+                ephemeral=True,
                 delete_after=5.0,
             )
 
-        @filter.command(name="low_pass")
-        @commands.guild_only()
-        @app_commands.checks.has_permissions(administrator=True)
-        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
-        async def low_pass(self, interaction: discord.Interaction, smoothing: float):
-            """High frequencies are suppressed, while low frequencies are passed through. (this defaults is 0.0)"""
-            player: wavelink.Player = interaction.guild.voice_client
+        filters = player.filters
+        filters.vibrato.set(frequency, depth)
 
-            if not player:
-                return
+        await player.set_filters(filters)
 
-            filters = player.filters
-            filters.low_pass.set(smoothing)
-
-            await player.set_filters(filters)
-
-            await interaction.response.send_message(
-                embed=Embed(description="The filter will be applied in a few seconds!"),
-                delete_after=5.0,
-            )
-
-        @filter.command(name="rotation")
-        @commands.guild_only()
-        @app_commands.checks.has_permissions(administrator=True)
-        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
-        @app_commands.describe(rotation_hz="The rotation speed in Hz. (1.0 is fast)")
-        async def rotation(
-            self,
-            interaction: discord.Interaction,
-            rotation_hz: float = None,
-        ):
-            """Add a filter which can be used to add a rotating effect to audio."""
-            player: wavelink.Player = interaction.guild.voice_client
-
-            if not player:
-                return
-
-            if rotation_hz < 0.0:
-                return await interaction.response.send_message(
-                    embed=Embed.error(description="The rotation_hz value must be at least 0.0."),
-                    ephemeral=True,
-                    delete_after=5.0,
-                )
-
-            filters = player.filters
-            filters.low_pass.set(rotation_hz)
-
-            await player.set_filters(filters)
-
-            await interaction.response.send_message(
-                embed=Embed(description="The filter will be applied in a few seconds!"),
-                delete_after=5.0,
-            )
-
-        @filter.command(name="volume")
-        @commands.guild_only()
-        @app_commands.checks.has_permissions(administrator=True)
-        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
-        @app_commands.describe(
-            volume="This defaults to 100 on creation. If the volume is outside 0 to 1000 it will be clamped."
+        await interaction.response.send_message(
+            embed=Embed(description="The filter will be applied in a few seconds!"),
+            delete_after=5.0,
         )
-        async def volume(self, interaction: discord.Interaction, volume: int = 100):
-            """Change the volume of the audio. (this apply to all users)"""
-            player: wavelink.Player = interaction.guild.voice_client
 
-            if not player:
-                return
+    @filter.command(name="distortion")
+    @commands.guild_only()
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def distortion(
+        self,
+        interaction: discord.Interaction,
+        sin_offset: Optional[float] = None,
+        sin_scale: Optional[float] = None,
+        cos_offset: Optional[float] = None,
+        cos_scale: Optional[float] = None,
+        tan_offset: Optional[float] = None,
+        tan_scale: Optional[float] = None,
+        offset: Optional[float] = None,
+        scale: Optional[float] = None,
+    ):
+        """This applies sine, cosine and tangent distortion to the audio. Pretty hard to use."""
+        player: wavelink.Player = interaction.guild.voice_client
 
-            await player.set_volume(volume)
+        if not player:
+            return
 
-            await interaction.response.send_message(
-                embed=Embed(description="Volume updated!"), delete_after=5.0
+        filters = player.filters
+        filters.distortion.set(
+            sin_offset,
+            sin_scale,
+            cos_offset,
+            cos_scale,
+            tan_offset,
+            tan_scale,
+            offset,
+            scale,
+        )
+
+        await player.set_filters(filters)
+
+        await interaction.response.send_message(
+            embed=Embed(description="The filter will be applied in a few seconds!"),
+            delete_after=5.0,
+        )
+
+    @filter.command(name="channel_mix")
+    @commands.guild_only()
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.describe(
+        left_to_left="The amount of the left channel to mix into the left channel."
+    )
+    @app_commands.describe(
+        left_to_right="The amount of the left channel to mix into the right channel."
+    )
+    @app_commands.describe(
+        right_to_left="The amount of the right channel to mix into the left channel."
+    )
+    @app_commands.describe(
+        right_to_right="The amount of the right channel to mix into the right channel."
+    )
+    async def channel_mix(
+        self,
+        interaction: discord.Interaction,
+        left_to_left: float = None,
+        left_to_right: float = None,
+        right_to_left: float = None,
+        right_to_right: float = None,
+    ):
+        """Channel mix filter (all at 0.5 => mono, ll=1.0 and rr=1.0 => stereo)."""
+        player: wavelink.Player = interaction.guild.voice_client
+
+        if not player:
+            return
+
+        filters = player.filters
+        filters.channel_mix.set(
+            left_to_left, left_to_right, right_to_left, right_to_right
+        )
+
+        await player.set_filters(filters)
+
+        await interaction.response.send_message(
+            embed=Embed(description="The filter will be applied in a few seconds!"),
+            delete_after=5.0,
+        )
+
+    @filter.command(name="low_pass")
+    @commands.guild_only()
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def low_pass(self, interaction: discord.Interaction, smoothing: float):
+        """High frequencies are suppressed, while low frequencies are passed through. (this defaults is 0.0)"""
+        player: wavelink.Player = interaction.guild.voice_client
+
+        if not player:
+            return
+
+        filters = player.filters
+        filters.low_pass.set(smoothing)
+
+        await player.set_filters(filters)
+
+        await interaction.response.send_message(
+            embed=Embed(description="The filter will be applied in a few seconds!"),
+            delete_after=5.0,
+        )
+
+    @filter.command(name="rotation")
+    @commands.guild_only()
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.describe(rotation_hz="The rotation speed in Hz. (1.0 is fast)")
+    async def rotation(
+        self,
+        interaction: discord.Interaction,
+        rotation_hz: float = None,
+    ):
+        """Add a filter which can be used to add a rotating effect to audio."""
+        player: wavelink.Player = interaction.guild.voice_client
+
+        if not player:
+            return
+
+        if rotation_hz < 0.0:
+            return await interaction.response.send_message(
+                embed=Embed.error(description="The rotation_hz value must be at least 0.0."),
+                ephemeral=True,
+                delete_after=5.0,
             )
 
-        @filter.command(name="clear")
-        @commands.guild_only()
-        @app_commands.checks.has_permissions(administrator=True)
-        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
-        async def volume(self, interaction: discord.Interaction):
-            player: wavelink.Player = interaction.guild.voice_client
+        filters = player.filters
+        filters.low_pass.set(rotation_hz)
 
-            if not player:
-                return
+        await player.set_filters(filters)
 
-            filters = player.filters
-            filters.reset()
+        await interaction.response.send_message(
+            embed=Embed(description="The filter will be applied in a few seconds!"),
+            delete_after=5.0,
+        )
 
-            await player.set_filters(filters)
+    @filter.command(name="volume")
+    @commands.guild_only()
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.describe(
+        volume="This defaults to 100 on creation. If the volume is outside 0 to 1000 it will be clamped."
+    )
+    async def volume(self, interaction: discord.Interaction, volume: int = 100):
+        """Change the volume of the audio. (this apply to all users)"""
+        player: wavelink.Player = interaction.guild.voice_client
 
-            await interaction.response.send_message(
-                embed=Embed(description="Filters clear!"), delete_after=5.0
-            )
+        if not player:
+            return
+
+        await player.set_volume(volume)
+
+        await interaction.response.send_message(
+            embed=Embed(description="Volume updated!"), delete_after=5.0
+        )
+
+    @filter.command(name="clear")
+    @commands.guild_only()
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+    async def volume(self, interaction: discord.Interaction):
+        player: wavelink.Player = interaction.guild.voice_client
+
+        if not player:
+            return
+
+        filters = player.filters
+        filters.reset()
+
+        await player.set_filters(filters)
+
+        await interaction.response.send_message(
+            embed=Embed(description="Filters clear!"), delete_after=5.0
+        )

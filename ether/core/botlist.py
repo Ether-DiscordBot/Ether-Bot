@@ -5,8 +5,6 @@ from ether.core.config import config
 
 # protected decorator for recusrion functions with a max depth
 def recursion(*args, **kwargs):
-    pass
-
     max_depth = kwargs.get("max_depth", 10)
 
     def _trace(func):
@@ -23,9 +21,7 @@ def recursion(*args, **kwargs):
 
         return wrapper
 
-    if len(args) == 1 and callable(args[0]):
-        return _trace(args[0])
-    return _trace
+    return _trace(args[0]) if len(args) == 1 and callable(args[0]) else _trace
 
 
 class DBLClient:
@@ -38,34 +34,6 @@ class DBLClient:
         url = f"https://discordbotlist.com/api/v1/bots/{self.client.user.id}/commands"
 
         return
-
-        commands = []
-
-        @recursion
-        def get_commands(cog):
-            for command in cog.get_commands():
-                if isinstance(command, SlashCommandGroup):
-                    get_commands(command)
-                    continue
-
-                commands.append(
-                    {
-                        "name": command.name,
-                        "description": command.description,
-                        "options": command.options,
-                    }
-                )
-
-        print(commands)
-
-        for command in set(self.client.cogs.values()):
-            commands.append(
-                {
-                    "name": command.name,
-                    "description": command.description,
-                    "options": command.options,
-                }
-            )
 
     def submit_stat(self):
         """Submit a stat to the bot list."""
