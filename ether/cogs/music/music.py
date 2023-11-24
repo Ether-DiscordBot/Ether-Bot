@@ -704,8 +704,11 @@ class Music(commands.Cog, group_name="music"):
         if not player:
             return
 
-        if (level and not (level <= 1.0 and level >= 0.0)) or (
-            mono_level and not (mono_level <= 1.0 and mono_level >= 0.0)
+        if (
+            level
+            and (level > 1.0 or level < 0.0)
+            or mono_level
+            and (mono_level > 1.0 or mono_level < 0.0)
         ):
             return await interaction.response.send_message(
                 embed=Embed.error(
@@ -746,9 +749,12 @@ class Music(commands.Cog, group_name="music"):
             return
 
         if (
-            (speed and not (speed <= 1.0 and speed >= 0.0))
-            or (pitch and not (pitch <= 1.0 and pitch >= 0.0))
-            or (rate and not (rate <= 1.0 and rate >= 0.0))
+            speed
+            and (speed > 1.0 or speed < 0.0)
+            or pitch
+            and (pitch > 1.0 or pitch < 0.0)
+            or rate
+            and (rate > 1.0 or rate < 0.0)
         ):
             return await interaction.response.send_message(
                 embed=Embed.error(description="Values must be between`0.0` and `1.0`."),
@@ -788,7 +794,7 @@ class Music(commands.Cog, group_name="music"):
         if not player:
             return
 
-        if frequency and not (frequency >= 0.0 and frequency <= 2.0):
+        if frequency and (frequency < 0.0 or frequency > 2.0):
             return await interaction.response.send_message(
                 embed=Embed.error(
                     "Frequency value must be between`0.0` and `2.0`."
@@ -797,7 +803,7 @@ class Music(commands.Cog, group_name="music"):
                 delete_after=5.0,
             )
 
-        if depth and not (depth >= 0.0 and depth <= 1.0):
+        if depth and (depth < 0.0 or depth > 1.0):
             return await interaction.response.send_message(
                 embed=Embed.error(
                     "Frequency value must be between`0.0` and `1.0` (this defaults to 0.5)."
@@ -838,7 +844,7 @@ class Music(commands.Cog, group_name="music"):
         if not player:
             return
 
-        if frequency and not (frequency >= 0.0 and frequency <= 2.0):
+        if frequency and (frequency < 0.0 or frequency > 2.0):
             return await interaction.response.send_message(
                 embed=Embed.error(
                     "Frequency value must be between`0.0` and `2.0`."
@@ -847,7 +853,7 @@ class Music(commands.Cog, group_name="music"):
                 delete_after=5.0,
             )
 
-        if depth and not (depth >= 0.0 and depth <= 1.0):
+        if depth and (depth < 0.0 or depth > 1.0):
             return await interaction.response.send_message(
                 embed=Embed.error(
                     "Frequency value must be between`0.0` and `1.0` (this defaults to 0.5)."
