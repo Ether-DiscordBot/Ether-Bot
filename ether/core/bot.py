@@ -88,7 +88,7 @@ class Ether(commands.bot.AutoShardedBot):
         sessions_id = []
         for identifier in wavelink.Pool.nodes:
             s_id = wavelink.Pool.get_node(identifier).session_id
-            if s_id == None:
+            if s_id is None:
                 continue
 
             sessions_id.append(s_id)

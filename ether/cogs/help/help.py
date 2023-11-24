@@ -147,9 +147,7 @@ class Help(commands.Cog):
 
     async def callback(self, interaction: discord.Interaction):
         category = interaction.data["values"][0]
-        embeds = self.build_cog_response(category)
-
-        if embeds:
+        if embeds := self.build_cog_response(category):
             return await interaction.response.edit_message(embeds=embeds)
         return await interaction.response.edit_message(
             embed=Embed(description="Interaction closed."), delete_after=5
