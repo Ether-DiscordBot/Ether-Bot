@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from discord.ext.commands import Context, Paginator
+from discord.ext.commands import Paginator
 
 from ether.core.constants import Emoji, Links, Other
 from ether.core.embed import Embed
@@ -118,37 +118,39 @@ class Help(commands.Cog):
         if not cog:
             return
 
-        def get_brief(cmd: app_commands.Command):
-            return (
-                "No information."
-                if not cmd.description
-                else cmd.description
-            )
+        app_cmds = cog.walk_app_commands()
+
+        def sort_cmd(cmd):
+            return cmd.qualified_name
+        app_cmds = sorted(app_cmds, key=sort_cmd, reverse=True)
 
         for cmd in cog.walk_app_commands():
             if isinstance(cmd, app_commands.Group):
                 for sub_cmd in cmd.walk_commands():
-                    cmds.append(f"`/{sub_cmd.qualified_name}` - {get_brief(sub_cmd)}\n")
+                    cmds.append(f"`/{sub_cmd.qualified_name}`\n")
                 continue
 
-            cmds.append(f"`/{cmd.qualified_name}` - {get_brief(cmd)}\n")
+            cmds.append(f"`/{cmd.qualified_name}`\n")
 
-        embeds = [
-            Embed(
-                title=f"{cog.help_icon} {cog.qualified_name} commands",
-                description="".join(cmds[i : i + 25]),
+
+        embed = Embed(title=f"{cog.help_icon} {cog.qualified_name} commands")
+
+        # TODO: Split the music cog between filters and music commands
+
+        for i in range(0, len(cmds), 25):
+            embed.add_field(
+                name="",
+                value="".join(cmds[i:i+25])
             )
-            for i in range(0, len(cmds), 25)
-        ]
-        if len(embeds) > 1:
-            return Paginator(pages=embeds, show_disabled=False, show_indicator=True)
 
-        return embeds[0]
+        return [embed]
 
     async def callback(self, interaction: discord.Interaction):
         category = interaction.data["values"][0]
-        if paginator := self.build_cog_response(category):
-            return await interaction.response.edit_message(embed=paginator)
+        embeds = self.build_cog_response(category)
+
+        if embeds:
+            return await interaction.response.edit_message(embeds=embeds)
         return await interaction.response.edit_message(
             embed=Embed(description="Interaction closed."), delete_after=5
         )

@@ -1,4 +1,3 @@
-import asyncio
 import datetime
 from typing import Any, Dict, List, Literal, Optional
 
@@ -221,15 +220,31 @@ class Database:
 
                 await command.save_changes()
 
+    class LavalinkNodeSessions:
+        @staticmethod
+        async def get_or_none(bot_id: int):
+            lavalink_sessions = await LavalinkNodeSessions.get(bot_id)
+            return lavalink_sessions if lavalink_sessions else None
 
-def init_database(db_uri):
+        @staticmethod
+        async def register(bot_id: int, sessions: List[str]):
+            # Register will overwrite existing sessions for the bot
+            lavalink_sessions = await Database.LavalinkNodeSessions.get_or_none(bot_id)
+            if not lavalink_sessions:
+                lavalink_sessions = LavalinkNodeSessions(id=bot_id, sessions=sessions)
+
+                await lavalink_sessions.insert()
+                log.debug(f"Lavalink node sessions created (client id: {bot_id})")
+
+            lavalink_sessions.sessions = sessions
+            await lavalink_sessions.save_changes()
+
+async def init_database(db_uri):
     Database.client = AsyncIOMotorClient(db_uri).dbot
 
-    asyncio.run(
-        init_beanie(
-            database=Database.client,
-            document_models=[Guild, GuildUser, User, ReactionRole, Playlist, CommandUsage],
-        )
+    await init_beanie(
+        database=Database.client,
+        document_models=[Guild, GuildUser, User, ReactionRole, Playlist, CommandUsage, LavalinkNodeSessions],
     )
 
 
@@ -402,4 +417,12 @@ class CommandUsage(Document):
     month_usage: Dict[Any, int] = {} # {(year, month): count}
 
     async def register_usage(self):
-        return await Database.BotStatistic.CommandUsage.register_usage(self)
+        return await Database.BotStatistic.CommandUsage.register_usage(self.id)
+
+class LavalinkNodeSessions(Document):
+    class Settings:
+        name = "lavalink_sessions"
+        use_state_management = True
+
+    id: int
+    sessions: List[str | None]

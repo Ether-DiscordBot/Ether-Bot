@@ -78,8 +78,6 @@ class Admin(commands.GroupCog, name="admin"):
                 delete_after=5,
             )
 
-        # TODO replace try/except by a condition to check permissions
-
         try:
             await interaction.guild.kick(member)
             if guild.logs and guild.logs.moderation and guild.logs.moderation.enabled:

@@ -6,8 +6,7 @@ import discord
 from discord import Member, app_commands
 from discord.app_commands import Choice
 from discord.ext import commands
-from discord.ext.commands import Context
-from requests import get, request
+from requests import request
 
 from ether.core.constants import Emoji
 from ether.core.embed import Embed

@@ -1,3 +1,9 @@
+## 1.0.0b6
+- Lavalink session id recovery system (but it doesn't seem to work)
+- Fix the `help` command (again)
+- Support root command in cogs
+- Update requirements.txt
+
 ## 1.0.0b5
 - Fix the `help` command
 - Add the latest change from the changelog to the `help` command
