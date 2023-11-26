@@ -17,10 +17,8 @@ class Tree(app_commands.CommandTree):
 
         ignored = (
             app_commands.NoPrivateMessage,
-            # app_commands.DisabledCommand,
             app_commands.CheckFailure,
             app_commands.CommandNotFound,
-            # app_commands.UserInputError,
             discord.errors.HTTPException,
         )
         error = getattr(error, "original", error)

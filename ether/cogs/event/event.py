@@ -142,50 +142,6 @@ class Event(commands.GroupCog):
         log.info(f"Removed cog: {extension}")
 
     @commands.Cog.listener()
-    async def on_command_error(self, interaction: discord.Interaction, error):
-        ignored = (
-            app_commands.NoPrivateMessage,
-            app_commands.CheckFailure,
-            app_commands.CommandNotFound,
-            HTTPException,
-        )
-        error = getattr(error, "original", error)
-
-        if isinstance(error, ignored):
-            return
-
-        if isinstance(error, app_commands.CommandOnCooldown):
-            return await interaction.response.send_message(
-                embed=Embed.error(
-                    f"This command is on cooldown, please retry in `{error.retry_after:.2f}s`."
-                ),
-                ephemeral=True,
-            )
-
-        if (
-            isinstance(error, RuntimeError)
-            and error.args[0]
-            == "Websocket is not connected but attempted to listen, report this."
-        ):
-            if player := interaction.guild.voice_client:
-                log.error(
-                    f"Lavalink Runtime error with node {player.node.label}({player.node.host}:{player.node.port})"
-                )
-                log.error(f"\t => Available: {player.node.available}")
-                log.error(f"\t => Uptime: {player.node.stats.uptime}")
-
-        await interaction.response.send_message(
-            embed=Embed.error(
-                description=f"An error occurred while executing this command, please retry later.\n If the problem persist, please contact the support.\n\n Error: `{error.__class__.__name__}({error})`"
-            ),
-            ephemeral=True,
-        )
-
-        log.error(f"Error on command {interaction.command}")
-        log.error(f" => Selected parameters: {str(interaction.command.parameters)}")
-        raise error
-
-    @commands.Cog.listener()
     async def on_shard_ready(self, shard_id):
         log.info(f"Shard {shard_id} ready!")
 
