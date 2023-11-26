@@ -11,6 +11,9 @@ class UptimeCards():
 
         data = self._get_data()
 
+        if not data:
+            return
+
         cards = [
             self._build_card(monitor, data['days'])
             for monitor in data['psp']['monitors']
