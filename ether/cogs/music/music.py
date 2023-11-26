@@ -145,13 +145,20 @@ class Music(commands.Cog, group_name="music"):
         source: Choice[int] = 0,
         auto_play: bool = True,
     ):
-        """Play a song from YouTube
+        """Play a song or a playlist from YouTube, YT Music or Soundcloud
 
         query:
             The song to search or play
         """
 
-        return await self.music_play(interaction, query=query, shuffle=shuffle, source=source, auto_play=auto_play)
+        return await self.music_play.callback(
+            self,
+            interaction=interaction,
+            query=query,
+            shuffle=shuffle,
+            source=source,
+            auto_play=auto_play
+        )
 
 
 
@@ -174,6 +181,13 @@ class Music(commands.Cog, group_name="music"):
         source: Choice[int] = 0,
         auto_play: bool = True,
     ):
+        """Play a song or a playlist from YouTube, YT Music or Soundcloud
+
+        query:
+            The song to search or play
+        """
+        await interaction.response.defer(thinking=True)
+
         player: wavelink.Player
         player = cast(wavelink.Player, interaction.guild.voice_client)  # type: ignore
 
@@ -199,7 +213,7 @@ class Music(commands.Cog, group_name="music"):
 
             added: int = await player.queue.put_wait(playlist_tracks)
 
-            await interaction.response.send_message(
+            await interaction.edit_original_response(
                 embed=Embed(
                     description=f"**[{tracks.name}]({query})** - {len(added)} tracks",
                     color=Colors.DEFAULT,
@@ -208,7 +222,7 @@ class Music(commands.Cog, group_name="music"):
         else:
             track: wavelink.Playable = tracks[0]
             await player.queue.put_wait(track)
-            await interaction.response.send_message(
+            await interaction.edit_original_response(
                 embed=Embed(
                     description=f"Track added to queue: **[{track.title}]({track.uri})**",
                     color=Colors.DEFAULT,
@@ -243,7 +257,7 @@ class Music(commands.Cog, group_name="music"):
             return
 
         player.queue.clear()
-        await player.stop()
+        await player.skip(force=True)
 
         await interaction.response.send_message(
             embed=Embed(description="🛑 Stopped"), delete_after=5
