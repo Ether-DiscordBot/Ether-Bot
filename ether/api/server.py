@@ -30,7 +30,7 @@ class ServerThread(threading.Thread):
         serve(app, port=self.port, _quiet=True)
 
     @app.route("/ping", methods=["GET"])
-    async def ping():
+    def ping():
         return make_response(jsonify({"response": "pong"}), 200)
 
     def login_required(f):
