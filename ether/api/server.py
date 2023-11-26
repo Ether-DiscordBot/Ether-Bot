@@ -31,10 +31,6 @@ class ServerThread(threading.Thread):
 
     @app.route("/ping", methods=["GET"])
     async def ping():
-        bot: discord.AutoShardedClient = app.bot
-
-        if not bot.is_ready():
-            return make_response(jsonify({"response": "Not ready yet"}), 503)
         return make_response(jsonify({"response": "pong"}), 200)
 
     def login_required(f):
