@@ -3,7 +3,7 @@ import random
 import discord
 import gitinfo
 import wavelink
-from discord import File, HTTPException
+from discord import File, HTTPException, app_commands
 from discord.ext import commands
 from discord.ext.commands import Context, errors
 
@@ -144,11 +144,9 @@ class Event(commands.GroupCog):
     @commands.Cog.listener()
     async def on_command_error(self, interaction: discord.Interaction, error):
         ignored = (
-            commands.NoPrivateMessage,
-            commands.DisabledCommand,
-            commands.CheckFailure,
-            commands.CommandNotFound,
-            commands.UserInputError,
+            app_commands.NoPrivateMessage,
+            app_commands.CheckFailure,
+            app_commands.CommandNotFound,
             HTTPException,
         )
         error = getattr(error, "original", error)
@@ -156,7 +154,7 @@ class Event(commands.GroupCog):
         if isinstance(error, ignored):
             return
 
-        if isinstance(error, commands.errors.CommandOnCooldown):
+        if isinstance(error, app_commands.CommandOnCooldown):
             return await interaction.response.send_message(
                 embed=Embed.error(
                     f"This command is on cooldown, please retry in `{error.retry_after:.2f}s`."

@@ -1,3 +1,7 @@
+## 1.0.0b7
+- HotFix
+- Command `play` work
+
 ## 1.0.0b6
 - Lavalink session id recovery system (but it doesn't seem to work)
 - Fix the `help` command (again)

@@ -19,17 +19,22 @@ class ServerThread(threading.Thread):
         super(ServerThread, self).__init__()
 
         self.port = port
-        self.bot = bot
+        self.bot: discord.AutoShardedClient = bot
 
     def run(self):
         log.info("Server starting...")
 
         app.logger.setLevel(logging.INFO)
+        setattr(app, "bot", self.bot)
 
         serve(app, port=self.port, _quiet=True)
 
     @app.route("/ping", methods=["GET"])
-    def ping():
+    async def ping():
+        bot: discord.AutoShardedClient = app.bot
+
+        if not bot.is_ready():
+            return make_response(jsonify({"response": "Not ready yet"}), 503)
         return make_response(jsonify({"response": "pong"}), 200)
 
     def login_required(f):
