@@ -10,6 +10,7 @@ from discord import app_commands
 from discord.app_commands import Choice
 from discord.ext import commands
 
+from ether.core.checks import is_owner
 from ether.core.config import config
 from ether.core.constants import Colors, Emoji
 from ether.core.db.client import Database
@@ -609,9 +610,11 @@ class Music(commands.Cog, group_name="music"):
 
     @music.command(name="lavalinkinfo")
     @commands.guild_only()
-    @commands.is_owner()
-    async def lavalink_info(self, interaction: discord.Interaction):
+    @app_commands.check(is_owner)
+    async def lavalink_info(self, interaction: discord.Interaction): #FIXME
         """Show lavalink info"""
+        log.info("Booba")
+
         embed = Embed(title=f"**Wavelink:** `{wavelink.__version__}`", color=Colors.DEFAULT)
 
         embed.add_field(
@@ -620,12 +623,15 @@ class Music(commands.Cog, group_name="music"):
             f"Voice Client Connected: `{len(self.client.voice_clients)}`\n",
             inline=False,
         )
+        log.info("Boooba")
 
         nodes = [
             f"`{identifier}`({len(node.players)})"
             for identifier, node in wavelink.Pool.nodes.items()
         ]
+        log.info(nodes)
         embed.add_field(name="Nodes", value=f"{', '.join(nodes)}", inline=False)
+        log.info("Booooba")
         await interaction.response.send_message(embed=embed)
 
     @filter.command(name="equalizer")

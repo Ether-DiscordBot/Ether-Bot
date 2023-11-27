@@ -142,6 +142,20 @@ class Event(commands.GroupCog):
         log.info(f"Removed cog: {extension}")
 
     @commands.Cog.listener()
+    async def on_app_command_error(self, ctx: commands.Context, error):
+        ignored = (
+            app_commands.NoPrivateMessage,
+            app_commands.CheckFailure,
+            app_commands.CommandNotFound,
+            commands.CommandNotFound,
+            HTTPException,
+        )
+        if isinstance(error, ignored):
+            return
+
+        log.exception(error)
+
+    @commands.Cog.listener()
     async def on_shard_ready(self, shard_id):
         log.info(f"Shard {shard_id} ready!")
 
