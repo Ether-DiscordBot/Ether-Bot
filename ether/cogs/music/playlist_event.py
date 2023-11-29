@@ -1,32 +1,34 @@
 import random
 
 import discord
+import wavelink
 from discord.ext import commands
 
 from ether.core.constants import Other
 from ether.core.db.client import Playlist
+from ether.core.logging import log
 
 
 class PlaylistEvent(commands.Cog):
     def __init__(self, client) -> None:
         self.client = client
 
-    async def ensure_voice(self, payload):
+    async def ensure_voice(self, payload: discord.RawReactionActionEvent):
         """This check ensures that the bot and command author are in the same voicechannel."""
         if not payload.member.voice or not payload.member.voice.channel:
             return
 
-        guild = self.client.get_guild(payload.guild_id)
+        guild = payload.member.guild
         player = guild.voice_client
 
         if not player:
-            await payload.member.voice.channel.connect()
+            await payload.member.voice.channel.connect(cls=wavelink.Player)
 
             player = guild.voice_client
             setattr(player, "channel", payload.channel_id)
 
     @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload):
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
         if payload.member.bot:
             return
 
@@ -49,7 +51,7 @@ class PlaylistEvent(commands.Cog):
             if not payload.member.voice:
                 return
 
-            player = payload.member.guild.voice_client
+            player: wavelink.Player = payload.member.guild.voice_client
             if not player:
                 return
 
@@ -66,15 +68,15 @@ class PlaylistEvent(commands.Cog):
                 f"https://www.youtube.com/playlist?list={playlist.playlist_id}"
             )
 
-            load_playlist = await player.fetch_tracks(playlist_link)
+            load_playlist: wavelink.Playlist = await wavelink.Pool.fetch_tracks(playlist_link)
 
             if load_playlist:
                 shuffle = emoji.id == 990260524686139432
                 if shuffle:
                     random.shuffle(load_playlist.tracks)
-                tracks = load_playlist.tracks
-                if len(tracks) > 1:
-                    player.queue.extend(tracks[1:])
+                await player.queue.put_wait(load_playlist.tracks[1:])
+
+                await player.play(player.queue.get())
 
                 new_embed = message.embeds[0].copy()
 
@@ -85,7 +87,7 @@ class PlaylistEvent(commands.Cog):
                     new_embed.set_field_at(
                         0,
                         name="Tracks",
-                        value=f"{len(load_playlist.tracks)} tracks",
+                        value=f"{len(load_playlist)} tracks",
                     )
 
                 # Update title
@@ -98,16 +100,35 @@ class PlaylistEvent(commands.Cog):
                         await message.edit(embed=new_embed)
                 except discord.errors.Forbidden:
                     pass
-
-            await player.play(load_playlist.tracks[0])
         elif emoji.id == 990260521355862036:  # back
-            pass
+            player: wavelink.Player = payload.member.guild.voice_client
+
+            try:
+                if not player.current:
+                    raise wavelink.QueueEmpty()
+
+                track: wavelink.Playable
+                if player.current.recommended and len(player.auto_queue.history) > 1:
+                    t_idx = len(player.auto_queue.history) - 2
+
+                    track = player.auto_queue.history[t_idx]
+                    await player.auto_queue.history.delete(t_idx)
+                else:
+                    t_idx = len(player.queue.history) - 2
+
+                    track = player.queue.history[t_idx]
+                    await player.queue.history.delete(t_idx)
+            except (wavelink.QueueEmpty, ValueError):
+                return
+
+            await player.play(track, replace=True)
         elif emoji.id == 990260522521858078:  # skip
-            player = self.client.lavalink.player_manager.get(payload.guild_id)
+            player: wavelink.Player = payload.member.guild.voice_client
             if not player:
                 return
 
-            await player.skip()
+            # await player.skip(force=True)
+            await player.play(player.queue.get())
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):

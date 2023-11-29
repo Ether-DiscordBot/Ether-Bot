@@ -1,1 +1,6 @@
-__version__ = "1.0.0b7"
+
+
+__title__ = "Ether"
+__author__ = "Atomic Junky"
+__licence__ = "GNU GPLv3"
+__version__ = "1.0.0b8"

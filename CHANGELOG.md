@@ -1,3 +1,9 @@
+## 1.0.0b8
+- Bump wavelink to version 3.0.0
+- Move filters to there own file
+- Fix playlist system
+- Other minor changes
+
 ## 1.0.0b7
 - HotFix
 - Command `play` work

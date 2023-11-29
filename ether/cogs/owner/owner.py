@@ -1,14 +1,16 @@
 import os
 
 import discord
+import wavelink
 from discord import File, app_commands
 from discord.ext import commands
 
 from ether.cogs.event.welcomecard import WelcomeCard
-from ether.core.constants import Emoji
+from ether.core.constants import Colors, Emoji
 from ether.core.embed import Embed
 
 
+@app_commands.guilds(1027277588399403070, 697735468875513876)
 class Owner(commands.GroupCog, name="owner"):
     LOGS_FILE_PATH = os.path.abspath("logs.log")
 
@@ -38,8 +40,6 @@ class Owner(commands.GroupCog, name="owner"):
             f.write("")
         await interaction.response.send_message("Logs cleared", ephemeral=True)
 
-    @app_commands.command(name="test_welcome_card")
-    @commands.is_owner()
     async def test_welcome_card(self, interaction: discord.Interaction):
         card = WelcomeCard.create_card(
             interaction.user, interaction.user.guild
@@ -65,3 +65,23 @@ class Owner(commands.GroupCog, name="owner"):
             embed=Embed(description=f"Server count: `{len(self.client.guilds)}`"),
             ephemeral=True,
         )
+
+    @app_commands.command(name="lavalinkinfo")
+    @commands.is_owner()
+    async def lavalink_info(self, interaction: discord.Interaction):
+        """Show lavalink info"""
+        embed = Embed(title=f"**Wavelink:** `{wavelink.__version__}`", color=Colors.DEFAULT)
+
+        embed.add_field(
+            name="Server",
+            value=f"Server Nodes: `{len(wavelink.Pool.nodes)}`\n"
+            f"Voice Client Connected: `{len(self.client.voice_clients)}`\n",
+            inline=False,
+        )
+
+        nodes = [
+            f"`{identifier}`({len(node.players)})"
+            for identifier, node in wavelink.Pool.nodes.items()
+        ]
+        embed.add_field(name="Nodes", value=f"{', '.join(nodes)}", inline=False)
+        await interaction.response.send_message(embed=embed)
