@@ -1,3 +1,8 @@
+## 1.0.0b9
+- Fix command not found error
+- New `TERM_OF_SERVICE.md` file
+- New `PRIVACY_POLICY.md` file
+
 ## 1.0.0b8
 - Bump wavelink to version 3.0.0
 - Move filters to there own file

@@ -1,5 +1,6 @@
 import discord
 from discord import app_commands
+from discord.ext.commands import errors
 
 from ether.core.embed import Embed
 from ether.core.logging import log
@@ -19,6 +20,7 @@ class Tree(app_commands.CommandTree):
             app_commands.NoPrivateMessage,
             app_commands.CheckFailure,
             app_commands.CommandNotFound,
+            errors.CommandNotFound,
             discord.errors.HTTPException,
         )
         error = getattr(error, "original", error)

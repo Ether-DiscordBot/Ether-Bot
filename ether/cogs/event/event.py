@@ -2,10 +2,9 @@ import random
 
 import discord
 import gitinfo
-import wavelink
 from discord import File, HTTPException, app_commands
 from discord.ext import commands
-from discord.ext.commands import Context, errors
+from discord.ext.commands import errors
 
 from ether import __version__
 from ether.cogs.event.welcomecard import WelcomeCard
@@ -142,12 +141,12 @@ class Event(commands.GroupCog):
         log.info(f"Removed cog: {extension}")
 
     @commands.Cog.listener()
-    async def on_app_command_error(self, ctx: commands.Context, error):
+    async def on_command_error(self, ctx: commands.Context, error):
         ignored = (
             app_commands.NoPrivateMessage,
             app_commands.CheckFailure,
             app_commands.CommandNotFound,
-            commands.CommandNotFound,
+            errors.CommandNotFound,
             HTTPException,
         )
         if isinstance(error, ignored):
