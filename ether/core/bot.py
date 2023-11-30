@@ -15,7 +15,7 @@ from ether.core.tree import Tree
 
 
 class Ether(commands.bot.AutoShardedBot):
-    """The Ether subclass of discord.ext.commands.bot.AutoSharedBot"""
+    """The Æther subclass of discord.ext.commands.bot.AutoSharedBot"""
 
     def __init__(self, *, cli_flags=None, **kwargs) -> None:
         intents = Intents.all()

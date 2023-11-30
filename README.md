@@ -1,5 +1,5 @@
 <div align="center">
-   <h1>Ether Bot</h1>
+   <h1>Æther Bot</h1>
 </div>
 
 <div align="center">
@@ -29,9 +29,9 @@
 
 # Overview
 
-*The Bot is in developpement but you can already [use it](https://discord.com/api/oauth2/authorize?client_id=985100792270819389&permissions=1514461785206&scope=bot%20applications.commands)!*
+*The Bot is in development but you can already [use it](https://discord.com/api/oauth2/authorize?client_id=985100792270819389&permissions=1514461785206&scope=bot%20applications.commands)!*
 
-Ether is a powerful and easy to use Discord bot written in python.
+Æther is a powerful and easy to use Discord bot written in python.
 The bot include features like **Moderation, Fun, Leveling, Music, Playlists, Reddit, Reactions, Image, DnD, Steam** and more!
 
 
@@ -48,7 +48,7 @@ You can also support the development and hosting of the bot by making a small do
 First, look at this gorgeous music player!<br>
 <img src="./docs/assets/music_player.png">
 
-And now, let me talk about **Playlists**, the coolest feature of Ether!<br>
+And now, let me talk about **Playlists**, the coolest feature of Æther!<br>
 You can setup a playlist on your server using the `/music playlist <playlist link>` command. <br>
 And react later to the bot message at any time to play the playlist in one click.
 
@@ -60,20 +60,19 @@ And It's how this look: <br>
    <img src="./docs/assets/playlist_demo.gif">
 </details>
 
-Ether has many other non-music feature such as **birthday reminder**, **memes maker**, **DnD helper**, **admin stuff**, **quiet level system** and a tone of other things to play with.
+Æther has many other non-music feature such as **birthday reminder**, **memes maker**, **DnD helper**, **admin stuff**, **quiet level system** and a tone of other things to play with.
 
 If you have any ideas you want the bot to have, feel free to join the [support server](https://discord.gg/YTWUCufwjY) and publish your request or post your idea on [GitHub](https://github.com/Ether-DiscordBot/Ether-Bot/discussions).
 
 # Hosting
 
-You can host Ether simply by using Python, a virtual environment or Docker Compose. The environment variables must be in a `.env` file or in the `.secrets.toml` and `config.toml` files
+You can host Æther simply by using Python, a virtual environment or Docker Compose. The environment variables must be in a `.env` file or in the `.secrets.toml` and `config.toml` files
 
-But be aware that Ether is not meant to be hosted by anyone, you may have to change some parts of the code.
+But be aware that Æther is not meant to be hosted by anyone, you may have to change some parts of the code.
 
 # License
 
 Released under [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html) license.
 
-Time spent on Ether (it's a lot more):<br>
+Time spent on Æther (it's a lot more):<br>
 <img src="https://wakatime.com/badge/user/f4edea00-8a0b-4565-ac0c-18240ac5aa36/project/f950bbed-dfa6-438e-a7c0-87d645b7718e.svg?style=for-the-badge">
-

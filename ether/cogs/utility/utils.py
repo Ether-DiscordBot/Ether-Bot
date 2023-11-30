@@ -47,7 +47,7 @@ class Utils(commands.Cog, name="utils"):
     @app_commands.command(name="vote")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def vote(self, interaction: discord.Interaction) -> None:
-        """Send a link to vote for Ether on top.gg."""
+        """Send a link to vote for Æther on top.gg."""
 
         await interaction.response.send_message(
             embed=Embed(
@@ -92,12 +92,12 @@ class Utils(commands.Cog, name="utils"):
     @app_commands.command(name="status")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def status(self, interaction: discord.Interaction) -> None:
-        """Show the status of Ether"""
+        """Show the status of Æther"""
 
         await interaction.response.send_message(
             embed=Embed(
-                title="🟢 Ether Status",
-                description="Here is the [Ether's status page](https://stats.uptimerobot.com/yxDgrt60O3).",
+                title="🟢 Æther Status",
+                description="Here is the [Æther's status page](https://stats.uptimerobot.com/yxDgrt60O3).",
             )
         )
 
@@ -350,7 +350,7 @@ class Utils(commands.Cog, name="utils"):
     @app_commands.command(name="uptime")
     @app_commands.checks.cooldown(1, 15.0, key=lambda i: (i.guild_id, i.user.id))
     async def uptime(self, interaction: discord.Interaction):
-        """Get the uptime statistics of Ether"""
+        """Get the uptime statistics of Æther"""
         if not self.monitors_card:
             return await interaction.response.send_message(
                 embed=Embed.error(description="Sorry, uptime cards are not available yet, retry later.")

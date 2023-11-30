@@ -1,3 +1,6 @@
+## 1.0.0b10
+- Rename the bot from Ether to Æther
+
 ## 1.0.0b9
 - Fix command not found error
 - New `TERM_OF_SERVICE.md` file
@@ -47,8 +50,8 @@
 
 ## 1.0.0b1
 - A lot of technical changes
-    - Ether is now using discord.py (instead of py-cord)
-    - Ether is now using wevelink (instead of mafic)
+    - Æther is now using discord.py (instead of py-cord)
+    - Æther is now using wevelink (instead of mafic)
     - The above changes result in a rewriting of the bot
     - Rewrite parts like the base client and some events
 - Rename the `Image` cog to `Remix`
@@ -86,9 +89,9 @@
 - Fix lavalink_request
 
 ## 0.19.0
-- Ether disconnect when using the command `stop`
+- Æther disconnect when using the command `stop`
 - Some big technical changes
-    - Ether is now running lavalink by itself beside the bot
+    - Æther is now running lavalink by itself beside the bot
     - New logging in `on_ready`
 
 ## 0.18.0
@@ -104,7 +107,7 @@
 - New `changelog` command
 
 ## 0.16.2
-- Technical changes (Ether is now using a patch for mafic)
+- Technical changes (Æther is now using a patch for mafic)
 
 ## 0.16.1
 - Update support messages

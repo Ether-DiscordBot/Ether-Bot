@@ -21,7 +21,7 @@ subprocesses = []
 
 
 #
-#               Ether - Discord Bot
+#               Æther - Discord Bot
 #
 #              Made by  Atomic Junky
 #
@@ -111,7 +111,7 @@ def main():
         loop.run_forever()
     except KeyboardInterrupt:
         log.warning(
-            "Please do not use Ctrl+C to Shutdown Ether! (attempting to die gracefully...)"
+            "Please do not use Ctrl+C to Shutdown Æther! (attempting to die gracefully...)"
         )
         log.error("Received KeyboardInterrupt, treating as interrupt")
         if ether is not None:

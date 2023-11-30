@@ -118,7 +118,7 @@ class Event(commands.GroupCog):
         if random.randint(1, 100) <= 1:
             embed = Embed(
                 title="Support us (we need money)!",
-                description="Ether is a free and open source bot, please vote for the bot on [Top.gg](https://top.gg/bot/985100792270819389) and consider supporting us on [Ko-fi](https://ko-fi.com/holycrusader)!\n"
+                description="Æther is a free and open source bot, please vote for the bot on [Top.gg](https://top.gg/bot/985100792270819389) and consider supporting us on [Ko-fi](https://ko-fi.com/holycrusader)!\n"
                 "(we need 14$ per month to keep the bot running properly)",
                 color=0x2F3136,
             )

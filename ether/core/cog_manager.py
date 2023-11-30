@@ -10,7 +10,7 @@ __all__ = ["CogManager"]
 
 
 class CogManager:
-    """Directory manager for Ether's cogs.
+    """Directory manager for Æther's cogs.
 
     This module allows the bot to load all cogs in ether/cogs/ with the __init__.py files.
     """
