@@ -153,7 +153,10 @@ class MusicEvent(commands.Cog):
 
         try:
             message: discord.Message = player.message
-            if not message or not player.current:
+            if not message:
+                return
+            if not player.current:
+                await message.delete()
                 return
 
             await message.fetch()
