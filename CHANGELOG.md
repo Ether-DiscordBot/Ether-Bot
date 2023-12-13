@@ -17,6 +17,7 @@
 - Support root command in cogs
 - New `TERM_OF_SERVICE.md` file
 - New `PRIVACY_POLICY.md` file
+- Command `play` work
 - Rename the bot from Ether to Æther (possible step backwards)
 
 - A lot of technical changes
@@ -36,64 +37,9 @@
     - Move filters to there own file
     - Fix playlist system
     - Bump wavelink to version 3.0.0
+    - HotFix
     - Other minor changes
-
-## 1.0.0b10
-- Rename the bot from Ether to Æther
-
-## 1.0.0b9
-- Fix command not found error
-- New `TERM_OF_SERVICE.md` file
-- New `PRIVACY_POLICY.md` file
-
-## 1.0.0b8
-- Bump wavelink to version 3.0.0
-- Move filters to there own file
-- Fix playlist system
-- Other minor changes
-
-## 1.0.0b7
-- HotFix
-- Command `play` work
-
-## 1.0.0b6
-- Lavalink session id recovery system (but it doesn't seem to work)
-- Fix the `help` command (again)
-- Support root command in cogs
-- Update requirements.txt
-- Logging color changes
-
-## 1.0.0b5
-- Fix the `help` command
-- Add the latest change from the changelog to the `help` command
-
-## 1.0.0b4
-- Fix command prefix error
-- Some little changes on the `utils` cog
-- Remove some useless/boring or empty commands
-- Fix things
-
-## 1.0.0b3
-- Command usage statistic
-- Remove `ether/core/reddit.py` file
-- New `utils uptime` command and `Utils.monitor_card_builder` task
-
-## 1.0.0b2
-- Again, a lot of technical changes
-    - Update the logging system
-    - Update pre-commit
-    - Ctrl+C close the bot "properly"
-    - A lot of other changes
-- Music cogs is now functional (in theory)
-- Add a new `auto_play` parameter to the `music play` command that is set to `true` by default
-- New `music loop_all`, `music history` and `music back` commands
-
-## 1.0.0b1
-- A lot of technical changes
-    - Æther is now using discord.py (instead of py-cord)
-    - Æther is now using wevelink (instead of mafic)
-    - The above changes result in a rewriting of the bot
-    - Rewrite parts like the base client and some events
+ and some events
 - Rename the `Image` cog to `Remix`
 
 ## 0.20.3
