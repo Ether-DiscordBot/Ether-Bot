@@ -64,7 +64,7 @@ class Event(commands.GroupCog):
         if guild.logs and guild.logs.join and guild.logs.join.enabled:
             channel = member.guild.get_channel(guild.logs.join.channel_id)
 
-            if not channel.permissions_for(self.client.user).send_messages:
+            if not channel.permissions_for(channel.guild.me).send_messages:
                 return
 
             if guild.logs.join.image:

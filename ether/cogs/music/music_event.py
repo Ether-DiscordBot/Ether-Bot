@@ -219,3 +219,11 @@ class MusicEvent(commands.Cog):
         node: wavelink.Node = payload.node
 
         log.info(f"Node {node.identifier} is ready")
+
+    @commands.Cog.listener()
+    async def on_wavelink_extra_event(self, payload: wavelink.ExtraEventPayload):
+        log.info("Lavalink extra event received:")
+        log.info(f"\tNode: {payload.node.identifier}")
+        if payload.player:
+            log.info(f"\tPlayer: {payload.player.guild.id}")
+        log.info(f"\tData: {str(payload.data)}")

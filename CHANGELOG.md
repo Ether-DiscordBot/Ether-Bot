@@ -1,3 +1,43 @@
+## 1.0.0rc1
+- Fix something in on_member_join
+- Bump wavelink to 3.1.0
+- New `on_wavelink_extra_event` event supported
+
+## 1.0.0b1 to 1.0.0b10
+- Rename the `Image` cog to `Remix`
+- Music cogs is now functional (in theory)
+- Add a new `auto_play` parameter to the `music play` command that is set to `true` by default
+- New `music loop_all`, `music history` and `music back` commands
+- Command usage statistic
+- Remove `ether/core/reddit.py` file
+- New `utils uptime` command and `Utils.monitor_card_builder` task
+- Some little changes on the `utils` cog
+- Remove some useless/boring or empty commands
+- Fix the `help` command
+- Support root command in cogs
+- New `TERM_OF_SERVICE.md` file
+- New `PRIVACY_POLICY.md` file
+- Rename the bot from Ether to Æther (possible step backwards)
+
+- A lot of technical changes
+    - Æther is now using discord.py (instead of py-cord)
+    - Æther is now using wevelink (instead of mafic)
+    - The above changes result in a rewriting of the bot
+    - Rewrite parts like the base client and some events
+    - Update the logging system
+    - Update pre-commit
+    - Ctrl+C close the bot "properly"
+    - A lot of other changes
+    - Update requirements.txt
+    - Logging color changes
+    - Fix command prefix error
+    - Lavalink session id recovery system
+    - Fix command not found error
+    - Move filters to there own file
+    - Fix playlist system
+    - Bump wavelink to version 3.0.0
+    - Other minor changes
+
 ## 1.0.0b10
 - Rename the bot from Ether to Æther
 
