@@ -1,3 +1,6 @@
+## 1.0.0rc2
+- Music player update ratelimit hotfix
+
 ## 1.0.0rc1
 - Fix something in on_member_join
 - Bump wavelink to 3.1.0

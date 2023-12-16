@@ -65,7 +65,7 @@ class MusicEvent(commands.Cog):
                 td = datetime.timedelta(milliseconds=track.length)
                 length = format_td(td)
 
-                range_pointer_pos = min(int((500 / track.length) * 30), 30)
+                range_pointer_pos = min(int((30000 / track.length) * 30), 30)
 
                 range = ["─"] * 30
                 range[:range_pointer_pos] = "░" * range_pointer_pos
@@ -169,7 +169,7 @@ class MusicEvent(commands.Cog):
             pointer_pos = int((min_max_pos / player.current.length) * 30)
 
             range_pos = max(
-                min(player.position + 500, player.current.length), min_max_pos
+                min(player.position + 30000, player.current.length), min_max_pos
             )
             range_pointer_pos = min(int((range_pos / player.current.length) * 30), 30)
             range = ["─"] * 30
@@ -183,6 +183,11 @@ class MusicEvent(commands.Cog):
             setattr(player, "message", edited_message)
         except discord.errors.NotFound:
             return
+        except discord.errors.HTTPException:
+            new_message = await message.channel.send(embed=embed)
+            setattr(player, "message", new_message)
+
+            await message.delete()
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, _before, _after):
