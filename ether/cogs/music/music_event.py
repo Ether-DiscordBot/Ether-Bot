@@ -89,6 +89,8 @@ class MusicEvent(commands.Cog):
                 setattr(player, "message", message)
             except discord.errors.Forbidden:
                 return
+            except OverflowError:
+                return
 
     @commands.Cog.listener()
     async def on_wavelink_track_end(self, payload: wavelink.TrackEndEventPayload):
