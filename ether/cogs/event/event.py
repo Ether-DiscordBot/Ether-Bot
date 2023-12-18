@@ -99,6 +99,13 @@ class Event(commands.GroupCog):
 
         if Database.client != None and message.guild:
             guild = await Guild.from_guild_object(message.guild)
+            author = message.author
+            if author is discord.User:
+                author = message.guild.get_member(author.id)
+
+            if not author:
+                return
+
             await GuildUser.from_member_object(message.author)
             if random.randint(1, 100) <= 33:
                 new_level = await Database.GuildUser.add_exp(
