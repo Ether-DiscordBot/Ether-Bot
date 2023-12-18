@@ -69,8 +69,10 @@ class Ether(commands.bot.AutoShardedBot):
         default_node = config.lavalink.get("default_node")
         node_uri = f"https://{default_node.get('host')}:{default_node.get('port')}"
 
+        identifiers = [n.identifier for n in wavelink.Pool.nodes]
+
         node = wavelink.Node(
-            identifier=NODE_CODE_NAME.get_random(),
+            identifier=NODE_CODE_NAME.get_random(identifiers),
             uri=node_uri,
             password=default_node.get("pass")
         )

@@ -1,3 +1,6 @@
+## 1.0.0rc3
+- Fix a bug where a new node can take an already taken identifier
+
 ## 1.0.0rc2
 - Music player update ratelimit hotfix
 
