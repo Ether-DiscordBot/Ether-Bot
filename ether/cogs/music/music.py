@@ -293,13 +293,20 @@ class Music(commands.Cog, group_name="music"):
         if not player:
             return
 
+        if not player.current:
+            await interaction.response.send_message(
+                embed=Embed.error(description="I am not currently playing anything!"),
+                delete_after=5,
+            )
+            return
+
         if not player.paused:
             await interaction.response.send_message(
                 embed=Embed.error(description="I am not paused!"), delete_after=5
             )
             return
 
-        await player.resume()
+        await player.pause(False)
         await interaction.response.send_message(
             embed=Embed(description="⏸️ Resume"), delete_after=5
         )

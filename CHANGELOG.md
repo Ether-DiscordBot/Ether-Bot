@@ -1,3 +1,6 @@
+## 1.0.0rc4
+- Fix `music resume` command
+
 ## 1.0.0rc3
 - Fix a bug where a new node can take an already taken identifier
 
