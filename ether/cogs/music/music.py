@@ -198,37 +198,48 @@ class Music(commands.Cog, group_name="music"):
         if hasattr(source, "value"):
             source = source.value
 
-        tracks = await wavelink.Playable.search(query, source=wavelink.TrackSource(source))
-        if not tracks:
-            return await interaction.response.send_message(
-                embed=Embed.error(description="No tracks were found!")
-            )
+        try:
+            tracks = await wavelink.Playable.search(query, source=wavelink.TrackSource(source))
 
-        if isinstance(tracks, wavelink.Playlist):
-            playlist_tracks = tracks.tracks
-            if shuffle:
-                random.shuffle(playlist_tracks)
+            if not tracks:
+                return await interaction.response.send_message(
+                    embed=Embed.error(description="No tracks were found!")
+                )
 
-            added: int = await player.queue.put_wait(playlist_tracks)
+            if isinstance(tracks, wavelink.Playlist):
+                playlist_tracks = tracks.tracks
+                if shuffle:
+                    random.shuffle(playlist_tracks)
 
+                added: int = await player.queue.put_wait(playlist_tracks)
+
+                await interaction.edit_original_response(
+                    embed=Embed(
+                        description=f"**[{tracks.name}]({query})** - {len(added)} tracks",
+                        color=Colors.DEFAULT,
+                    )
+                )
+            else:
+                track: wavelink.Playable = tracks[0]
+                await player.queue.put_wait(track)
+                await interaction.edit_original_response(
+                    embed=Embed(
+                        description=f"Track added to queue: **[{track.title}]({track.uri})**",
+                        color=Colors.DEFAULT,
+                    )
+                )
+
+            if not player.playing:
+                await player.play(player.queue.get())
+        except wavelink.exceptions.LavalinkLoadException as err:
             await interaction.edit_original_response(
-                embed=Embed(
-                    description=f"**[{tracks.name}]({query})** - {len(added)} tracks",
-                    color=Colors.DEFAULT,
+                embed=Embed.error(
+                    title="Failed to load tracks",
+                    description=err.error
                 )
             )
-        else:
-            track: wavelink.Playable = tracks[0]
-            await player.queue.put_wait(track)
-            await interaction.edit_original_response(
-                embed=Embed(
-                    description=f"Track added to queue: **[{track.title}]({track.uri})**",
-                    color=Colors.DEFAULT,
-                )
-            )
 
-        if not player.playing:
-            await player.play(player.queue.get())
+            log.warning(f"Failed to load tracks with query: {query}, error={err.error}")
 
 
     @music.command(name="stop")

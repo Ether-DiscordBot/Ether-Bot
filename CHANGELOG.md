@@ -1,3 +1,6 @@
+## 1.0.0rc5
+- Handle load tracks exceptions
+
 ## 1.0.0rc4
 - Fix `music resume` command
 
