@@ -29,11 +29,10 @@ class Tree(app_commands.CommandTree):
             return
 
         if interaction.response.is_done():
-            await interaction.response.edit_message(
+            await interaction.edit_original_response(
                 embed=Embed.error(
                     description=f"An error occurred while executing this command, please retry later.\n If the problem persist, please contact the support.\n\n Error: `{error.__class__.__name__}({error})`"
-                ),
-                ephemeral=True,
+                )
             )
         else:
             await interaction.response.send_message(

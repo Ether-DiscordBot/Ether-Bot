@@ -202,7 +202,7 @@ class Music(commands.Cog, group_name="music"):
             tracks = await wavelink.Playable.search(query, source=wavelink.TrackSource(source))
 
             if not tracks:
-                return await interaction.response.send_message(
+                return await interaction.response.edit_original_response(
                     embed=Embed.error(description="No tracks were found!")
                 )
 
@@ -550,6 +550,79 @@ class Music(commands.Cog, group_name="music"):
             await interaction.response.send_message(
                 embed=Embed(description="🔁 Queue loop disabled"), delete_after=5
             )
+
+
+    @music.command(name="lyrics")
+    @commands.guild_only()
+    @app_commands.checks.cooldown(1, 10.0, key=lambda i: (i.guild_id, i.user.id))
+    async def lyrics(self, interaction: discord.Interaction):
+        """Get the lyrics of the current track"""
+        player: wavelink.Player = interaction.guild.voice_client
+
+        if not player:
+            return
+
+        if not player.current:
+            return await interaction.response.send_message(
+                embed=Embed.error(description="I am not currently playing anything!"),
+                delete_after=5,
+            )
+
+        await interaction.response.defer(thinking=True)
+
+        async def lyrics_send(path: str):
+            try:
+                return await player.node.send("GET", path=path)
+            except wavelink.exceptions.LavalinkException as _:
+                return None
+
+        lyrics = None
+        lyrics = await lyrics_send(path=f"v4/sessions/{player.node.session_id}/players/{player.guild.id}/lyrics")
+
+        if lyrics is None:
+            tracks = await lyrics_send(path=f"v4/lyrics/search/{player.current.title} - {player.current.author}")
+
+            if tracks:
+                for track in tracks[:2]:
+                    lyrics = await lyrics_send(path=f"v4/lyrics/{track['videoId']}")
+                    if lyrics != None:
+                        break
+
+        if lyrics is None:
+            return await interaction.edit_original_response(
+                    embed=Embed.error(
+                        description="Sorry, we haven't found any lyrics for this music.",
+                    )
+                )
+
+        text = ""
+        if lyrics['type'] == "timed":
+            for line in lyrics['lines']:
+                range = line['range']
+                if range['start'] < player.position and range['end'] > player.position:
+                    text += "> "
+                else:
+                    text += "  "
+
+                text += line['line'] + "\n"
+
+                if len(text) >= 1900:
+                    text += "  ..."
+                    break
+        else:
+            text = lyrics['track']['text'][:1900]
+
+        return await interaction.edit_original_response(
+            content=f"""
+```md
+## {lyrics['track']['title']} - {lyrics['track']['author']}
+
+{text}
+```
+"""
+        )
+
+
 
     @music.command(name="playlist")
     @commands.guild_only()

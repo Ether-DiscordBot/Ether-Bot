@@ -108,25 +108,17 @@ class MusicEvent(commands.Cog):
                 error_message = f"Track finished for reason `{reason}` with node `{player.node.identifier}`"
 
                 if reason == "loadFailed":
-                    error_message = f"Failed to load track probably due to the source. This error occurred on the node `{player.node.identifier}`"
+                    error_message = f"Failed to load the track. (This error occurred on the node `{player.node.identifier}`)"
 
                 log.warning(error_message)
-
-                channel = player.home
-                try:
-                    await channel.send(
-                        embed=Embed.error(
-                            description=error_message
-                            + "\nIf the source is YouTube, try an other source because YouTube is blocking some videos"
-                        )
-                    )
-                except discord.errors.Forbidden:
-                    pass
 
         if hasattr(player, "message"):
             try:
                 await player.message.delete()
             except discord.errors.NotFound:
+                pass
+
+            if not hasattr(player, "message"): # I know it's weird
                 pass
             delattr(player, "message")
 
@@ -157,12 +149,13 @@ class MusicEvent(commands.Cog):
             message: discord.Message = player.message
             if not message:
                 return
-            if not player.current:
-                await message.delete()
-                return
 
             await message.fetch()
             embed = message.embeds[0]
+
+            if not player.current:
+                await message.delete()
+                return
 
             length = format_td(datetime.timedelta(milliseconds=player.current.length))
 

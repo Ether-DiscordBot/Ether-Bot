@@ -1,3 +1,8 @@
+## 1.0.0rc6
+- Switch from AutoShardedBot to a simple Bot
+- New `music lyrics` command
+- Some (minor) fix
+
 ## 1.0.0rc5
 - Handle load tracks exceptions
 

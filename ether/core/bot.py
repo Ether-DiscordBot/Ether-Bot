@@ -14,7 +14,7 @@ from ether.core.logging import log
 from ether.core.tree import Tree
 
 
-class Ether(commands.bot.AutoShardedBot):
+class Ether(commands.bot.Bot):
     """The Æther subclass of discord.ext.commands.bot.AutoSharedBot"""
 
     def __init__(self, *, cli_flags=None, **kwargs) -> None:
