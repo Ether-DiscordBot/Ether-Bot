@@ -84,6 +84,13 @@ def ether_exception_handler(ether, ether_task: asyncio.Future):
         ether_task.result()
     except (SystemExit, KeyboardInterrupt, asyncio.CancelledError):
         pass
+    except discord.errors.HTTPException as e:
+        log.critical(f"An HTTP request failed with the status {e.status}.")
+        log.critical(f"Code: {e.code}")
+        log.critical(e.text)
+
+        log.warning("Attempting to die as gracefully as possible...")
+        asyncio.create_task(shutdown_handler(ether))
     except Exception as e:
         log.critical(
             "The main bot task didn't handle an exception and has crashed", exc_info=e
