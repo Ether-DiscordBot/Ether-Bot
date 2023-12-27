@@ -165,9 +165,12 @@ class Music(commands.Cog, group_name="music"):
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.choices(
         source=[
-            Choice(name="YouTube", value=0),
-            Choice(name="YouTube Music", value=1),
-            Choice(name="SoundCloud", value=2),
+            Choice(name="YouTube", value="ytsearch"),
+            Choice(name="YouTube Music", value="ytmsearch"),
+            Choice(name="SoundCloud", value="scsearch"),
+            Choice(name="Spotify", value="spsearch"),
+            Choice(name="Apple Music", value="amsearch"),
+            Choice(name="Deezer", value="dzsearch")
         ]
     )
     async def music_play(
