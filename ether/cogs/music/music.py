@@ -129,9 +129,11 @@ class Music(commands.Cog, group_name="music"):
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.choices(
         source=[
-            Choice(name="YouTube", value=0),
-            Choice(name="YouTube Music", value=1),
-            Choice(name="SoundCloud", value=2),
+            Choice(name="YouTube", value="ytsearch"),
+            Choice(name="YouTube Music", value="ytmsearch"),
+            Choice(name="SoundCloud", value="scsearch"),
+            Choice(name="Spotify", value="spsearch"),
+            Choice(name="Deezer", value="dzsearch")
         ]
     )
     async def play(
@@ -140,7 +142,7 @@ class Music(commands.Cog, group_name="music"):
         *,
         query: str,
         shuffle: bool = False,
-        source: Choice[int] = 0,
+        source: Choice[str] = "ytsearch",
         auto_play: bool = True,
     ):
         """Play a song or a playlist from YouTube, YT Music or Soundcloud
@@ -165,9 +167,11 @@ class Music(commands.Cog, group_name="music"):
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.choices(
         source=[
-            Choice(name="YouTube", value=0),
-            Choice(name="YouTube Music", value=1),
-            Choice(name="SoundCloud", value=2),
+            Choice(name="YouTube", value="ytsearch"),
+            Choice(name="YouTube Music", value="ytmsearch"),
+            Choice(name="SoundCloud", value="scsearch"),
+            Choice(name="Spotify", value="spsearch"),
+            Choice(name="Deezer", value="dzsearch")
         ]
     )
     async def music_play(
@@ -176,7 +180,7 @@ class Music(commands.Cog, group_name="music"):
         *,
         query: str,
         shuffle: bool = False,
-        source: Choice[int] = 0,
+        source: Choice[str] = "ytsearch",
         auto_play: bool = True,
     ):
         """Play a song or a playlist from YouTube, YT Music or Soundcloud
@@ -199,7 +203,7 @@ class Music(commands.Cog, group_name="music"):
             source = source.value
 
         try:
-            tracks = await wavelink.Playable.search(query, source=wavelink.TrackSource(source))
+            tracks = await wavelink.Playable.search(query, source=source)
 
             if not tracks:
                 return await interaction.response.edit_original_response(
@@ -585,10 +589,10 @@ class Music(commands.Cog, group_name="music"):
             if tracks:
                 for track in tracks[:2]:
                     lyrics = await lyrics_send(path=f"v4/lyrics/{track['videoId']}")
-                    if lyrics != None:
+                    if lyrics != None and ('lines' in lyrics['track'] or 'text' in lyrics):
                         break
 
-        if lyrics is None:
+        if lyrics is None and ('lines' in lyrics or 'text' in lyrics):
             return await interaction.edit_original_response(
                     embed=Embed.error(
                         description="Sorry, we haven't found any lyrics for this music.",
@@ -596,6 +600,7 @@ class Music(commands.Cog, group_name="music"):
                 )
 
         text = ""
+
         if lyrics['type'] == "timed":
             for line in lyrics['lines']:
                 range = line['range']
@@ -610,7 +615,7 @@ class Music(commands.Cog, group_name="music"):
                     text += "  ..."
                     break
         else:
-            text = lyrics['track']['text'][:1900]
+            text = lyrics['text'][:1900]
 
         return await interaction.edit_original_response(
             content=f"""
