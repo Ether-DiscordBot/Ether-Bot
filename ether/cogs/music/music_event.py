@@ -109,8 +109,6 @@ class MusicEvent(commands.Cog):
 
                 if reason == "loadFailed":
                     error_message = f"Failed to load the track. (This error occurred on the node `{player.node.identifier}`)"
-                    await player.stop()
-                    await player.disconnect()
 
                 log.warning(error_message)
 
