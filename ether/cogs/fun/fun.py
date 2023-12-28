@@ -69,12 +69,12 @@ class Fun(commands.GroupCog, name="fun"):
         """Make the bot say something"""
 
         if hide:
+            await interaction.channel.send(message)
             await interaction.response.send_message(
-                "👌 Done! (only you can see this message)",
+                "👌 Done!",
                 ephemeral=True,
                 delete_after=5,
             )
-            await interaction.channel.send(message)
             return
 
         await interaction.response.send_message(message)

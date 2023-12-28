@@ -40,7 +40,7 @@ class Music(commands.Cog, group_name="music"):
         name="music", description="Tthhee Ppaarrttyy"
     )
 
-    filter = Filters(parent=music)
+    # filter = Filters(parent=music)
 
     async def interaction_check(self, interaction: discord.Interaction):
         """Command before-invoke handler."""

@@ -35,6 +35,8 @@ class Ether(commands.bot.Bot):
 
             for cmd in commands:
                 if isinstance(cmd, discord.app_commands.Group):
+                    print(len(cmd.commands))
+                    print(depth)
                     count += cmd_count(cmd.commands, depth + 1)
                     continue
                 count += 1
